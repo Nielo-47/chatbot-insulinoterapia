@@ -2,1197 +2,693 @@
   "doc-8899fd1c2e0ba3c7068151c8b7afd597": {
     "relation_pairs": [
       [
-        "Diabetes Mellitus",
-        "Public Health Research"
+        "Bomba de insulina",
+        "Sensor em tempo real"
       ],
       [
-        "Diabetes Mellitus",
-        "Sulfonylurea"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Patient Education and Support Services Development Programs Initiatives Initiatives"
-      ],
-      [
-        "FreeStyle Libre",
-        "Glicosímetro"
-      ],
-      [
-        "Agulha",
+        "Frasco",
         "Insulina"
       ],
       [
-        "Dose Ímpares",
-        "Seringa U100"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Patient Education and Support Services"
-      ],
-      [
-        "Geladeira",
-        "Insulina NPH"
-      ],
-      [
-        "Tempo no Alvo (TIR)",
-        "Variabilidade glicêmica"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Social Support Services and Resources Development"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Regular Exercise"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Healthcare Access"
-      ],
-      [
-        "Celular",
-        "SMCG"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Healthcare Provider Education and Training Programs Initiatives"
-      ],
-      [
-        "Monitorização Contínua de Glicose (CGM)",
-        "Sensor de Glicose"
-      ],
-      [
-        "Caneta de Insulina",
-        "Insulina Rápida ou Ultrarrápida"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Patient Engagement Strategies and Techniques Development Initiatives Initiatives"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Patient Education and Support Services Development Programs"
-      ],
-      [
-        "Monitoramento Contínuo",
-        "Sensor de Glicose"
-      ],
-      [
-        "Prega Subcutânea",
-        "Rodízio dos Locais de Aplicação da Insulina"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Technology and Tools"
-      ],
-      [
-        "Glicose",
-        "Glicosímetro"
-      ],
-      [
-        "Insulina",
-        "Pregas subcutâneas"
-      ],
-      [
-        "Diabetes Tipo 1",
-        "Sistema de Defesa"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Healthcare Provider Education"
-      ],
-      [
-        "Insulina",
-        "Medtronic MiniMed"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Lifestyle Change Strategies and Techniques Development Programs"
-      ],
-      [
-        "Dose Pequenas e Fracionadas",
-        "Seringa U100"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Social Support Services and Resources Development Programs"
-      ],
-      [
-        "Braços",
-        "Nádegas"
-      ],
-      [
-        "Insulina",
-        "Sensor de Glicose"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Monitoring Blood Glucose Levels"
-      ],
-      [
-        "Agulha",
+        "Abdômen",
         "Pele"
       ],
       [
-        "Diabetes Mellitus",
-        "Lifestyle Change Strategies and Techniques Development Programs Initiatives"
+        "Bomba de Insulina",
+        "Seringa"
       ],
       [
-        "Diabetes Mellitus",
-        "Healthcare System Evaluation and Improvement"
+        "Febre",
+        "Insuloterapia"
       ],
       [
-        "Diabetes Mellitus",
-        "Support System"
+        "Algodo",
+        "Seringa"
       ],
       [
-        "Diabetes Mellitus",
-        "Self-Management Skill Development and Improvement Programs"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Public Health Education"
-      ],
-      [
-        "Atividade Física",
-        "Dose de Insulina"
-      ],
-      [
-        "Medicação",
-        "Profissionais de Saúde"
-      ],
-      [
-        "Caneta de Insulina",
-        "Insulina"
-      ],
-      [
-        "Dedo",
-        "Lanceta"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Patient-Centered Care"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Dietary Changes"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Healthcare Provider Training and Education Initiatives"
-      ],
-      [
-        "Diabetes tipo 2 (DM2)",
-        "Sistema de defesa (imunidade)"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Public Health Initiatives"
-      ],
-      [
-        "Caneta",
-        "Unidade de Saúde"
-      ],
-      [
-        "Canetas",
-        "Unidade de Saúde"
-      ],
-      [
-        "Insulina",
-        "Lugar Fresco"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Public Health Policy Development"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Healthcare Provider Training and Education Initiatives Initiatives"
-      ],
-      [
-        "SMCG",
-        "Sensor"
-      ],
-      [
-        "Dose de Insulina",
-        "Idade e Fase da Vida"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Social Support Network Development and Improvement Initiatives"
-      ],
-      [
-        "Diabetes",
-        "Paciente"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Government Policies and Programs"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Self-Management Strategy Development and Improvement"
-      ],
-      [
-        "Gestantes",
-        "Prega Subcutânea"
-      ],
-      [
-        "Geladeira",
-        "Insulina"
-      ],
-      [
-        "Glicosímetro (Sensor de Glicose)",
-        "Médico"
-      ],
-      [
-        "Insulina",
-        "Lipo-Hipertrofia"
-      ],
-      [
-        "Caneta",
-        "Insulina Leitosa"
-      ],
-      [
-        "Insulina",
-        "Seringa U100"
-      ],
-      [
-        "Canetas",
-        "Insulina Leitosa"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Metformin"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Insulina"
-      ],
-      [
-        "Hospital",
-        "Paciente"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Healthcare System Reform and Improvement Programs Initiatives"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Social Support Services and Resources"
-      ],
-      [
-        "Enfermidade",
-        "Paciente"
-      ],
-      [
-        "Insulina",
-        "Paciente"
-      ],
-      [
-        "Agulhas Curtas",
-        "Prega Subcutânea"
-      ],
-      [
-        "Medicação",
-        "Paciente"
-      ],
-      [
-        "Community Involvement",
-        "Diabetes Mellitus"
-      ],
-      [
-        "Glicosímetro",
-        "Variabilidade Glicêmica"
-      ],
-      [
-        "World Athletics Championship",
-        "World Athletics Federation"
-      ],
-      [
-        "Coletor para Material Perfurocortante",
-        "Seringas e Agulhas Usadas"
-      ],
-      [
-        "Lipodistrofia",
-        "mudança no tecido da pele"
-      ],
-      [
-        "Glicose",
+        "Glicemia Capilar",
         "Sensor de Glicose"
       ],
       [
-        "Conselho de Saúde",
-        "Insulina"
+        "Cuidador",
+        "Prega Subcutânea"
       ],
       [
-        "Caneta Recarregável",
-        "Refil de Insulina"
+        "Células do pâncreas",
+        "Sistema de defesa"
       ],
       [
-        "Canetas de Insulina",
-        "Laboratórios"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Glucagon-Like Peptide-1 Receptor Agonist"
-      ],
-      [
-        "Intersticial",
-        "Sensor de Glicose"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Public Health Research and Development"
-      ],
-      [
-        "Insulina Intermediária, Lenta ou Ultralenta",
-        "Seringa e Frasco"
-      ],
-      [
-        "Família",
-        "Paciente"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Healthcare System Reform and Improvement Programs Initiatives Initiatives"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Self-Management Skill Development"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Healthcare Provider Education and Training"
-      ],
-      [
-        "Dexcom G6",
-        "Insulina"
-      ],
-      [
-        "Café",
-        "Mãe"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Patient Engagement Strategies and Techniques Development Initiatives"
-      ],
-      [
-        "Cetonas",
-        "Gordura"
-      ],
-      [
-        "Glicemia",
-        "Jejum"
-      ],
-      [
-        "Bagageiro de Carro ou Ônibus",
-        "Seringas e Agulhas Usadas"
-      ],
-      [
-        "Seringas",
+        "Seringa",
         "Álcool 70%"
       ],
       [
-        "Agulhas Curtas",
-        "Pessoas Magras"
+        "Lipo-hipertrofia",
+        "Lipodistrofia"
+      ],
+      [
+        "Mãe",
+        "Sensor de glicose (CGM)"
+      ],
+      [
+        "Infecção",
+        "Insuloterapia"
+      ],
+      [
+        "Podem",
+        "neos"
+      ],
+      [
+        "Federal Medical Organization",
+        "Hemoglobina Glicada (HbA1c)"
+      ],
+      [
+        "Agulha",
+        "Rodizio"
+      ],
+      [
+        "Desidratação",
+        "Insulina"
+      ],
+      [
+        "Insulina",
+        "Seringa"
       ],
       [
         "Tokyo",
         "World Athletics Championship"
       ],
       [
-        "Diabetes Mellitus",
-        "Self-Management Skill Development and Improvement Initiatives"
+        "Federal Medical Organization",
+        "Sensor de Glicose"
       ],
       [
-        "Caneta",
-        "Prega Subcutânea"
-      ],
-      [
-        "Fita",
-        "Sangue"
-      ],
-      [
-        "Canetas",
-        "Prega Subcutânea"
-      ],
-      [
-        "Hipoglicemia",
-        "Tempo"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Public Health Research and Development Programs"
-      ],
-      [
-        "Associação Americana de Diabetes",
-        "Insulina"
-      ],
-      [
-        ">glicosímetro",
-        "sangue"
-      ],
-      [
-        "Algodão",
-        "Álcool 70%"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Healthcare Provider Training and Education"
-      ],
-      [
-        "Agulha Fixa",
-        "Seringa U100"
-      ],
-      [
-        "Prega Subcutânea",
+        "Depósito rígido",
         "Unidade de Saúde"
       ],
       [
-        "Paciente",
-        "Profissionais de Saúde"
+        "Bebê",
+        "Glicemia"
       ],
       [
-        "Diabetes Mellitus",
-        "Self-Management Strategy Development"
+        "Idosos com doenças ou limitações",
+        "Idosos saudáveis"
       ],
       [
-        "Diabetes Mellitus",
-        "Healthcare Provider"
-      ],
-      [
-        "Caneta Descartável",
-        "Caneta Recarregável"
-      ],
-      [
-        "Agulha",
-        "Canetas de Insulina"
-      ],
-      [
-        "Açúcar no Sangue",
-        "Glicose Baixa"
-      ],
-      [
-        "Luz Solar Direta",
-        "Porta-Luvas"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Healthcare Provider Education and Training Programs Initiatives Initiatives"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Education and Awareness"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Lifestyle Modification Strategies and Techniques Initiatives"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Healthcare System Reform and Improvement"
-      ],
-      [
-        "Diabetes tipo 1",
-        "Insulinaoterapia"
+        "Educação em diabetes",
+        "Paciente bem informado"
       ],
       [
         "Gordura",
         "Insulina"
       ],
       [
-        "Insulina",
-        "Transporte"
+        "Glicemia",
+        "MG/dL"
       ],
       [
-        "Pele",
-        "Álcool 70%"
-      ],
-      [
-        "Bolsas Térmicas com Gelox ou Gelo",
-        "Frascos Lacrados"
-      ],
-      [
-        "Adolescentes e Adultos",
-        "Prega Subcutânea"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Patient Engagement Strategies"
-      ],
-      [
-        "Insulina NPH",
-        "Insulina Regular"
-      ],
-      [
-        "Adultos e Crianças",
-        "Prega Subcutânea"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Lifestyle Change Strategies and Techniques Development"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Healthcare Provider Education and Training Programs"
-      ],
-      [
-        "Dicas para Fazer o Rodízio da Forma Correta",
-        "Rodízio dos Locais de Aplicação da Insulina"
-      ],
-      [
-        "Diabetes",
-        "Tratamento"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Self-Management Skills"
-      ],
-      [
-        "Insulina",
-        "Prega Subcutânea"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Pâncreas"
-      ],
-      [
-        "Conselso de Saúde",
+        "Geladeira",
         "Insulina"
       ],
       [
-        "Comprimidos",
-        "Remédios orais"
-      ],
-      [
-        "Hipoglicemia",
-        "Monitorização Contínua de Glicose (CGM)"
-      ],
-      [
-        "Gestão da Diabetes",
-        "Monitorização Contínua de Glicose (CGM)"
-      ],
-      [
-        "Bebê",
-        "Mãe"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Lifestyle Changes"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Healthcare Quality Improvement"
-      ],
-      [
-        "pele",
-        "álcool 70%"
-      ],
-      [
-        "Adultos com diabetes tipo 1 ou 2",
-        "HbA1c"
-      ],
-      [
-        "Insulina",
-        "Músculo"
-      ],
-      [
-        "Local de Aplicação",
-        "Rodízio"
-      ],
-      [
-        "Coletor para Material Perfurocortante",
-        "Unidade Básica de Saúde (UBS)"
-      ],
-      [
-        "Dose de Insulina",
-        "Situações Especiais"
-      ],
-      [
-        "Bomba de Insulina",
-        "Monitorização Contínua de Glicose (CGM)"
-      ],
-      [
-        "Esquema Basal-Bolus (Insulina Lenta + Insulina Antes das Refeições)",
-        "Insulina Várias Vezes ao Dia ou Bomba de Insulina"
-      ],
-      [
-        "Glicemia",
-        "Mãe"
-      ],
-      [
-        "Dose de Insulina",
-        "Médico"
-      ],
-      [
-        "Dose Pares",
-        "Seringa U100"
-      ],
-      [
-        "Dose de Insulina",
-        "Peso Corporal"
-      ],
-      [
-        "Insulina",
-        "Local de Aplicação"
-      ],
-      [
-        "Adultos e Crianças",
-        "Agulhas Curtas"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Patient Education and Support"
-      ],
-      [
-        "ACOG (EUA) e IDF (Internacional)",
-        "Glicemia"
-      ],
-      [
-        "insulina",
-        "pele"
-      ],
-      [
-        "Glicosímetro",
+        "Paciente",
         "Sensor de Glicose"
       ],
       [
-        "pele",
-        "prega subcutânea"
+        "Frasco",
+        "Seringa"
       ],
       [
-        "Diabetes Mellitus",
-        "Healthcare System Evaluation"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Social Support Network Development and Improvement"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Social Support Services"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Self-Management Strategy Development and Improvement Programs Initiatives Initiatives"
-      ],
-      [
-        "Insulina Intermediária, Lenta ou Ultralenta",
-        "Médico"
-      ],
-      [
-        "Esquema Basal-Bolus (Insulina Lenta + Insulina Antes das Refeições)",
-        "Insulina Uma Vez por Dia ou Só Comprimidos"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Lifestyle Modification Strategies and Techniques"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Patient Education and Support Services Development Programs Initiatives"
-      ],
-      [
-        "Insulina Leitosa",
-        "Unidade de Saúde"
-      ],
-      [
-        "Açúcar Dissolvido em Água",
-        "Bala de Glicose"
-      ],
-      [
-        "Glicosímetro",
-        "Sensor"
-      ],
-      [
-        "Insulina Regular",
-        "NPH Insulin"
-      ],
-      [
-        "Crianças e adolescentes",
-        "DM tipo 1"
-      ],
-      [
-        "Dicas para Fazer o Rodízio da Forma Correta",
-        "Prega Subcutânea"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Self-Management Strategies"
-      ],
-      [
-        "Açúcar",
-        "Monitorização Contínua de Glicose (CGM)"
+        "Disglicemia",
+        "Vasos sanguíneos"
       ],
       [
         "Agulha",
-        "Unidade de Saúde"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Lifestyle Modification Strategies"
-      ],
-      [
-        "Bagagem de Mão",
         "Insulina"
       ],
       [
-        "Glicosímetro",
-        "SMCG"
+        "Elliott P. Joslin",
+        "i-Port"
       ],
       [
-        "Diabetes Mellitus",
-        "Patient Engagement Strategies and Techniques Development"
+        "Caneta",
+        "Álcool 70%"
       ],
       [
-        "Diabetes",
+        "Glicemia após as Refeições (2h)",
+        "Glicemia em Jejum"
+      ],
+      [
+        "Hipoglicemia (<70 mg/dL)",
+        "Tempo no Alvo (70–180 mg/dL)"
+      ],
+      [
+        "CDA (Canadá)",
+        "Glicemia"
+      ],
+      [
+        "Hemoglobina Glicada (HbA1c)",
+        "Sensor em tempo real"
+      ],
+      [
+        "Federal Reserve",
+        "HbA1c"
+      ],
+      [
+        "DM2",
+        "Federal Medical Organization"
+      ],
+      [
+        "Banho quente",
         "Insulina"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Lifestyle Modification"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Lifestyle Change Strategies and Techniques Development Programs Initiatives Initiatives"
-      ],
-      [
-        "Hipoglicemia",
-        "Insulina"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Research and Development"
-      ],
-      [
-        "insulina",
-        "prega subcutânea"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Lifestyle Change Strategies"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Healthcare Provider Training and Education Programs"
-      ],
-      [
-        "Abdômen (barriga)",
-        "Coxas"
-      ],
-      [
-        "Educação em Diabetes",
-        "Paciente"
-      ],
-      [
-        "Bomba de Insulina (SICI)",
-        "Insulina Rápida ou Ultrarrápida"
       ],
       [
         "Insulina",
-        "Lipohipertrofia"
+        "Vez"
       ],
       [
-        "Crianças Pequenas",
-        "Prega"
-      ],
-      [
-        "Agulha Nova",
+        "Compressa fria",
         "Insulina"
       ],
       [
-        "Diabetes Mellitus",
-        "Public Health Policy Development and Implementation"
+        "Mulheres grávidas com diabetes",
+        "Sensor de glicose (CGM)"
       ],
       [
-        "Punção",
-        "Sangue"
+        "Diabetes gestacional",
+        "Mulheres grávidas com diabetes"
+      ],
+      [
+        "Insulina",
+        "Prega Subcutânea"
+      ],
+      [
+        "Canetas recarregáveis de insulina",
+        "Elliott P. Joslin"
+      ],
+      [
+        "Glicemia",
+        "Refeição"
+      ],
+      [
+        "Canetas",
+        "Paciente"
+      ],
+      [
+        "Insulina",
+        "Tempo de absorção"
+      ],
+      [
+        "Insuloterapia",
+        "Lipohipertrofia"
+      ],
+      [
+        "Seringa",
+        "Álcool"
+      ],
+      [
+        "Insulina",
+        "Pele"
+      ],
+      [
+        "Federal Reserve",
+        "médicos"
+      ],
+      [
+        "Agulha",
+        "Seringa"
+      ],
+      [
+        "FreeStyle Libre",
+        "Sensor em tempo real"
+      ],
+      [
+        "Aprender e praticar",
+        "Insulina"
+      ],
+      [
+        "Insuloterapia",
+        "Pós-Operatório"
+      ],
+      [
+        "Educação em diabetes",
+        "Insulina"
+      ],
+      [
+        "Educação em diabetes",
+        "Elliott P. Joslin"
+      ],
+      [
+        "Compressa quente",
+        "Insulina"
+      ],
+      [
+        "Federal University of Health",
+        "Paciente"
+      ],
+      [
+        "Diabetes Tipo 2",
+        "Insuloterapia"
+      ],
+      [
+        "Caneta de Insulina",
+        "Insulina"
+      ],
+      [
+        "Caneta",
+        "Insulina"
+      ],
+      [
+        "ADA (EUA)",
+        "Glicemia"
+      ],
+      [
+        "pele",
+        "sensor"
+      ],
+      [
+        "Bebê",
+        "Mulheres que usam sensor de glicose (CGM) durante a gravidez"
+      ],
+      [
+        "Glicemia",
+        "Mulheres que usam sensor de glicose (CGM) durante a gravidez"
+      ],
+      [
+        "Gordura",
+        "Onde aplicar a insulina e como ela age"
+      ],
+      [
+        "Gestante",
+        "Pele"
+      ],
+      [
+        "Calor",
+        "Insulina"
+      ],
+      [
+        "Exercício",
+        "Insulina"
+      ],
+      [
+        "Aparelho",
+        "Médico"
+      ],
+      [
+        "Diabetes Gestacional",
+        "Insuloterapia"
+      ],
+      [
+        "Federal Reserve",
+        "World Athletics Championship"
+      ],
+      [
+        "Glicemia",
+        "NICE (Reino Unido)"
+      ],
+      [
+        "Algodo",
+        "Caneta"
+      ],
+      [
+        "Diabetes gestacional",
+        "Sensor de glicose (CGM)"
+      ],
+      [
+        "dedo",
+        "furinho"
+      ],
+      [
+        "Aplicativo de Celular",
+        "Paciente"
+      ],
+      [
+        "Aparelho",
+        "Paciente"
+      ],
+      [
+        "açúcar",
+        "urina"
+      ],
+      [
+        "Gordura",
+        "Músculo"
+      ],
+      [
+        "Crianças",
+        "Tamanho da agulha"
+      ],
+      [
+        "Abdômen",
+        "Insulina"
+      ],
+      [
+        "Canetas recarregáveis de insulina",
+        "Insulina"
+      ],
+      [
+        "Glicose",
+        "Hormônio"
+      ],
+      [
+        "Bebê",
+        "Pele"
+      ],
+      [
+        "Intersticial Fluid",
+        "Sensor em tempo real"
       ],
       [
         "Hospital",
         "Insulina"
       ],
       [
-        "Agulha",
-        "Insulina Leitosa"
+        "Medtronic MiniMed",
+        "Sensor em tempo real"
       ],
       [
-        "Profissionais de Saúde",
-        "Tratamento"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Public Health Policy Development and Implementation Initiatives Initiatives"
-      ],
-      [
-        "Meta de HbA1c",
-        "Variabilidade Glicêmica"
-      ],
-      [
-        "Caneta de Insulina",
-        "Paciente"
-      ],
-      [
-        "100m Sprint Record",
-        "World Athletics Championship"
-      ],
-      [
-        "Alimentação",
-        "Dose de Insulina"
-      ],
-      [
-        "Glicose",
-        "Idosos muito comprometido"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Social Support Network Development and Improvement Initiatives Initiatives"
-      ],
-      [
-        "Diabetes tipo 2",
-        "Insulinaoterapia"
-      ],
-      [
-        "Diabetes Tipo 2",
-        "Insulina"
-      ],
-      [
-        "Abreviações em Receitas Médicas",
-        "Profissionais de Saúde"
-      ],
-      [
-        "Insulina Rápida ou Ultrarrápida",
-        "Médico"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Healthcare System Reform and Improvement Initiatives"
-      ],
-      [
-        "Dose de Insulina",
-        "Glicosímetro (Sensor de Glicose)"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Social Support Services and Resources Development Programs Initiatives"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Healthcare System Evaluation and Improvement Initiatives Initiatives"
-      ],
-      [
-        "Crianças e Adolescentes",
-        "Seringas"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Healthcare Provider Training"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Healthcare Provider Education and Training Initiatives"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Self-Management Strategy Development and Improvement Programs"
-      ],
-      [
-        "Glicose",
-        "Variabilidade glicêmica"
-      ],
-      [
-        "Agulha",
-        "Caneta"
-      ],
-      [
-        "Insulina NPH",
-        "Seringas"
-      ],
-      [
-        "Insulina Antes das Refeições",
-        "Insulina Lenta"
-      ],
-      [
-        "Glicose",
-        "Tempo no Alvo (TIR)"
-      ],
-      [
-        "Carbon-Fiber Spikes",
-        "Noah Carter"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Patient Engagement"
-      ],
-      [
-        "Refrigerante Comum",
-        "Suco de Laranja"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Self-Management Skill Development and Improvement"
-      ],
-      [
-        "Músculo",
-        "Pelo"
-      ],
-      [
-        "Diabetes",
-        "Sensor de Glicose"
-      ],
-      [
-        "Caneta Recarregável",
-        "Refil"
-      ],
-      [
-        "ACOG (EUA)",
-        "IDF (Internacional)"
-      ],
-      [
-        "Insulina Leitosa",
-        "Prega Subcutânea"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Social Support Network Development"
-      ],
-      [
-        "Hipoglicemia",
-        "Meta de HbA1c"
-      ],
-      [
-        "Insulina",
-        "Seringas"
-      ],
-      [
-        "Agulha de Insulina",
-        "Caneta de Insulina Recarregável"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Self-Management Strategy Development and Improvement Programs Initiatives"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Patient Engagement Strategies and Techniques"
-      ],
-      [
-        "Diabetes",
-        "Glicosímetro"
-      ],
-      [
-        "Agulha",
-        "Prega Subcutânea"
-      ],
-      [
-        "Casos de Diabetes",
-        "Diabetes Descompensado"
-      ],
-      [
-        "Canetas",
-        "Álcool 70%"
-      ],
-      [
-        "Crianças",
-        "Prega Subcutânea"
-      ],
-      [
-        "Lancetas (aquelas agulhinhas do teste de glicemia)",
-        "Seringas e Agulhas Usadas"
-      ],
-      [
-        "HbA1c",
-        "Idosos (a partir de 65 anos)"
-      ],
-      [
-        "Médico",
-        "Tratamento"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Public Health Policy"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Healthcare System Evaluation and Improvement Initiatives"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Healthcare System"
-      ],
-      [
-        "Insulina",
-        "Meta de HbA1c"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Lifestyle Modification Strategies and Techniques Initiatives Initiatives"
-      ],
-      [
-        "Bomba de Insulina",
-        "Sensor"
-      ],
-      [
-        "Glicemia",
-        "Insulina"
-      ],
-      [
-        "100m Sprint Record",
-        "Noah Carter"
-      ],
-      [
-        "Pessoas Magras",
-        "Prega Subcutânea"
-      ],
-      [
-        "Agulha",
-        "Canetas"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Social Support Services and Resources Development Programs Initiatives Initiatives"
-      ],
-      [
-        "Gestão Contínua de Glicose (CGM)",
-        "Monitorização Contínua de Glicose (CGM)"
-      ],
-      [
-        "Noah Carter",
-        "World Athletics Championship"
-      ],
-      [
-        "Bomba de Insulina",
-        "SMCG"
-      ],
-      [
-        "Agulha Removível",
-        "Profissionais de Saúde"
+        "Federal Medical Organization",
+        "Jejum"
       ],
       [
         "Glicosímetro",
-        "Punção"
+        "Sensor em tempo real"
       ],
       [
-        "Diabetes Mellitus",
-        "Healthcare System Reform"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Lifestyle Change Strategies and Techniques"
-      ],
-      [
-        "Punção",
-        "Toalha Limpa"
-      ],
-      [
-        "Cetoacidose Diabética",
-        "Cetonas"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Patient Education and Support Services Development"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Self-Management Skill Development and Improvement Initiatives Initiatives"
-      ],
-      [
-        "Diabetes Mellitus",
-        "Public Health Policy Development and Implementation Initiatives"
+        "Caneta de Insulina",
+        "Seringa"
       ],
       [
         "Insulina",
-        "SMCG"
+        "Insulina em suspensão"
       ],
       [
-        "Diabetes Mellitus",
-        "Public Health Research and Development Programs Initiatives"
+        "Federal Reserve",
+        "neos"
       ],
       [
-        "Sensores de Glicose",
-        "Variabilidade Glicêmica"
+        "diabetes",
+        "insulina"
       ],
       [
-        "fitinha",
-        "urina"
+        "Paciente",
+        "Álcool 70%"
       ],
       [
-        "Gestação",
-        "Insulinaoterapia"
+        "Lipo-hipertrofia",
+        "Lipoatrofia"
       ],
       [
-        "Carboidrato de Ação Rápida",
-        "Glicose Baixa"
+        "Músculo",
+        "Via Subcutânea"
       ],
       [
-        "Diabetes Mellitus",
-        "Healthcare System Reform and Improvement Programs"
+        "Canetas",
+        "Federal University of Health"
       ],
       [
-        "Gestação",
-        "Mãe e Bebê"
+        "Braços",
+        "Pele"
+      ],
+      [
+        "Insulina",
+        "Sensor de Glicose"
       ],
       [
         "Insulina",
         "Pâncreas"
       ],
       [
-        "Diabetes Mellitus",
-        "Public Health Research and Development Programs Initiatives Initiatives"
+        "Eversense",
+        "Sensor em tempo real"
       ],
       [
-        "Diabetes Mellitus",
-        "Social Support Network"
+        "Insulina",
+        "Massagem"
       ],
       [
-        "Canetas de Insulina Descartáveis",
-        "Materiais da Bomba de Insulina"
+        "DM1",
+        "Federal Medical Organization"
       ],
       [
-        "HbA1c",
-        "pessoas"
+        "Elliott P. Joslin",
+        "Paciente bem informado"
       ],
       [
-        "Insulinaoterapia",
-        "Remédios orais"
+        "Aprender e praticar",
+        "Onde aplicar a insulina e como ela age"
       ],
       [
-        "Diabetes",
-        "Hipoglicemia"
+        "Insulina",
+        "Via Subcutânea"
       ],
       [
-        "pele",
-        "álcool"
+        "Abdômen",
+        "Músculo"
       ],
       [
-        "Enfermeiras",
-        "Médico Elliott P. Joslin"
+        "Disglicemia",
+        "Memória metabólica"
       ],
       [
-        "Diabetes",
-        "Hiperglicemia"
+        "Caderninho",
+        "Paciente"
       ],
       [
-        "DM tipo 1",
-        "HbA1c"
-      ],
-      [
-        "Almoço e Jantar",
+        "Glicemia",
         "Mãe"
       ],
       [
-        "Agulha Removível",
-        "Seringa U100"
+        "Fevereira",
+        "Insulina"
       ],
       [
-        "Diabetes Mellitus",
-        "Social Determinants of Health"
+        "Federal Reserve",
+        "Podem"
+      ],
+      [
+        "Frasco",
+        "Geladeira"
+      ],
+      [
+        "Adolescentes",
+        "Tamanho da agulha"
+      ],
+      [
+        "Continuous Glucose Monitoring (CGM)",
+        "Hemoglobina Glicada (HbA1c)"
+      ],
+      [
+        "Canetas",
+        "Álcool 70%"
+      ],
+      [
+        "açúcar",
+        "médicos"
+      ],
+      [
+        "Caneta",
+        "Álcool"
+      ],
+      [
+        "Banho frio",
+        "Insulina"
+      ],
+      [
+        "Médico",
+        "Sensor de Glicose"
+      ],
+      [
+        "cães",
+        "insulina"
+      ],
+      [
+        "Insulina",
+        "Músculo"
+      ],
+      [
+        "Glicosímetro",
+        "Médico"
+      ],
+      [
+        "Médico",
+        "Paciente"
+      ],
+      [
+        "Enlite",
+        "Sensor em tempo real"
+      ],
+      [
+        "Insulina",
+        "Rodizio"
+      ],
+      [
+        "Paciente",
+        "Prega Subcutânea"
+      ],
+      [
+        "Federal Medical Organization",
+        "Insulina"
+      ],
+      [
+        "Diabetes tipo 1",
+        "Diabetes tipo 2"
+      ],
+      [
+        "Continuous Glucose Monitoring (CGM)",
+        "Sensor em tempo real"
+      ],
+      [
+        "Disglicemia",
+        "Inflamações internas"
+      ],
+      [
+        "Cuidador",
+        "Pele"
+      ],
+      [
+        "Açúcar",
+        "Glicemia"
+      ],
+      [
+        "Glicosímetro",
+        "Paciente"
+      ],
+      [
+        "CGM",
+        "Sensor em tempo real"
+      ],
+      [
+        "Federal Medical Organization",
+        "Glicemia Capilar"
+      ],
+      [
+        "Insulina",
+        "Rodízio dos locais de aplicação da insulina"
+      ],
+      [
+        "Coxas",
+        "Pele"
+      ],
+      [
+        "Nádegas",
+        "Pele"
+      ],
+      [
+        "Caneta",
+        "Frasco"
+      ],
+      [
+        "Adultos em geral (DM1 ou DM2)",
+        "Crianças e adolescentes (DM1)"
+      ],
+      [
+        "Diabetes gestacional",
+        "Mãe"
+      ],
+      [
+        "Federal Medical Organization",
+        "Hiperglicemia"
+      ],
+      [
+        "Glicemia",
+        "IDF (Internacional)"
+      ],
+      [
+        "Federal Medical Organization",
+        "Hipoglicemia"
+      ],
+      [
+        "Células do pâncreas",
+        "Pâncreas"
+      ],
+      [
+        "Insulina",
+        "i-Port"
+      ],
+      [
+        "Prega Subcutânea",
+        "Tamanho da agulha"
+      ],
+      [
+        "Dexcom",
+        "Sensor em tempo real"
+      ],
+      [
+        "Caroços",
+        "Insuloterapia"
+      ],
+      [
+        "Lipohipertrofia",
+        "Pele"
+      ],
+      [
+        "Aprender e praticar",
+        "Educação em diabetes"
+      ],
+      [
+        "Glicemia",
+        "UTI neonatal"
+      ],
+      [
+        "Diabetes Tipo 1",
+        "Insuloterapia"
+      ],
+      [
+        "Hemoglobina Glicada (HbA1c)",
+        "Sensor de Glicose"
+      ],
+      [
+        "Grupo de Pacientes Hemoglobina Glicada",
+        "Hemoglobina Glicada (HbA1c)"
+      ],
+      [
+        "Insuloterapia",
+        "Profissional de Saúde"
+      ],
+      [
+        "Complicações",
+        "Disglicemia"
+      ],
+      [
+        "Glicemia",
+        "Jejum"
+      ],
+      [
+        "Associação Americana de Diabetes",
+        "Insulina"
+      ],
+      [
+        "Profissional de saúde",
+        "Rodízio"
+      ],
+      [
+        "Dexcom G6",
+        "Sensor em tempo real"
+      ],
+      [
+        "Insulina",
+        "Paciente"
+      ],
+      [
+        "ACOG (EUA)",
+        "Glicemia"
+      ],
+      [
+        "Noah Carter",
+        "World Athletics Championship"
+      ],
+      [
+        "glicosímetro",
+        "sangue"
+      ],
+      [
+        "Glicemia em Jejum",
+        "Hemoglobina Glicada (HbA1c)"
       ]
     ],
-    "count": 297,
-    "create_time": 1767907659,
-    "update_time": 1767907659,
+    "count": 171,
+    "create_time": 1768244587,
+    "update_time": 1768244587,
     "_id": "doc-8899fd1c2e0ba3c7068151c8b7afd597"
   }
 }

@@ -1,2736 +1,1544 @@
 {
-  "Tokyo<SEP>World Athletics Championship": {
+  "Lipo-hipertrofia<SEP>Lipodistrofia": {
     "chunk_ids": [
-      "chunk-f7ce6803598fc40b5195013edfdff1fa",
-      "chunk-dc5b119794c9e3b37a1780691a203a56",
-      "chunk-2f69d979f4657c7c14fe376ade55c622",
-      "chunk-69290ab0ad77fa0e73a93d08a04674ae",
-      "chunk-6d929ce19720bb4e67ad71a3eca86612",
-      "chunk-02f534d9e8c9fe8bd03db1afa0fbd05f",
-      "chunk-2aef7719203539d0ae13728cfa95d2c2",
-      "chunk-851e0a599efe470b7e37c9883ad1afef",
-      "chunk-831d33334b41ba1642f76488d25cd3ca",
-      "chunk-257773ac7e40978613581bca72baa6db",
-      "chunk-125d5a12b02dae085997df631045cabc",
-      "chunk-f5d525f54d3aa4c70f0f6e4de5a2a295",
-      "chunk-e1d3dd7539f4d2eac5bd3aa197d5cc01",
-      "chunk-8b4a3fc67c9fc17c6dd8529cb70bdc88"
+      "chunk-5b718276408c07c4ce95283bdfdf03de"
     ],
-    "count": 14,
-    "create_time": 1767907623,
-    "update_time": 1767907623,
-    "_id": "Tokyo<SEP>World Athletics Championship"
-  },
-  "100m Sprint Record<SEP>Noah Carter": {
-    "chunk_ids": [
-      "chunk-f7ce6803598fc40b5195013edfdff1fa",
-      "chunk-dc5b119794c9e3b37a1780691a203a56",
-      "chunk-2f69d979f4657c7c14fe376ade55c622",
-      "chunk-69290ab0ad77fa0e73a93d08a04674ae",
-      "chunk-02f534d9e8c9fe8bd03db1afa0fbd05f",
-      "chunk-2aef7719203539d0ae13728cfa95d2c2",
-      "chunk-851e0a599efe470b7e37c9883ad1afef",
-      "chunk-831d33334b41ba1642f76488d25cd3ca",
-      "chunk-257773ac7e40978613581bca72baa6db",
-      "chunk-125d5a12b02dae085997df631045cabc",
-      "chunk-f5d525f54d3aa4c70f0f6e4de5a2a295",
-      "chunk-e1d3dd7539f4d2eac5bd3aa197d5cc01",
-      "chunk-8b4a3fc67c9fc17c6dd8529cb70bdc88"
-    ],
-    "count": 13,
-    "create_time": 1767907623,
-    "update_time": 1767907623,
-    "_id": "100m Sprint Record<SEP>Noah Carter"
-  },
-  "Carbon-Fiber Spikes<SEP>Noah Carter": {
-    "chunk_ids": [
-      "chunk-f7ce6803598fc40b5195013edfdff1fa",
-      "chunk-dc5b119794c9e3b37a1780691a203a56",
-      "chunk-2f69d979f4657c7c14fe376ade55c622",
-      "chunk-69290ab0ad77fa0e73a93d08a04674ae",
-      "chunk-6d929ce19720bb4e67ad71a3eca86612",
-      "chunk-02f534d9e8c9fe8bd03db1afa0fbd05f",
-      "chunk-2aef7719203539d0ae13728cfa95d2c2",
-      "chunk-851e0a599efe470b7e37c9883ad1afef",
-      "chunk-831d33334b41ba1642f76488d25cd3ca",
-      "chunk-257773ac7e40978613581bca72baa6db",
-      "chunk-125d5a12b02dae085997df631045cabc",
-      "chunk-f5d525f54d3aa4c70f0f6e4de5a2a295",
-      "chunk-e1d3dd7539f4d2eac5bd3aa197d5cc01",
-      "chunk-8b4a3fc67c9fc17c6dd8529cb70bdc88"
-    ],
-    "count": 14,
-    "create_time": 1767907623,
-    "update_time": 1767907623,
-    "_id": "Carbon-Fiber Spikes<SEP>Noah Carter"
-  },
-  "Noah Carter<SEP>World Athletics Championship": {
-    "chunk_ids": [
-      "chunk-f7ce6803598fc40b5195013edfdff1fa",
-      "chunk-dc5b119794c9e3b37a1780691a203a56",
-      "chunk-2f69d979f4657c7c14fe376ade55c622",
-      "chunk-69290ab0ad77fa0e73a93d08a04674ae",
-      "chunk-6d929ce19720bb4e67ad71a3eca86612",
-      "chunk-02f534d9e8c9fe8bd03db1afa0fbd05f",
-      "chunk-2aef7719203539d0ae13728cfa95d2c2",
-      "chunk-851e0a599efe470b7e37c9883ad1afef",
-      "chunk-831d33334b41ba1642f76488d25cd3ca",
-      "chunk-257773ac7e40978613581bca72baa6db",
-      "chunk-125d5a12b02dae085997df631045cabc",
-      "chunk-f5d525f54d3aa4c70f0f6e4de5a2a295",
-      "chunk-e1d3dd7539f4d2eac5bd3aa197d5cc01",
-      "chunk-8b4a3fc67c9fc17c6dd8529cb70bdc88"
-    ],
-    "count": 14,
-    "create_time": 1767907623,
-    "update_time": 1767907623,
-    "_id": "Noah Carter<SEP>World Athletics Championship"
-  },
-  "Insulina<SEP>Lipo-Hipertrofia": {
-    "chunk_ids": [
-      "chunk-1caedfdc556eaf26a60a6655cc1949ad"
-    ],
-    "count": 1,
-    "create_time": 1767907623,
-    "update_time": 1767907623,
-    "_id": "Insulina<SEP>Lipo-Hipertrofia"
-  },
-  "Glicemia<SEP>Insulina": {
-    "chunk_ids": [
-      "chunk-1caedfdc556eaf26a60a6655cc1949ad",
-      "chunk-59f50956370c3c8d07b4ccdf2c1be920"
-    ],
-    "count": 2,
-    "create_time": 1767907623,
-    "update_time": 1767907623,
-    "_id": "Glicemia<SEP>Insulina"
-  },
-  "Diabetes Mellitus<SEP>Pâncreas": {
-    "chunk_ids": [
-      "chunk-1caedfdc556eaf26a60a6655cc1949ad"
-    ],
-    "count": 1,
-    "create_time": 1767907623,
-    "update_time": 1767907623,
-    "_id": "Diabetes Mellitus<SEP>Pâncreas"
-  },
-  "Diabetes Tipo 1<SEP>Sistema de Defesa": {
-    "chunk_ids": [
-      "chunk-1caedfdc556eaf26a60a6655cc1949ad"
-    ],
-    "count": 1,
-    "create_time": 1767907624,
-    "update_time": 1767907624,
-    "_id": "Diabetes Tipo 1<SEP>Sistema de Defesa"
-  },
-  "Diabetes Tipo 2<SEP>Insulina": {
-    "chunk_ids": [
-      "chunk-1caedfdc556eaf26a60a6655cc1949ad"
-    ],
-    "count": 1,
-    "create_time": 1767907624,
-    "update_time": 1767907624,
-    "_id": "Diabetes Tipo 2<SEP>Insulina"
-  },
-  "Canetas<SEP>Álcool 70%": {
-    "chunk_ids": [
-      "chunk-dc5b119794c9e3b37a1780691a203a56"
-    ],
-    "count": 1,
-    "create_time": 1767907624,
-    "update_time": 1767907624,
-    "_id": "Canetas<SEP>Álcool 70%"
-  },
-  "Agulha<SEP>Insulina Leitosa": {
-    "chunk_ids": [
-      "chunk-dc5b119794c9e3b37a1780691a203a56"
-    ],
-    "count": 1,
-    "create_time": 1767907624,
-    "update_time": 1767907624,
-    "_id": "Agulha<SEP>Insulina Leitosa"
-  },
-  "Canetas<SEP>Unidade de Saúde": {
-    "chunk_ids": [
-      "chunk-dc5b119794c9e3b37a1780691a203a56"
-    ],
-    "count": 1,
-    "create_time": 1767907624,
-    "update_time": 1767907624,
-    "_id": "Canetas<SEP>Unidade de Saúde"
-  },
-  "Algodão<SEP>Álcool 70%": {
-    "chunk_ids": [
-      "chunk-dc5b119794c9e3b37a1780691a203a56"
-    ],
-    "count": 1,
-    "create_time": 1767907624,
-    "update_time": 1767907624,
-    "_id": "Algodão<SEP>Álcool 70%"
-  },
-  "Agulha<SEP>Caneta": {
-    "chunk_ids": [
-      "chunk-dc5b119794c9e3b37a1780691a203a56"
-    ],
-    "count": 1,
-    "create_time": 1767907624,
-    "update_time": 1767907624,
-    "_id": "Agulha<SEP>Caneta"
-  },
-  "Agulha<SEP>Prega Subcutânea": {
-    "chunk_ids": [
-      "chunk-dc5b119794c9e3b37a1780691a203a56"
-    ],
-    "count": 1,
-    "create_time": 1767907624,
-    "update_time": 1767907624,
-    "_id": "Agulha<SEP>Prega Subcutânea"
-  },
-  "Caneta<SEP>Prega Subcutânea": {
-    "chunk_ids": [
-      "chunk-dc5b119794c9e3b37a1780691a203a56"
-    ],
-    "count": 1,
-    "create_time": 1767907625,
-    "update_time": 1767907625,
-    "_id": "Caneta<SEP>Prega Subcutânea"
-  },
-  "Agulha<SEP>Unidade de Saúde": {
-    "chunk_ids": [
-      "chunk-dc5b119794c9e3b37a1780691a203a56"
-    ],
-    "count": 1,
-    "create_time": 1767907625,
-    "update_time": 1767907625,
-    "_id": "Agulha<SEP>Unidade de Saúde"
-  },
-  "Canetas<SEP>Insulina Leitosa": {
-    "chunk_ids": [
-      "chunk-dc5b119794c9e3b37a1780691a203a56"
-    ],
-    "count": 1,
-    "create_time": 1767907625,
-    "update_time": 1767907625,
-    "_id": "Canetas<SEP>Insulina Leitosa"
-  },
-  "Caneta<SEP>Insulina Leitosa": {
-    "chunk_ids": [
-      "chunk-dc5b119794c9e3b37a1780691a203a56"
-    ],
-    "count": 1,
-    "create_time": 1767907625,
-    "update_time": 1767907625,
-    "_id": "Caneta<SEP>Insulina Leitosa"
-  },
-  "Prega Subcutânea<SEP>Unidade de Saúde": {
-    "chunk_ids": [
-      "chunk-dc5b119794c9e3b37a1780691a203a56"
-    ],
-    "count": 1,
-    "create_time": 1767907625,
-    "update_time": 1767907625,
-    "_id": "Prega Subcutânea<SEP>Unidade de Saúde"
-  },
-  "Agulha<SEP>Canetas": {
-    "chunk_ids": [
-      "chunk-dc5b119794c9e3b37a1780691a203a56"
-    ],
-    "count": 1,
-    "create_time": 1767907625,
-    "update_time": 1767907625,
-    "_id": "Agulha<SEP>Canetas"
-  },
-  "Insulina Leitosa<SEP>Unidade de Saúde": {
-    "chunk_ids": [
-      "chunk-dc5b119794c9e3b37a1780691a203a56"
-    ],
-    "count": 1,
-    "create_time": 1767907625,
-    "update_time": 1767907625,
-    "_id": "Insulina Leitosa<SEP>Unidade de Saúde"
-  },
-  "Insulina Leitosa<SEP>Prega Subcutânea": {
-    "chunk_ids": [
-      "chunk-dc5b119794c9e3b37a1780691a203a56"
-    ],
-    "count": 1,
-    "create_time": 1767907625,
-    "update_time": 1767907625,
-    "_id": "Insulina Leitosa<SEP>Prega Subcutânea"
-  },
-  "Caneta<SEP>Unidade de Saúde": {
-    "chunk_ids": [
-      "chunk-dc5b119794c9e3b37a1780691a203a56"
-    ],
-    "count": 1,
-    "create_time": 1767907625,
-    "update_time": 1767907625,
-    "_id": "Caneta<SEP>Unidade de Saúde"
-  },
-  "Canetas<SEP>Prega Subcutânea": {
-    "chunk_ids": [
-      "chunk-dc5b119794c9e3b37a1780691a203a56"
-    ],
-    "count": 1,
-    "create_time": 1767907625,
-    "update_time": 1767907625,
-    "_id": "Canetas<SEP>Prega Subcutânea"
-  },
-  "Glicose<SEP>Sensor de Glicose": {
-    "chunk_ids": [
-      "chunk-6d14439b381ec0a71696113bd127d2de"
-    ],
-    "count": 1,
-    "create_time": 1767907625,
-    "update_time": 1767907625,
-    "_id": "Glicose<SEP>Sensor de Glicose"
-  },
-  "Dexcom G6<SEP>Insulina": {
-    "chunk_ids": [
-      "chunk-6d14439b381ec0a71696113bd127d2de"
-    ],
-    "count": 1,
-    "create_time": 1767907626,
-    "update_time": 1767907626,
-    "_id": "Dexcom G6<SEP>Insulina"
-  },
-  "FreeStyle Libre<SEP>Glicosímetro": {
-    "chunk_ids": [
-      "chunk-6d14439b381ec0a71696113bd127d2de"
-    ],
-    "count": 1,
-    "create_time": 1767907626,
-    "update_time": 1767907626,
-    "_id": "FreeStyle Libre<SEP>Glicosímetro"
-  },
-  "Insulina<SEP>Medtronic MiniMed": {
-    "chunk_ids": [
-      "chunk-6d14439b381ec0a71696113bd127d2de"
-    ],
-    "count": 1,
-    "create_time": 1767907626,
-    "update_time": 1767907626,
-    "_id": "Insulina<SEP>Medtronic MiniMed"
-  },
-  "Glicose<SEP>Glicosímetro": {
-    "chunk_ids": [
-      "chunk-6d14439b381ec0a71696113bd127d2de"
-    ],
-    "count": 1,
-    "create_time": 1767907626,
-    "update_time": 1767907626,
-    "_id": "Glicose<SEP>Glicosímetro"
-  },
-  "Diabetes<SEP>Insulina": {
-    "chunk_ids": [
-      "chunk-6d14439b381ec0a71696113bd127d2de",
-      "chunk-85880c91264817aba4392d3a9a19e000"
-    ],
-    "count": 2,
-    "create_time": 1767907626,
-    "update_time": 1767907626,
-    "_id": "Diabetes<SEP>Insulina"
-  },
-  "Dose de Insulina<SEP>Médico": {
-    "chunk_ids": [
-      "chunk-e1b449a19112dd1377dffd0b845fdd75"
-    ],
-    "count": 1,
-    "create_time": 1767907626,
-    "update_time": 1767907626,
-    "_id": "Dose de Insulina<SEP>Médico"
-  },
-  "Esquema Basal-Bolus (Insulina Lenta + Insulina Antes das Refeições)<SEP>Insulina Várias Vezes ao Dia ou Bomba de Insulina": {
-    "chunk_ids": [
-      "chunk-e1b449a19112dd1377dffd0b845fdd75"
-    ],
-    "count": 1,
-    "create_time": 1767907626,
-    "update_time": 1767907626,
-    "_id": "Esquema Basal-Bolus (Insulina Lenta + Insulina Antes das Refeições)<SEP>Insulina Várias Vezes ao Dia ou Bomba de Insulina"
-  },
-  "Esquema Basal-Bolus (Insulina Lenta + Insulina Antes das Refeições)<SEP>Insulina Uma Vez por Dia ou Só Comprimidos": {
-    "chunk_ids": [
-      "chunk-e1b449a19112dd1377dffd0b845fdd75"
-    ],
-    "count": 1,
-    "create_time": 1767907626,
-    "update_time": 1767907626,
-    "_id": "Esquema Basal-Bolus (Insulina Lenta + Insulina Antes das Refeições)<SEP>Insulina Uma Vez por Dia ou Só Comprimidos"
-  },
-  "Dose de Insulina<SEP>Glicosímetro (Sensor de Glicose)": {
-    "chunk_ids": [
-      "chunk-e1b449a19112dd1377dffd0b845fdd75"
-    ],
-    "count": 1,
-    "create_time": 1767907626,
-    "update_time": 1767907626,
-    "_id": "Dose de Insulina<SEP>Glicosímetro (Sensor de Glicose)"
-  },
-  "Glicosímetro (Sensor de Glicose)<SEP>Médico": {
-    "chunk_ids": [
-      "chunk-e1b449a19112dd1377dffd0b845fdd75"
-    ],
-    "count": 1,
-    "create_time": 1767907626,
-    "update_time": 1767907626,
-    "_id": "Glicosímetro (Sensor de Glicose)<SEP>Médico"
-  },
-  "Insulina Antes das Refeições<SEP>Insulina Lenta": {
-    "chunk_ids": [
-      "chunk-e1b449a19112dd1377dffd0b845fdd75"
-    ],
-    "count": 1,
-    "create_time": 1767907626,
-    "update_time": 1767907626,
-    "_id": "Insulina Antes das Refeições<SEP>Insulina Lenta"
-  },
-  "Glicose<SEP>Tempo no Alvo (TIR)": {
-    "chunk_ids": [
-      "chunk-2f69d979f4657c7c14fe376ade55c622"
-    ],
-    "count": 1,
-    "create_time": 1767907627,
-    "update_time": 1767907627,
-    "_id": "Glicose<SEP>Tempo no Alvo (TIR)"
-  },
-  "DM tipo 1<SEP>HbA1c": {
-    "chunk_ids": [
-      "chunk-2f69d979f4657c7c14fe376ade55c622"
-    ],
-    "count": 1,
-    "create_time": 1767907627,
-    "update_time": 1767907627,
-    "_id": "DM tipo 1<SEP>HbA1c"
-  },
-  "Crianças e adolescentes<SEP>DM tipo 1": {
-    "chunk_ids": [
-      "chunk-2f69d979f4657c7c14fe376ade55c622"
-    ],
-    "count": 1,
-    "create_time": 1767907627,
-    "update_time": 1767907627,
-    "_id": "Crianças e adolescentes<SEP>DM tipo 1"
-  },
-  "Adultos com diabetes tipo 1 ou 2<SEP>HbA1c": {
-    "chunk_ids": [
-      "chunk-2f69d979f4657c7c14fe376ade55c622"
-    ],
-    "count": 1,
-    "create_time": 1767907627,
-    "update_time": 1767907627,
-    "_id": "Adultos com diabetes tipo 1 ou 2<SEP>HbA1c"
-  },
-  "HbA1c<SEP>Idosos (a partir de 65 anos)": {
-    "chunk_ids": [
-      "chunk-2f69d979f4657c7c14fe376ade55c622"
-    ],
-    "count": 1,
-    "create_time": 1767907627,
-    "update_time": 1767907627,
-    "_id": "HbA1c<SEP>Idosos (a partir de 65 anos)"
-  },
-  "Glicose<SEP>Idosos muito comprometido": {
-    "chunk_ids": [
-      "chunk-2f69d979f4657c7c14fe376ade55c622"
-    ],
-    "count": 1,
-    "create_time": 1767907627,
-    "update_time": 1767907627,
-    "_id": "Glicose<SEP>Idosos muito comprometido"
-  },
-  "Glicose<SEP>Variabilidade glicêmica": {
-    "chunk_ids": [
-      "chunk-2f69d979f4657c7c14fe376ade55c622"
-    ],
-    "count": 1,
-    "create_time": 1767907627,
-    "update_time": 1767907627,
-    "_id": "Glicose<SEP>Variabilidade glicêmica"
-  },
-  "Tempo no Alvo (TIR)<SEP>Variabilidade glicêmica": {
-    "chunk_ids": [
-      "chunk-2f69d979f4657c7c14fe376ade55c622"
-    ],
-    "count": 1,
-    "create_time": 1767907628,
-    "update_time": 1767907628,
-    "_id": "Tempo no Alvo (TIR)<SEP>Variabilidade glicêmica"
-  },
-  "Diabetes tipo 1<SEP>Insulinaoterapia": {
-    "chunk_ids": [
-      "chunk-59f50956370c3c8d07b4ccdf2c1be920"
-    ],
-    "count": 1,
-    "create_time": 1767907628,
-    "update_time": 1767907628,
-    "_id": "Diabetes tipo 1<SEP>Insulinaoterapia"
-  },
-  "Diabetes tipo 2<SEP>Insulinaoterapia": {
-    "chunk_ids": [
-      "chunk-59f50956370c3c8d07b4ccdf2c1be920"
-    ],
-    "count": 1,
-    "create_time": 1767907628,
-    "update_time": 1767907628,
-    "_id": "Diabetes tipo 2<SEP>Insulinaoterapia"
-  },
-  "Gestação<SEP>Insulinaoterapia": {
-    "chunk_ids": [
-      "chunk-59f50956370c3c8d07b4ccdf2c1be920"
-    ],
-    "count": 1,
-    "create_time": 1767907628,
-    "update_time": 1767907628,
-    "_id": "Gestação<SEP>Insulinaoterapia"
-  },
-  "Insulinaoterapia<SEP>Remédios orais": {
-    "chunk_ids": [
-      "chunk-59f50956370c3c8d07b4ccdf2c1be920"
-    ],
-    "count": 1,
-    "create_time": 1767907628,
-    "update_time": 1767907628,
-    "_id": "Insulinaoterapia<SEP>Remédios orais"
-  },
-  "Insulina<SEP>Pâncreas": {
-    "chunk_ids": [
-      "chunk-59f50956370c3c8d07b4ccdf2c1be920"
-    ],
-    "count": 1,
-    "create_time": 1767907628,
-    "update_time": 1767907628,
-    "_id": "Insulina<SEP>Pâncreas"
-  },
-  "Comprimidos<SEP>Remédios orais": {
-    "chunk_ids": [
-      "chunk-59f50956370c3c8d07b4ccdf2c1be920"
-    ],
-    "count": 1,
-    "create_time": 1767907628,
-    "update_time": 1767907628,
-    "_id": "Comprimidos<SEP>Remédios orais"
-  },
-  "Insulina<SEP>Local de Aplicação": {
-    "chunk_ids": [
-      "chunk-9024e9ddfe355e8b160c342f465a659b"
-    ],
-    "count": 1,
-    "create_time": 1767907628,
-    "update_time": 1767907628,
-    "_id": "Insulina<SEP>Local de Aplicação"
-  },
-  "Músculo<SEP>Pelo": {
-    "chunk_ids": [
-      "chunk-9024e9ddfe355e8b160c342f465a659b"
-    ],
-    "count": 1,
-    "create_time": 1767907628,
-    "update_time": 1767907628,
-    "_id": "Músculo<SEP>Pelo"
-  },
-  "Gordura<SEP>Insulina": {
-    "chunk_ids": [
-      "chunk-9024e9ddfe355e8b160c342f465a659b",
-      "chunk-e518490e7f866f11cb885b9d1dad5202"
-    ],
-    "count": 2,
-    "create_time": 1767907628,
-    "update_time": 1767907628,
-    "_id": "Gordura<SEP>Insulina"
-  },
-  "Local de Aplicação<SEP>Rodízio": {
-    "chunk_ids": [
-      "chunk-9024e9ddfe355e8b160c342f465a659b"
-    ],
-    "count": 1,
-    "create_time": 1767907629,
-    "update_time": 1767907629,
-    "_id": "Local de Aplicação<SEP>Rodízio"
-  },
-  "Associação Americana de Diabetes<SEP>Insulina": {
-    "chunk_ids": [
-      "chunk-9024e9ddfe355e8b160c342f465a659b"
-    ],
-    "count": 1,
-    "create_time": 1767907629,
-    "update_time": 1767907629,
-    "_id": "Associação Americana de Diabetes<SEP>Insulina"
-  },
-  "Punção<SEP>Toalha Limpa": {
-    "chunk_ids": [
-      "chunk-bca4a0fa9d8f5f8ebf4006750e31c2d3"
-    ],
-    "count": 1,
-    "create_time": 1767907629,
-    "update_time": 1767907629,
-    "_id": "Punção<SEP>Toalha Limpa"
-  },
-  "Dedo<SEP>Lanceta": {
-    "chunk_ids": [
-      "chunk-bca4a0fa9d8f5f8ebf4006750e31c2d3"
-    ],
-    "count": 1,
-    "create_time": 1767907629,
-    "update_time": 1767907629,
-    "_id": "Dedo<SEP>Lanceta"
-  },
-  "Punção<SEP>Sangue": {
-    "chunk_ids": [
-      "chunk-bca4a0fa9d8f5f8ebf4006750e31c2d3"
-    ],
-    "count": 1,
-    "create_time": 1767907629,
-    "update_time": 1767907629,
-    "_id": "Punção<SEP>Sangue"
-  },
-  "Fita<SEP>Sangue": {
-    "chunk_ids": [
-      "chunk-bca4a0fa9d8f5f8ebf4006750e31c2d3"
-    ],
-    "count": 1,
-    "create_time": 1767907629,
-    "update_time": 1767907629,
-    "_id": "Fita<SEP>Sangue"
-  },
-  "Glicosímetro<SEP>Punção": {
-    "chunk_ids": [
-      "chunk-bca4a0fa9d8f5f8ebf4006750e31c2d3"
-    ],
-    "count": 1,
-    "create_time": 1767907629,
-    "update_time": 1767907629,
-    "_id": "Glicosímetro<SEP>Punção"
-  },
-  "Monitoramento Contínuo<SEP>Sensor de Glicose": {
-    "chunk_ids": [
-      "chunk-bca4a0fa9d8f5f8ebf4006750e31c2d3"
-    ],
-    "count": 1,
-    "create_time": 1767907629,
-    "update_time": 1767907629,
-    "_id": "Monitoramento Contínuo<SEP>Sensor de Glicose"
-  },
-  "Diabetes<SEP>Sensor de Glicose": {
-    "chunk_ids": [
-      "chunk-85880c91264817aba4392d3a9a19e000"
-    ],
-    "count": 1,
-    "create_time": 1767907629,
-    "update_time": 1767907629,
-    "_id": "Diabetes<SEP>Sensor de Glicose"
-  },
-  "Diabetes<SEP>Glicosímetro": {
-    "chunk_ids": [
-      "chunk-85880c91264817aba4392d3a9a19e000"
-    ],
-    "count": 1,
-    "create_time": 1767907630,
-    "update_time": 1767907630,
-    "_id": "Diabetes<SEP>Glicosímetro"
-  },
-  "Diabetes<SEP>Hipoglicemia": {
-    "chunk_ids": [
-      "chunk-85880c91264817aba4392d3a9a19e000"
-    ],
-    "count": 1,
-    "create_time": 1767907630,
-    "update_time": 1767907630,
-    "_id": "Diabetes<SEP>Hipoglicemia"
-  },
-  "Diabetes<SEP>Hiperglicemia": {
-    "chunk_ids": [
-      "chunk-85880c91264817aba4392d3a9a19e000"
-    ],
-    "count": 1,
-    "create_time": 1767907630,
-    "update_time": 1767907630,
-    "_id": "Diabetes<SEP>Hiperglicemia"
-  },
-  "Médico<SEP>Tratamento": {
-    "chunk_ids": [
-      "chunk-85880c91264817aba4392d3a9a19e000"
-    ],
-    "count": 1,
-    "create_time": 1767907630,
-    "update_time": 1767907630,
-    "_id": "Médico<SEP>Tratamento"
-  },
-  "Diabetes<SEP>Tratamento": {
-    "chunk_ids": [
-      "chunk-85880c91264817aba4392d3a9a19e000"
-    ],
-    "count": 1,
-    "create_time": 1767907630,
-    "update_time": 1767907630,
-    "_id": "Diabetes<SEP>Tratamento"
-  },
-  "Diabetes tipo 2 (DM2)<SEP>Sistema de defesa (imunidade)": {
-    "chunk_ids": [
-      "chunk-69290ab0ad77fa0e73a93d08a04674ae"
-    ],
-    "count": 1,
-    "create_time": 1767907630,
-    "update_time": 1767907630,
-    "_id": "Diabetes tipo 2 (DM2)<SEP>Sistema de defesa (imunidade)"
-  },
-  "Geladeira<SEP>Insulina": {
-    "chunk_ids": [
-      "chunk-7104ff0f5a867decbe88ca957f2af13c",
-      "chunk-9735005c520b96f8a681712cd6b88668",
-      "chunk-851e0a599efe470b7e37c9883ad1afef",
-      "chunk-04636bf8225531316eb483ac0cb3d130"
-    ],
-    "count": 4,
-    "create_time": 1767907630,
-    "update_time": 1767907630,
-    "_id": "Geladeira<SEP>Insulina"
-  },
-  "Educação em Diabetes<SEP>Paciente": {
-    "chunk_ids": [
-      "chunk-7104ff0f5a867decbe88ca957f2af13c"
-    ],
-    "count": 1,
-    "create_time": 1767907630,
-    "update_time": 1767907630,
-    "_id": "Educação em Diabetes<SEP>Paciente"
-  },
-  "Enfermeiras<SEP>Médico Elliott P. Joslin": {
-    "chunk_ids": [
-      "chunk-7104ff0f5a867decbe88ca957f2af13c"
-    ],
-    "count": 1,
-    "create_time": 1767907631,
-    "update_time": 1767907631,
-    "_id": "Enfermeiras<SEP>Médico Elliott P. Joslin"
-  },
-  "Família<SEP>Paciente": {
-    "chunk_ids": [
-      "chunk-7104ff0f5a867decbe88ca957f2af13c"
-    ],
-    "count": 1,
-    "create_time": 1767907631,
-    "update_time": 1767907631,
-    "_id": "Família<SEP>Paciente"
-  },
-  "Crianças Pequenas<SEP>Prega": {
-    "chunk_ids": [
-      "chunk-6d929ce19720bb4e67ad71a3eca86612"
-    ],
-    "count": 1,
-    "create_time": 1767907631,
-    "update_time": 1767907631,
-    "_id": "Crianças Pequenas<SEP>Prega"
-  },
-  "Adultos e Crianças<SEP>Agulhas Curtas": {
-    "chunk_ids": [
-      "chunk-6d929ce19720bb4e67ad71a3eca86612"
-    ],
-    "count": 1,
-    "create_time": 1767907631,
-    "update_time": 1767907631,
-    "_id": "Adultos e Crianças<SEP>Agulhas Curtas"
-  },
-  "Agulhas Curtas<SEP>Pessoas Magras": {
-    "chunk_ids": [
-      "chunk-6d929ce19720bb4e67ad71a3eca86612"
-    ],
-    "count": 1,
-    "create_time": 1767907631,
-    "update_time": 1767907631,
-    "_id": "Agulhas Curtas<SEP>Pessoas Magras"
-  },
-  "Adultos e Crianças<SEP>Prega Subcutânea": {
-    "chunk_ids": [
-      "chunk-6d929ce19720bb4e67ad71a3eca86612"
-    ],
-    "count": 1,
-    "create_time": 1767907631,
-    "update_time": 1767907631,
-    "_id": "Adultos e Crianças<SEP>Prega Subcutânea"
-  },
-  "Pessoas Magras<SEP>Prega Subcutânea": {
-    "chunk_ids": [
-      "chunk-6d929ce19720bb4e67ad71a3eca86612"
-    ],
-    "count": 1,
-    "create_time": 1767907631,
-    "update_time": 1767907631,
-    "_id": "Pessoas Magras<SEP>Prega Subcutânea"
-  },
-  "Agulhas Curtas<SEP>Prega Subcutânea": {
-    "chunk_ids": [
-      "chunk-6d929ce19720bb4e67ad71a3eca86612"
-    ],
-    "count": 1,
-    "create_time": 1767907632,
-    "update_time": 1767907632,
-    "_id": "Agulhas Curtas<SEP>Prega Subcutânea"
-  },
-  "100m Sprint Record<SEP>World Athletics Championship": {
-    "chunk_ids": [
-      "chunk-6d929ce19720bb4e67ad71a3eca86612"
-    ],
-    "count": 1,
-    "create_time": 1767907632,
-    "update_time": 1767907632,
-    "_id": "100m Sprint Record<SEP>World Athletics Championship"
-  },
-  "World Athletics Championship<SEP>World Athletics Federation": {
-    "chunk_ids": [
-      "chunk-6d929ce19720bb4e67ad71a3eca86612"
-    ],
-    "count": 1,
-    "create_time": 1767907632,
-    "update_time": 1767907632,
-    "_id": "World Athletics Championship<SEP>World Athletics Federation"
-  },
-  "pele<SEP>álcool": {
-    "chunk_ids": [
-      "chunk-42476b8a22397aba0ab5e7a1f60e9eb9"
-    ],
-    "count": 1,
-    "create_time": 1767907632,
-    "update_time": 1767907632,
-    "_id": "pele<SEP>álcool"
-  },
-  "insulina<SEP>pele": {
-    "chunk_ids": [
-      "chunk-42476b8a22397aba0ab5e7a1f60e9eb9"
-    ],
-    "count": 1,
-    "create_time": 1767907632,
-    "update_time": 1767907632,
-    "_id": "insulina<SEP>pele"
-  },
-  "insulina<SEP>prega subcutânea": {
-    "chunk_ids": [
-      "chunk-42476b8a22397aba0ab5e7a1f60e9eb9"
-    ],
-    "count": 1,
-    "create_time": 1767907632,
-    "update_time": 1767907632,
-    "_id": "insulina<SEP>prega subcutânea"
-  },
-  "pele<SEP>prega subcutânea": {
-    "chunk_ids": [
-      "chunk-42476b8a22397aba0ab5e7a1f60e9eb9"
-    ],
-    "count": 1,
-    "create_time": 1767907632,
-    "update_time": 1767907632,
-    "_id": "pele<SEP>prega subcutânea"
-  },
-  "pele<SEP>álcool 70%": {
-    "chunk_ids": [
-      "chunk-42476b8a22397aba0ab5e7a1f60e9eb9"
-    ],
-    "count": 1,
-    "create_time": 1767907632,
-    "update_time": 1767907632,
-    "_id": "pele<SEP>álcool 70%"
-  },
-  "Gestação<SEP>Mãe e Bebê": {
-    "chunk_ids": [
-      "chunk-4111a46cf6046a651b1427734fef8de4"
-    ],
-    "count": 1,
-    "create_time": 1767907632,
-    "update_time": 1767907632,
-    "_id": "Gestação<SEP>Mãe e Bebê"
-  },
-  "Bebê<SEP>Mãe": {
-    "chunk_ids": [
-      "chunk-4111a46cf6046a651b1427734fef8de4"
-    ],
-    "count": 1,
-    "create_time": 1767907633,
-    "update_time": 1767907633,
-    "_id": "Bebê<SEP>Mãe"
-  },
-  "Glicemia<SEP>Jejum": {
-    "chunk_ids": [
-      "chunk-4111a46cf6046a651b1427734fef8de4"
-    ],
-    "count": 1,
-    "create_time": 1767907633,
-    "update_time": 1767907633,
-    "_id": "Glicemia<SEP>Jejum"
-  },
-  "Glicemia<SEP>Mãe": {
-    "chunk_ids": [
-      "chunk-4111a46cf6046a651b1427734fef8de4"
-    ],
-    "count": 1,
-    "create_time": 1767907633,
-    "update_time": 1767907633,
-    "_id": "Glicemia<SEP>Mãe"
-  },
-  "ACOG (EUA)<SEP>IDF (Internacional)": {
-    "chunk_ids": [
-      "chunk-4111a46cf6046a651b1427734fef8de4"
-    ],
-    "count": 1,
-    "create_time": 1767907633,
-    "update_time": 1767907633,
-    "_id": "ACOG (EUA)<SEP>IDF (Internacional)"
-  },
-  "Café<SEP>Mãe": {
-    "chunk_ids": [
-      "chunk-4111a46cf6046a651b1427734fef8de4"
-    ],
-    "count": 1,
-    "create_time": 1767907633,
-    "update_time": 1767907633,
-    "_id": "Café<SEP>Mãe"
-  },
-  "Almoço e Jantar<SEP>Mãe": {
-    "chunk_ids": [
-      "chunk-4111a46cf6046a651b1427734fef8de4"
-    ],
-    "count": 1,
-    "create_time": 1767907633,
-    "update_time": 1767907633,
-    "_id": "Almoço e Jantar<SEP>Mãe"
-  },
-  "ACOG (EUA) e IDF (Internacional)<SEP>Glicemia": {
-    "chunk_ids": [
-      "chunk-4111a46cf6046a651b1427734fef8de4"
-    ],
-    "count": 1,
-    "create_time": 1767907633,
-    "update_time": 1767907633,
-    "_id": "ACOG (EUA) e IDF (Internacional)<SEP>Glicemia"
-  },
-  "HbA1c<SEP>pessoas": {
-    "chunk_ids": [
-      "chunk-1589a8affdd5757e262b758cb4998689"
-    ],
     "count": 1,
-    "create_time": 1767907634,
-    "update_time": 1767907634,
-    "_id": "HbA1c<SEP>pessoas"
+    "create_time": 1768244577,
+    "update_time": 1768244577,
+    "_id": "Lipo-hipertrofia<SEP>Lipodistrofia"
   },
   "Agulha<SEP>Insulina": {
     "chunk_ids": [
-      "chunk-e518490e7f866f11cb885b9d1dad5202",
-      "chunk-4436a835dfb969a51419d3f9bc744a89"
-    ],
-    "count": 2,
-    "create_time": 1767907634,
-    "update_time": 1767907634,
-    "_id": "Agulha<SEP>Insulina"
-  },
-  "Agulha<SEP>Pele": {
-    "chunk_ids": [
-      "chunk-e518490e7f866f11cb885b9d1dad5202",
-      "chunk-831d33334b41ba1642f76488d25cd3ca"
-    ],
-    "count": 2,
-    "create_time": 1767907634,
-    "update_time": 1767907634,
-    "_id": "Agulha<SEP>Pele"
-  },
-  "Hospital<SEP>Insulina": {
-    "chunk_ids": [
-      "chunk-e518490e7f866f11cb885b9d1dad5202"
+      "chunk-5b718276408c07c4ce95283bdfdf03de"
     ],
     "count": 1,
-    "create_time": 1767907634,
-    "update_time": 1767907634,
-    "_id": "Hospital<SEP>Insulina"
+    "create_time": 1768244577,
+    "update_time": 1768244577,
+    "_id": "Agulha<SEP>Insulina"
+  },
+  "Diabetes tipo 1<SEP>Diabetes tipo 2": {
+    "chunk_ids": [
+      "chunk-5b718276408c07c4ce95283bdfdf03de"
+    ],
+    "count": 1,
+    "create_time": 1768244577,
+    "update_time": 1768244577,
+    "_id": "Diabetes tipo 1<SEP>Diabetes tipo 2"
+  },
+  "Profissional de saúde<SEP>Rodízio": {
+    "chunk_ids": [
+      "chunk-5b718276408c07c4ce95283bdfdf03de"
+    ],
+    "count": 1,
+    "create_time": 1768244577,
+    "update_time": 1768244577,
+    "_id": "Profissional de saúde<SEP>Rodízio"
+  },
+  "Glicose<SEP>Hormônio": {
+    "chunk_ids": [
+      "chunk-5b718276408c07c4ce95283bdfdf03de"
+    ],
+    "count": 1,
+    "create_time": 1768244577,
+    "update_time": 1768244577,
+    "_id": "Glicose<SEP>Hormônio"
+  },
+  "Células do pâncreas<SEP>Sistema de defesa": {
+    "chunk_ids": [
+      "chunk-5b718276408c07c4ce95283bdfdf03de"
+    ],
+    "count": 1,
+    "create_time": 1768244577,
+    "update_time": 1768244577,
+    "_id": "Células do pâncreas<SEP>Sistema de defesa"
+  },
+  "Lipo-hipertrofia<SEP>Lipoatrofia": {
+    "chunk_ids": [
+      "chunk-5b718276408c07c4ce95283bdfdf03de"
+    ],
+    "count": 1,
+    "create_time": 1768244577,
+    "update_time": 1768244577,
+    "_id": "Lipo-hipertrofia<SEP>Lipoatrofia"
+  },
+  "Disglicemia<SEP>Memória metabólica": {
+    "chunk_ids": [
+      "chunk-5b718276408c07c4ce95283bdfdf03de"
+    ],
+    "count": 1,
+    "create_time": 1768244577,
+    "update_time": 1768244577,
+    "_id": "Disglicemia<SEP>Memória metabólica"
+  },
+  "Células do pâncreas<SEP>Pâncreas": {
+    "chunk_ids": [
+      "chunk-5b718276408c07c4ce95283bdfdf03de"
+    ],
+    "count": 1,
+    "create_time": 1768244578,
+    "update_time": 1768244578,
+    "_id": "Células do pâncreas<SEP>Pâncreas"
+  },
+  "Grupo de Pacientes Hemoglobina Glicada<SEP>Hemoglobina Glicada (HbA1c)": {
+    "chunk_ids": [
+      "chunk-e0414c15947d64d29feb75d664ad8688"
+    ],
+    "count": 1,
+    "create_time": 1768244578,
+    "update_time": 1768244578,
+    "_id": "Grupo de Pacientes Hemoglobina Glicada<SEP>Hemoglobina Glicada (HbA1c)"
+  },
+  "Glicemia após as Refeições (2h)<SEP>Glicemia em Jejum": {
+    "chunk_ids": [
+      "chunk-e0414c15947d64d29feb75d664ad8688"
+    ],
+    "count": 1,
+    "create_time": 1768244578,
+    "update_time": 1768244578,
+    "_id": "Glicemia após as Refeições (2h)<SEP>Glicemia em Jejum"
+  },
+  "Complicações<SEP>Disglicemia": {
+    "chunk_ids": [
+      "chunk-5b718276408c07c4ce95283bdfdf03de"
+    ],
+    "count": 1,
+    "create_time": 1768244578,
+    "update_time": 1768244578,
+    "_id": "Complicações<SEP>Disglicemia"
+  },
+  "Hipoglicemia (<70 mg/dL)<SEP>Tempo no Alvo (70–180 mg/dL)": {
+    "chunk_ids": [
+      "chunk-e0414c15947d64d29feb75d664ad8688"
+    ],
+    "count": 1,
+    "create_time": 1768244578,
+    "update_time": 1768244578,
+    "_id": "Hipoglicemia (<70 mg/dL)<SEP>Tempo no Alvo (70–180 mg/dL)"
+  },
+  "Adultos em geral (DM1 ou DM2)<SEP>Crianças e adolescentes (DM1)": {
+    "chunk_ids": [
+      "chunk-e0414c15947d64d29feb75d664ad8688"
+    ],
+    "count": 1,
+    "create_time": 1768244578,
+    "update_time": 1768244578,
+    "_id": "Adultos em geral (DM1 ou DM2)<SEP>Crianças e adolescentes (DM1)"
+  },
+  "Idosos com doenças ou limitações<SEP>Idosos saudáveis": {
+    "chunk_ids": [
+      "chunk-e0414c15947d64d29feb75d664ad8688"
+    ],
+    "count": 1,
+    "create_time": 1768244578,
+    "update_time": 1768244578,
+    "_id": "Idosos com doenças ou limitações<SEP>Idosos saudáveis"
+  },
+  "Glicemia em Jejum<SEP>Hemoglobina Glicada (HbA1c)": {
+    "chunk_ids": [
+      "chunk-e0414c15947d64d29feb75d664ad8688"
+    ],
+    "count": 1,
+    "create_time": 1768244578,
+    "update_time": 1768244578,
+    "_id": "Glicemia em Jejum<SEP>Hemoglobina Glicada (HbA1c)"
+  },
+  "Diabetes gestacional<SEP>Mulheres grávidas com diabetes": {
+    "chunk_ids": [
+      "chunk-e0414c15947d64d29feb75d664ad8688"
+    ],
+    "count": 1,
+    "create_time": 1768244578,
+    "update_time": 1768244578,
+    "_id": "Diabetes gestacional<SEP>Mulheres grávidas com diabetes"
+  },
+  "Disglicemia<SEP>Inflamações internas": {
+    "chunk_ids": [
+      "chunk-5b718276408c07c4ce95283bdfdf03de"
+    ],
+    "count": 1,
+    "create_time": 1768244578,
+    "update_time": 1768244578,
+    "_id": "Disglicemia<SEP>Inflamações internas"
+  },
+  "Gordura<SEP>Onde aplicar a insulina e como ela age": {
+    "chunk_ids": [
+      "chunk-03b2434384e8d28afce996ceb9caa794"
+    ],
+    "count": 1,
+    "create_time": 1768244578,
+    "update_time": 1768244578,
+    "_id": "Gordura<SEP>Onde aplicar a insulina e como ela age"
+  },
+  "Mulheres grávidas com diabetes<SEP>Sensor de glicose (CGM)": {
+    "chunk_ids": [
+      "chunk-e0414c15947d64d29feb75d664ad8688"
+    ],
+    "count": 1,
+    "create_time": 1768244578,
+    "update_time": 1768244578,
+    "_id": "Mulheres grávidas com diabetes<SEP>Sensor de glicose (CGM)"
   },
   "Insulina<SEP>Músculo": {
     "chunk_ids": [
-      "chunk-e518490e7f866f11cb885b9d1dad5202"
+      "chunk-03b2434384e8d28afce996ceb9caa794"
     ],
     "count": 1,
-    "create_time": 1767907634,
-    "update_time": 1767907634,
+    "create_time": 1768244578,
+    "update_time": 1768244578,
     "_id": "Insulina<SEP>Músculo"
   },
-  "Insulina<SEP>Seringas": {
+  "Diabetes gestacional<SEP>Sensor de glicose (CGM)": {
     "chunk_ids": [
-      "chunk-9735005c520b96f8a681712cd6b88668"
+      "chunk-e0414c15947d64d29feb75d664ad8688"
     ],
     "count": 1,
-    "create_time": 1767907634,
-    "update_time": 1767907634,
-    "_id": "Insulina<SEP>Seringas"
+    "create_time": 1768244578,
+    "update_time": 1768244578,
+    "_id": "Diabetes gestacional<SEP>Sensor de glicose (CGM)"
   },
-  "Agulha Removível<SEP>Profissionais de Saúde": {
+  "Disglicemia<SEP>Vasos sanguíneos": {
     "chunk_ids": [
-      "chunk-9735005c520b96f8a681712cd6b88668"
+      "chunk-5b718276408c07c4ce95283bdfdf03de"
     ],
     "count": 1,
-    "create_time": 1767907634,
-    "update_time": 1767907634,
-    "_id": "Agulha Removível<SEP>Profissionais de Saúde"
+    "create_time": 1768244578,
+    "update_time": 1768244578,
+    "_id": "Disglicemia<SEP>Vasos sanguíneos"
   },
-  "Crianças e Adolescentes<SEP>Seringas": {
+  "Insulina<SEP>Vez": {
     "chunk_ids": [
-      "chunk-9735005c520b96f8a681712cd6b88668"
+      "chunk-03b2434384e8d28afce996ceb9caa794"
     ],
     "count": 1,
-    "create_time": 1767907634,
-    "update_time": 1767907634,
-    "_id": "Crianças e Adolescentes<SEP>Seringas"
+    "create_time": 1768244578,
+    "update_time": 1768244578,
+    "_id": "Insulina<SEP>Vez"
   },
-  "Insulina NPH<SEP>Seringas": {
+  "Gordura<SEP>Insulina": {
     "chunk_ids": [
-      "chunk-9735005c520b96f8a681712cd6b88668"
-    ],
-    "count": 1,
-    "create_time": 1767907634,
-    "update_time": 1767907634,
-    "_id": "Insulina NPH<SEP>Seringas"
-  },
-  "Seringas<SEP>Álcool 70%": {
-    "chunk_ids": [
-      "chunk-9735005c520b96f8a681712cd6b88668"
-    ],
-    "count": 1,
-    "create_time": 1767907635,
-    "update_time": 1767907635,
-    "_id": "Seringas<SEP>Álcool 70%"
-  },
-  "Geladeira<SEP>Insulina NPH": {
-    "chunk_ids": [
-      "chunk-9735005c520b96f8a681712cd6b88668"
-    ],
-    "count": 1,
-    "create_time": 1767907635,
-    "update_time": 1767907635,
-    "_id": "Geladeira<SEP>Insulina NPH"
-  },
-  "Hipoglicemia<SEP>Meta de HbA1c": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907635,
-    "update_time": 1767907635,
-    "_id": "Hipoglicemia<SEP>Meta de HbA1c"
-  },
-  "Insulina<SEP>Meta de HbA1c": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907635,
-    "update_time": 1767907635,
-    "_id": "Insulina<SEP>Meta de HbA1c"
-  },
-  "Sensores de Glicose<SEP>Variabilidade Glicêmica": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907635,
-    "update_time": 1767907635,
-    "_id": "Sensores de Glicose<SEP>Variabilidade Glicêmica"
-  },
-  "Glicosímetro<SEP>Variabilidade Glicêmica": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907635,
-    "update_time": 1767907635,
-    "_id": "Glicosímetro<SEP>Variabilidade Glicêmica"
-  },
-  "Hipoglicemia<SEP>Insulina": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c",
-      "chunk-8b4a3fc67c9fc17c6dd8529cb70bdc88"
+      "chunk-03b2434384e8d28afce996ceb9caa794",
+      "chunk-30e579d5ccfc0135f92c7582f294d15f"
     ],
     "count": 2,
-    "create_time": 1767907635,
-    "update_time": 1767907635,
-    "_id": "Hipoglicemia<SEP>Insulina"
+    "create_time": 1768244578,
+    "update_time": 1768244578,
+    "_id": "Gordura<SEP>Insulina"
   },
-  "Meta de HbA1c<SEP>Variabilidade Glicêmica": {
+  "Insulina<SEP>Tempo de absorção": {
     "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
+      "chunk-03b2434384e8d28afce996ceb9caa794"
     ],
     "count": 1,
-    "create_time": 1767907635,
-    "update_time": 1767907635,
-    "_id": "Meta de HbA1c<SEP>Variabilidade Glicêmica"
+    "create_time": 1768244579,
+    "update_time": 1768244579,
+    "_id": "Insulina<SEP>Tempo de absorção"
   },
-  "Diabetes Mellitus<SEP>Insulina": {
+  "Exercício<SEP>Insulina": {
     "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c",
-      "chunk-e84e5532f518fcabd3a299c90090899c"
+      "chunk-03b2434384e8d28afce996ceb9caa794"
+    ],
+    "count": 1,
+    "create_time": 1768244579,
+    "update_time": 1768244579,
+    "_id": "Exercício<SEP>Insulina"
+  },
+  "Calor<SEP>Insulina": {
+    "chunk_ids": [
+      "chunk-03b2434384e8d28afce996ceb9caa794"
+    ],
+    "count": 1,
+    "create_time": 1768244579,
+    "update_time": 1768244579,
+    "_id": "Calor<SEP>Insulina"
+  },
+  "Fevereira<SEP>Insulina": {
+    "chunk_ids": [
+      "chunk-03b2434384e8d28afce996ceb9caa794"
+    ],
+    "count": 1,
+    "create_time": 1768244579,
+    "update_time": 1768244579,
+    "_id": "Fevereira<SEP>Insulina"
+  },
+  "Banho quente<SEP>Insulina": {
+    "chunk_ids": [
+      "chunk-03b2434384e8d28afce996ceb9caa794"
+    ],
+    "count": 1,
+    "create_time": 1768244579,
+    "update_time": 1768244579,
+    "_id": "Banho quente<SEP>Insulina"
+  },
+  "Compressa quente<SEP>Insulina": {
+    "chunk_ids": [
+      "chunk-03b2434384e8d28afce996ceb9caa794"
+    ],
+    "count": 1,
+    "create_time": 1768244579,
+    "update_time": 1768244579,
+    "_id": "Compressa quente<SEP>Insulina"
+  },
+  "Canetas recarregáveis de insulina<SEP>Elliott P. Joslin": {
+    "chunk_ids": [
+      "chunk-03b2434384e8d28afce996ceb9caa794"
+    ],
+    "count": 1,
+    "create_time": 1768244579,
+    "update_time": 1768244579,
+    "_id": "Canetas recarregáveis de insulina<SEP>Elliott P. Joslin"
+  },
+  "Elliott P. Joslin<SEP>i-Port": {
+    "chunk_ids": [
+      "chunk-03b2434384e8d28afce996ceb9caa794"
+    ],
+    "count": 1,
+    "create_time": 1768244579,
+    "update_time": 1768244579,
+    "_id": "Elliott P. Joslin<SEP>i-Port"
+  },
+  "Insulina<SEP>Massagem": {
+    "chunk_ids": [
+      "chunk-03b2434384e8d28afce996ceb9caa794"
+    ],
+    "count": 1,
+    "create_time": 1768244579,
+    "update_time": 1768244579,
+    "_id": "Insulina<SEP>Massagem"
+  },
+  "Aprender e praticar<SEP>Onde aplicar a insulina e como ela age": {
+    "chunk_ids": [
+      "chunk-03b2434384e8d28afce996ceb9caa794"
+    ],
+    "count": 1,
+    "create_time": 1768244579,
+    "update_time": 1768244579,
+    "_id": "Aprender e praticar<SEP>Onde aplicar a insulina e como ela age"
+  },
+  "Educação em diabetes<SEP>Paciente bem informado": {
+    "chunk_ids": [
+      "chunk-03b2434384e8d28afce996ceb9caa794"
+    ],
+    "count": 1,
+    "create_time": 1768244579,
+    "update_time": 1768244579,
+    "_id": "Educação em diabetes<SEP>Paciente bem informado"
+  },
+  "Compressa fria<SEP>Insulina": {
+    "chunk_ids": [
+      "chunk-03b2434384e8d28afce996ceb9caa794"
+    ],
+    "count": 1,
+    "create_time": 1768244580,
+    "update_time": 1768244580,
+    "_id": "Compressa fria<SEP>Insulina"
+  },
+  "Elliott P. Joslin<SEP>Paciente bem informado": {
+    "chunk_ids": [
+      "chunk-03b2434384e8d28afce996ceb9caa794"
+    ],
+    "count": 1,
+    "create_time": 1768244580,
+    "update_time": 1768244580,
+    "_id": "Elliott P. Joslin<SEP>Paciente bem informado"
+  },
+  "Banho frio<SEP>Insulina": {
+    "chunk_ids": [
+      "chunk-03b2434384e8d28afce996ceb9caa794"
+    ],
+    "count": 1,
+    "create_time": 1768244580,
+    "update_time": 1768244580,
+    "_id": "Banho frio<SEP>Insulina"
+  },
+  "Desidratação<SEP>Insulina": {
+    "chunk_ids": [
+      "chunk-03b2434384e8d28afce996ceb9caa794"
+    ],
+    "count": 1,
+    "create_time": 1768244580,
+    "update_time": 1768244580,
+    "_id": "Desidratação<SEP>Insulina"
+  },
+  "Insulina<SEP>Insulina em suspensão": {
+    "chunk_ids": [
+      "chunk-03b2434384e8d28afce996ceb9caa794"
+    ],
+    "count": 1,
+    "create_time": 1768244580,
+    "update_time": 1768244580,
+    "_id": "Insulina<SEP>Insulina em suspensão"
+  },
+  "Insulina<SEP>i-Port": {
+    "chunk_ids": [
+      "chunk-03b2434384e8d28afce996ceb9caa794"
+    ],
+    "count": 1,
+    "create_time": 1768244580,
+    "update_time": 1768244580,
+    "_id": "Insulina<SEP>i-Port"
+  },
+  "Frasco<SEP>Seringa": {
+    "chunk_ids": [
+      "chunk-583c4afe8f20e09ec0157315dbab4992",
+      "chunk-39d6a3c2463013fd9e732773c88b8db5"
     ],
     "count": 2,
-    "create_time": 1767907635,
-    "update_time": 1767907635,
-    "_id": "Diabetes Mellitus<SEP>Insulina"
+    "create_time": 1768244580,
+    "update_time": 1768244580,
+    "_id": "Frasco<SEP>Seringa"
   },
-  "Diabetes Mellitus<SEP>Glucagon-Like Peptide-1 Receptor Agonist": {
+  "Educação em diabetes<SEP>Insulina": {
     "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
+      "chunk-03b2434384e8d28afce996ceb9caa794"
     ],
     "count": 1,
-    "create_time": 1767907636,
-    "update_time": 1767907636,
-    "_id": "Diabetes Mellitus<SEP>Glucagon-Like Peptide-1 Receptor Agonist"
+    "create_time": 1768244580,
+    "update_time": 1768244580,
+    "_id": "Educação em diabetes<SEP>Insulina"
   },
-  "Diabetes Mellitus<SEP>Sulfonylurea": {
+  "Canetas recarregáveis de insulina<SEP>Insulina": {
     "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
+      "chunk-03b2434384e8d28afce996ceb9caa794"
     ],
     "count": 1,
-    "create_time": 1767907636,
-    "update_time": 1767907636,
-    "_id": "Diabetes Mellitus<SEP>Sulfonylurea"
+    "create_time": 1768244580,
+    "update_time": 1768244580,
+    "_id": "Canetas recarregáveis de insulina<SEP>Insulina"
   },
-  "Diabetes Mellitus<SEP>Metformin": {
+  "Educação em diabetes<SEP>Elliott P. Joslin": {
     "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
+      "chunk-03b2434384e8d28afce996ceb9caa794"
     ],
     "count": 1,
-    "create_time": 1767907636,
-    "update_time": 1767907636,
-    "_id": "Diabetes Mellitus<SEP>Metformin"
+    "create_time": 1768244580,
+    "update_time": 1768244580,
+    "_id": "Educação em diabetes<SEP>Elliott P. Joslin"
   },
-  "Diabetes Mellitus<SEP>Dietary Changes": {
+  "Seringa<SEP>Álcool": {
     "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
+      "chunk-583c4afe8f20e09ec0157315dbab4992"
     ],
     "count": 1,
-    "create_time": 1767907636,
-    "update_time": 1767907636,
-    "_id": "Diabetes Mellitus<SEP>Dietary Changes"
+    "create_time": 1768244580,
+    "update_time": 1768244580,
+    "_id": "Seringa<SEP>Álcool"
   },
-  "Diabetes Mellitus<SEP>Regular Exercise": {
+  "Insulina<SEP>Seringa": {
     "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
+      "chunk-583c4afe8f20e09ec0157315dbab4992"
     ],
     "count": 1,
-    "create_time": 1767907636,
-    "update_time": 1767907636,
-    "_id": "Diabetes Mellitus<SEP>Regular Exercise"
+    "create_time": 1768244581,
+    "update_time": 1768244581,
+    "_id": "Insulina<SEP>Seringa"
   },
-  "Diabetes Mellitus<SEP>Monitoring Blood Glucose Levels": {
+  "Aprender e praticar<SEP>Educação em diabetes": {
     "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
+      "chunk-03b2434384e8d28afce996ceb9caa794"
     ],
     "count": 1,
-    "create_time": 1767907636,
-    "update_time": 1767907636,
-    "_id": "Diabetes Mellitus<SEP>Monitoring Blood Glucose Levels"
+    "create_time": 1768244581,
+    "update_time": 1768244581,
+    "_id": "Aprender e praticar<SEP>Educação em diabetes"
   },
-  "Diabetes Mellitus<SEP>Healthcare Provider": {
+  "Caneta<SEP>Insulina": {
     "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
+      "chunk-583c4afe8f20e09ec0157315dbab4992"
     ],
     "count": 1,
-    "create_time": 1767907636,
-    "update_time": 1767907636,
-    "_id": "Diabetes Mellitus<SEP>Healthcare Provider"
+    "create_time": 1768244581,
+    "update_time": 1768244581,
+    "_id": "Caneta<SEP>Insulina"
   },
-  "Diabetes Mellitus<SEP>Support System": {
+  "Seringa<SEP>Álcool 70%": {
     "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
+      "chunk-583c4afe8f20e09ec0157315dbab4992"
     ],
     "count": 1,
-    "create_time": 1767907637,
-    "update_time": 1767907637,
-    "_id": "Diabetes Mellitus<SEP>Support System"
+    "create_time": 1768244581,
+    "update_time": 1768244581,
+    "_id": "Seringa<SEP>Álcool 70%"
   },
-  "Diabetes Mellitus<SEP>Education and Awareness": {
+  "Geladeira<SEP>Insulina": {
     "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
+      "chunk-583c4afe8f20e09ec0157315dbab4992"
     ],
     "count": 1,
-    "create_time": 1767907637,
-    "update_time": 1767907637,
-    "_id": "Diabetes Mellitus<SEP>Education and Awareness"
+    "create_time": 1768244581,
+    "update_time": 1768244581,
+    "_id": "Geladeira<SEP>Insulina"
   },
-  "Diabetes Mellitus<SEP>Technology and Tools": {
+  "Algodo<SEP>Seringa": {
     "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
+      "chunk-583c4afe8f20e09ec0157315dbab4992"
     ],
     "count": 1,
-    "create_time": 1767907637,
-    "update_time": 1767907637,
-    "_id": "Diabetes Mellitus<SEP>Technology and Tools"
+    "create_time": 1768244581,
+    "update_time": 1768244581,
+    "_id": "Algodo<SEP>Seringa"
   },
-  "Diabetes Mellitus<SEP>Research and Development": {
+  "Aprender e praticar<SEP>Insulina": {
     "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
+      "chunk-03b2434384e8d28afce996ceb9caa794"
     ],
     "count": 1,
-    "create_time": 1767907637,
-    "update_time": 1767907637,
-    "_id": "Diabetes Mellitus<SEP>Research and Development"
+    "create_time": 1768244581,
+    "update_time": 1768244581,
+    "_id": "Aprender e praticar<SEP>Insulina"
   },
-  "Diabetes Mellitus<SEP>Government Policies and Programs": {
+  "Frasco<SEP>Geladeira": {
     "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
+      "chunk-583c4afe8f20e09ec0157315dbab4992"
     ],
     "count": 1,
-    "create_time": 1767907637,
-    "update_time": 1767907637,
-    "_id": "Diabetes Mellitus<SEP>Government Policies and Programs"
+    "create_time": 1768244581,
+    "update_time": 1768244581,
+    "_id": "Frasco<SEP>Geladeira"
   },
-  "Community Involvement<SEP>Diabetes Mellitus": {
+  "Insulina<SEP>Pele": {
     "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
+      "chunk-14a20edff579b0a517854d16cd546924"
     ],
     "count": 1,
-    "create_time": 1767907637,
-    "update_time": 1767907637,
-    "_id": "Community Involvement<SEP>Diabetes Mellitus"
+    "create_time": 1768244581,
+    "update_time": 1768244581,
+    "_id": "Insulina<SEP>Pele"
   },
-  "Diabetes Mellitus<SEP>Patient Education and Support": {
+  "Braços<SEP>Pele": {
     "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
+      "chunk-14a20edff579b0a517854d16cd546924"
     ],
     "count": 1,
-    "create_time": 1767907637,
-    "update_time": 1767907637,
-    "_id": "Diabetes Mellitus<SEP>Patient Education and Support"
+    "create_time": 1768244581,
+    "update_time": 1768244581,
+    "_id": "Braços<SEP>Pele"
   },
-  "Diabetes Mellitus<SEP>Healthcare System": {
+  "Frasco<SEP>Insulina": {
     "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
+      "chunk-583c4afe8f20e09ec0157315dbab4992"
     ],
     "count": 1,
-    "create_time": 1767907638,
-    "update_time": 1767907638,
-    "_id": "Diabetes Mellitus<SEP>Healthcare System"
+    "create_time": 1768244581,
+    "update_time": 1768244581,
+    "_id": "Frasco<SEP>Insulina"
   },
-  "Diabetes Mellitus<SEP>Public Health Initiatives": {
+  "Nádegas<SEP>Pele": {
     "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
+      "chunk-14a20edff579b0a517854d16cd546924"
     ],
     "count": 1,
-    "create_time": 1767907638,
-    "update_time": 1767907638,
-    "_id": "Diabetes Mellitus<SEP>Public Health Initiatives"
+    "create_time": 1768244581,
+    "update_time": 1768244581,
+    "_id": "Nádegas<SEP>Pele"
   },
-  "Diabetes Mellitus<SEP>Social Support Network": {
+  "Caneta<SEP>Frasco": {
     "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
+      "chunk-583c4afe8f20e09ec0157315dbab4992"
     ],
     "count": 1,
-    "create_time": 1767907638,
-    "update_time": 1767907638,
-    "_id": "Diabetes Mellitus<SEP>Social Support Network"
+    "create_time": 1768244581,
+    "update_time": 1768244581,
+    "_id": "Caneta<SEP>Frasco"
   },
-  "Diabetes Mellitus<SEP>Lifestyle Changes": {
+  "Coxas<SEP>Pele": {
     "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
+      "chunk-14a20edff579b0a517854d16cd546924"
     ],
     "count": 1,
-    "create_time": 1767907638,
-    "update_time": 1767907638,
-    "_id": "Diabetes Mellitus<SEP>Lifestyle Changes"
+    "create_time": 1768244581,
+    "update_time": 1768244581,
+    "_id": "Coxas<SEP>Pele"
   },
-  "Diabetes Mellitus<SEP>Self-Management Skills": {
+  "Caneta<SEP>Álcool": {
     "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
+      "chunk-583c4afe8f20e09ec0157315dbab4992"
     ],
     "count": 1,
-    "create_time": 1767907638,
-    "update_time": 1767907638,
-    "_id": "Diabetes Mellitus<SEP>Self-Management Skills"
+    "create_time": 1768244581,
+    "update_time": 1768244581,
+    "_id": "Caneta<SEP>Álcool"
   },
-  "Diabetes Mellitus<SEP>Healthcare Provider Education": {
+  "Abdômen<SEP>Pele": {
     "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
+      "chunk-14a20edff579b0a517854d16cd546924"
     ],
     "count": 1,
-    "create_time": 1767907638,
-    "update_time": 1767907638,
-    "_id": "Diabetes Mellitus<SEP>Healthcare Provider Education"
-  },
-  "Diabetes Mellitus<SEP>Patient Engagement": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907638,
-    "update_time": 1767907638,
-    "_id": "Diabetes Mellitus<SEP>Patient Engagement"
-  },
-  "Diabetes Mellitus<SEP>Healthcare System Reform": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907639,
-    "update_time": 1767907639,
-    "_id": "Diabetes Mellitus<SEP>Healthcare System Reform"
-  },
-  "Diabetes Mellitus<SEP>Public Health Policy": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907639,
-    "update_time": 1767907639,
-    "_id": "Diabetes Mellitus<SEP>Public Health Policy"
-  },
-  "Diabetes Mellitus<SEP>Social Determinants of Health": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907639,
-    "update_time": 1767907639,
-    "_id": "Diabetes Mellitus<SEP>Social Determinants of Health"
-  },
-  "Diabetes Mellitus<SEP>Healthcare Access": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907639,
-    "update_time": 1767907639,
-    "_id": "Diabetes Mellitus<SEP>Healthcare Access"
-  },
-  "Diabetes Mellitus<SEP>Patient-Centered Care": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907639,
-    "update_time": 1767907639,
-    "_id": "Diabetes Mellitus<SEP>Patient-Centered Care"
-  },
-  "Diabetes Mellitus<SEP>Healthcare Quality Improvement": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907639,
-    "update_time": 1767907639,
-    "_id": "Diabetes Mellitus<SEP>Healthcare Quality Improvement"
-  },
-  "Diabetes Mellitus<SEP>Public Health Education": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907639,
-    "update_time": 1767907639,
-    "_id": "Diabetes Mellitus<SEP>Public Health Education"
-  },
-  "Diabetes Mellitus<SEP>Social Support Services": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907640,
-    "update_time": 1767907640,
-    "_id": "Diabetes Mellitus<SEP>Social Support Services"
-  },
-  "Diabetes Mellitus<SEP>Lifestyle Modification": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907640,
-    "update_time": 1767907640,
-    "_id": "Diabetes Mellitus<SEP>Lifestyle Modification"
-  },
-  "Diabetes Mellitus<SEP>Self-Management Strategies": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907640,
-    "update_time": 1767907640,
-    "_id": "Diabetes Mellitus<SEP>Self-Management Strategies"
-  },
-  "Diabetes Mellitus<SEP>Healthcare Provider Training": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907640,
-    "update_time": 1767907640,
-    "_id": "Diabetes Mellitus<SEP>Healthcare Provider Training"
-  },
-  "Diabetes Mellitus<SEP>Healthcare System Evaluation": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907640,
-    "update_time": 1767907640,
-    "_id": "Diabetes Mellitus<SEP>Healthcare System Evaluation"
-  },
-  "Diabetes Mellitus<SEP>Public Health Research": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907640,
-    "update_time": 1767907640,
-    "_id": "Diabetes Mellitus<SEP>Public Health Research"
-  },
-  "Diabetes Mellitus<SEP>Social Support Network Development": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907640,
-    "update_time": 1767907640,
-    "_id": "Diabetes Mellitus<SEP>Social Support Network Development"
-  },
-  "Diabetes Mellitus<SEP>Lifestyle Change Strategies": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907641,
-    "update_time": 1767907641,
-    "_id": "Diabetes Mellitus<SEP>Lifestyle Change Strategies"
-  },
-  "Diabetes Mellitus<SEP>Self-Management Skill Development": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907641,
-    "update_time": 1767907641,
-    "_id": "Diabetes Mellitus<SEP>Self-Management Skill Development"
-  },
-  "Diabetes Mellitus<SEP>Healthcare Provider Education and Training": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907641,
-    "update_time": 1767907641,
-    "_id": "Diabetes Mellitus<SEP>Healthcare Provider Education and Training"
-  },
-  "Diabetes Mellitus<SEP>Patient Engagement Strategies": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907641,
-    "update_time": 1767907641,
-    "_id": "Diabetes Mellitus<SEP>Patient Engagement Strategies"
-  },
-  "Diabetes Mellitus<SEP>Healthcare System Reform and Improvement": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907641,
-    "update_time": 1767907641,
-    "_id": "Diabetes Mellitus<SEP>Healthcare System Reform and Improvement"
-  },
-  "Diabetes Mellitus<SEP>Public Health Policy Development": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907641,
-    "update_time": 1767907641,
-    "_id": "Diabetes Mellitus<SEP>Public Health Policy Development"
-  },
-  "Diabetes Mellitus<SEP>Social Support Services and Resources": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907641,
-    "update_time": 1767907641,
-    "_id": "Diabetes Mellitus<SEP>Social Support Services and Resources"
-  },
-  "Diabetes Mellitus<SEP>Lifestyle Modification Strategies": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907642,
-    "update_time": 1767907642,
-    "_id": "Diabetes Mellitus<SEP>Lifestyle Modification Strategies"
-  },
-  "Diabetes Mellitus<SEP>Self-Management Strategy Development": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907642,
-    "update_time": 1767907642,
-    "_id": "Diabetes Mellitus<SEP>Self-Management Strategy Development"
-  },
-  "Diabetes Mellitus<SEP>Healthcare Provider Training and Education": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907642,
-    "update_time": 1767907642,
-    "_id": "Diabetes Mellitus<SEP>Healthcare Provider Training and Education"
-  },
-  "Diabetes Mellitus<SEP>Patient Education and Support Services": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907642,
-    "update_time": 1767907642,
-    "_id": "Diabetes Mellitus<SEP>Patient Education and Support Services"
-  },
-  "Diabetes Mellitus<SEP>Healthcare System Evaluation and Improvement": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907642,
-    "update_time": 1767907642,
-    "_id": "Diabetes Mellitus<SEP>Healthcare System Evaluation and Improvement"
-  },
-  "Diabetes Mellitus<SEP>Public Health Research and Development": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907642,
-    "update_time": 1767907642,
-    "_id": "Diabetes Mellitus<SEP>Public Health Research and Development"
-  },
-  "Diabetes Mellitus<SEP>Social Support Network Development and Improvement": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907643,
-    "update_time": 1767907643,
-    "_id": "Diabetes Mellitus<SEP>Social Support Network Development and Improvement"
-  },
-  "Diabetes Mellitus<SEP>Lifestyle Change Strategies and Techniques": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907643,
-    "update_time": 1767907643,
-    "_id": "Diabetes Mellitus<SEP>Lifestyle Change Strategies and Techniques"
-  },
-  "Diabetes Mellitus<SEP>Self-Management Skill Development and Improvement": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907643,
-    "update_time": 1767907643,
-    "_id": "Diabetes Mellitus<SEP>Self-Management Skill Development and Improvement"
-  },
-  "Diabetes Mellitus<SEP>Healthcare Provider Education and Training Programs": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907643,
-    "update_time": 1767907643,
-    "_id": "Diabetes Mellitus<SEP>Healthcare Provider Education and Training Programs"
-  },
-  "Diabetes Mellitus<SEP>Patient Engagement Strategies and Techniques": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907643,
-    "update_time": 1767907643,
-    "_id": "Diabetes Mellitus<SEP>Patient Engagement Strategies and Techniques"
-  },
-  "Diabetes Mellitus<SEP>Healthcare System Reform and Improvement Initiatives": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907643,
-    "update_time": 1767907643,
-    "_id": "Diabetes Mellitus<SEP>Healthcare System Reform and Improvement Initiatives"
-  },
-  "Diabetes Mellitus<SEP>Public Health Policy Development and Implementation": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907643,
-    "update_time": 1767907643,
-    "_id": "Diabetes Mellitus<SEP>Public Health Policy Development and Implementation"
-  },
-  "Diabetes Mellitus<SEP>Social Support Services and Resources Development": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907644,
-    "update_time": 1767907644,
-    "_id": "Diabetes Mellitus<SEP>Social Support Services and Resources Development"
-  },
-  "Diabetes Mellitus<SEP>Lifestyle Modification Strategies and Techniques": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907644,
-    "update_time": 1767907644,
-    "_id": "Diabetes Mellitus<SEP>Lifestyle Modification Strategies and Techniques"
-  },
-  "Diabetes Mellitus<SEP>Self-Management Strategy Development and Improvement": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907644,
-    "update_time": 1767907644,
-    "_id": "Diabetes Mellitus<SEP>Self-Management Strategy Development and Improvement"
-  },
-  "Diabetes Mellitus<SEP>Healthcare Provider Training and Education Programs": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907644,
-    "update_time": 1767907644,
-    "_id": "Diabetes Mellitus<SEP>Healthcare Provider Training and Education Programs"
-  },
-  "Diabetes Mellitus<SEP>Patient Education and Support Services Development": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907644,
-    "update_time": 1767907644,
-    "_id": "Diabetes Mellitus<SEP>Patient Education and Support Services Development"
-  },
-  "Diabetes Mellitus<SEP>Healthcare System Evaluation and Improvement Initiatives": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907644,
-    "update_time": 1767907644,
-    "_id": "Diabetes Mellitus<SEP>Healthcare System Evaluation and Improvement Initiatives"
-  },
-  "Diabetes Mellitus<SEP>Public Health Research and Development Programs": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907644,
-    "update_time": 1767907644,
-    "_id": "Diabetes Mellitus<SEP>Public Health Research and Development Programs"
-  },
-  "Diabetes Mellitus<SEP>Social Support Network Development and Improvement Initiatives": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907645,
-    "update_time": 1767907645,
-    "_id": "Diabetes Mellitus<SEP>Social Support Network Development and Improvement Initiatives"
-  },
-  "Diabetes Mellitus<SEP>Lifestyle Change Strategies and Techniques Development": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907645,
-    "update_time": 1767907645,
-    "_id": "Diabetes Mellitus<SEP>Lifestyle Change Strategies and Techniques Development"
-  },
-  "Diabetes Mellitus<SEP>Self-Management Skill Development and Improvement Programs": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907645,
-    "update_time": 1767907645,
-    "_id": "Diabetes Mellitus<SEP>Self-Management Skill Development and Improvement Programs"
-  },
-  "Diabetes Mellitus<SEP>Healthcare Provider Education and Training Initiatives": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907645,
-    "update_time": 1767907645,
-    "_id": "Diabetes Mellitus<SEP>Healthcare Provider Education and Training Initiatives"
-  },
-  "Diabetes Mellitus<SEP>Patient Engagement Strategies and Techniques Development": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907645,
-    "update_time": 1767907645,
-    "_id": "Diabetes Mellitus<SEP>Patient Engagement Strategies and Techniques Development"
-  },
-  "Diabetes Mellitus<SEP>Healthcare System Reform and Improvement Programs": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907645,
-    "update_time": 1767907645,
-    "_id": "Diabetes Mellitus<SEP>Healthcare System Reform and Improvement Programs"
-  },
-  "Diabetes Mellitus<SEP>Public Health Policy Development and Implementation Initiatives": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907645,
-    "update_time": 1767907645,
-    "_id": "Diabetes Mellitus<SEP>Public Health Policy Development and Implementation Initiatives"
-  },
-  "Diabetes Mellitus<SEP>Social Support Services and Resources Development Programs": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907646,
-    "update_time": 1767907646,
-    "_id": "Diabetes Mellitus<SEP>Social Support Services and Resources Development Programs"
-  },
-  "Diabetes Mellitus<SEP>Lifestyle Modification Strategies and Techniques Initiatives": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907646,
-    "update_time": 1767907646,
-    "_id": "Diabetes Mellitus<SEP>Lifestyle Modification Strategies and Techniques Initiatives"
-  },
-  "Diabetes Mellitus<SEP>Self-Management Strategy Development and Improvement Programs": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907646,
-    "update_time": 1767907646,
-    "_id": "Diabetes Mellitus<SEP>Self-Management Strategy Development and Improvement Programs"
-  },
-  "Diabetes Mellitus<SEP>Healthcare Provider Training and Education Initiatives": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907646,
-    "update_time": 1767907646,
-    "_id": "Diabetes Mellitus<SEP>Healthcare Provider Training and Education Initiatives"
-  },
-  "Diabetes Mellitus<SEP>Patient Education and Support Services Development Programs": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907646,
-    "update_time": 1767907646,
-    "_id": "Diabetes Mellitus<SEP>Patient Education and Support Services Development Programs"
-  },
-  "Diabetes Mellitus<SEP>Public Health Research and Development Programs Initiatives": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907646,
-    "update_time": 1767907646,
-    "_id": "Diabetes Mellitus<SEP>Public Health Research and Development Programs Initiatives"
-  },
-  "Diabetes Mellitus<SEP>Lifestyle Change Strategies and Techniques Development Programs": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907646,
-    "update_time": 1767907646,
-    "_id": "Diabetes Mellitus<SEP>Lifestyle Change Strategies and Techniques Development Programs"
-  },
-  "Diabetes Mellitus<SEP>Self-Management Skill Development and Improvement Initiatives": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907647,
-    "update_time": 1767907647,
-    "_id": "Diabetes Mellitus<SEP>Self-Management Skill Development and Improvement Initiatives"
-  },
-  "Diabetes Mellitus<SEP>Healthcare Provider Education and Training Programs Initiatives": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907647,
-    "update_time": 1767907647,
-    "_id": "Diabetes Mellitus<SEP>Healthcare Provider Education and Training Programs Initiatives"
-  },
-  "Diabetes Mellitus<SEP>Patient Engagement Strategies and Techniques Development Initiatives": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907647,
-    "update_time": 1767907647,
-    "_id": "Diabetes Mellitus<SEP>Patient Engagement Strategies and Techniques Development Initiatives"
-  },
-  "Diabetes Mellitus<SEP>Healthcare System Reform and Improvement Programs Initiatives": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907647,
-    "update_time": 1767907647,
-    "_id": "Diabetes Mellitus<SEP>Healthcare System Reform and Improvement Programs Initiatives"
-  },
-  "Diabetes Mellitus<SEP>Public Health Policy Development and Implementation Initiatives Initiatives": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907647,
-    "update_time": 1767907647,
-    "_id": "Diabetes Mellitus<SEP>Public Health Policy Development and Implementation Initiatives Initiatives"
-  },
-  "Diabetes Mellitus<SEP>Social Support Services and Resources Development Programs Initiatives": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907647,
-    "update_time": 1767907647,
-    "_id": "Diabetes Mellitus<SEP>Social Support Services and Resources Development Programs Initiatives"
-  },
-  "Diabetes Mellitus<SEP>Lifestyle Modification Strategies and Techniques Initiatives Initiatives": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907647,
-    "update_time": 1767907647,
-    "_id": "Diabetes Mellitus<SEP>Lifestyle Modification Strategies and Techniques Initiatives Initiatives"
-  },
-  "Diabetes Mellitus<SEP>Self-Management Strategy Development and Improvement Programs Initiatives": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907648,
-    "update_time": 1767907648,
-    "_id": "Diabetes Mellitus<SEP>Self-Management Strategy Development and Improvement Programs Initiatives"
-  },
-  "Diabetes Mellitus<SEP>Healthcare Provider Training and Education Initiatives Initiatives": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907648,
-    "update_time": 1767907648,
-    "_id": "Diabetes Mellitus<SEP>Healthcare Provider Training and Education Initiatives Initiatives"
-  },
-  "Diabetes Mellitus<SEP>Patient Education and Support Services Development Programs Initiatives": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907648,
-    "update_time": 1767907648,
-    "_id": "Diabetes Mellitus<SEP>Patient Education and Support Services Development Programs Initiatives"
-  },
-  "Diabetes Mellitus<SEP>Healthcare System Evaluation and Improvement Initiatives Initiatives": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907648,
-    "update_time": 1767907648,
-    "_id": "Diabetes Mellitus<SEP>Healthcare System Evaluation and Improvement Initiatives Initiatives"
-  },
-  "Diabetes Mellitus<SEP>Public Health Research and Development Programs Initiatives Initiatives": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907648,
-    "update_time": 1767907648,
-    "_id": "Diabetes Mellitus<SEP>Public Health Research and Development Programs Initiatives Initiatives"
-  },
-  "Diabetes Mellitus<SEP>Social Support Network Development and Improvement Initiatives Initiatives": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907648,
-    "update_time": 1767907648,
-    "_id": "Diabetes Mellitus<SEP>Social Support Network Development and Improvement Initiatives Initiatives"
-  },
-  "Diabetes Mellitus<SEP>Lifestyle Change Strategies and Techniques Development Programs Initiatives": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907649,
-    "update_time": 1767907649,
-    "_id": "Diabetes Mellitus<SEP>Lifestyle Change Strategies and Techniques Development Programs Initiatives"
-  },
-  "Diabetes Mellitus<SEP>Self-Management Skill Development and Improvement Initiatives Initiatives": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907649,
-    "update_time": 1767907649,
-    "_id": "Diabetes Mellitus<SEP>Self-Management Skill Development and Improvement Initiatives Initiatives"
-  },
-  "Diabetes Mellitus<SEP>Healthcare Provider Education and Training Programs Initiatives Initiatives": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907649,
-    "update_time": 1767907649,
-    "_id": "Diabetes Mellitus<SEP>Healthcare Provider Education and Training Programs Initiatives Initiatives"
-  },
-  "Diabetes Mellitus<SEP>Patient Engagement Strategies and Techniques Development Initiatives Initiatives": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907649,
-    "update_time": 1767907649,
-    "_id": "Diabetes Mellitus<SEP>Patient Engagement Strategies and Techniques Development Initiatives Initiatives"
-  },
-  "Diabetes Mellitus<SEP>Healthcare System Reform and Improvement Programs Initiatives Initiatives": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907649,
-    "update_time": 1767907649,
-    "_id": "Diabetes Mellitus<SEP>Healthcare System Reform and Improvement Programs Initiatives Initiatives"
-  },
-  "Diabetes Mellitus<SEP>Social Support Services and Resources Development Programs Initiatives Initiatives": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907649,
-    "update_time": 1767907649,
-    "_id": "Diabetes Mellitus<SEP>Social Support Services and Resources Development Programs Initiatives Initiatives"
-  },
-  "Diabetes Mellitus<SEP>Self-Management Strategy Development and Improvement Programs Initiatives Initiatives": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907649,
-    "update_time": 1767907649,
-    "_id": "Diabetes Mellitus<SEP>Self-Management Strategy Development and Improvement Programs Initiatives Initiatives"
-  },
-  "Diabetes Mellitus<SEP>Patient Education and Support Services Development Programs Initiatives Initiatives": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907650,
-    "update_time": 1767907650,
-    "_id": "Diabetes Mellitus<SEP>Patient Education and Support Services Development Programs Initiatives Initiatives"
-  },
-  "Diabetes Mellitus<SEP>Lifestyle Change Strategies and Techniques Development Programs Initiatives Initiatives": {
-    "chunk_ids": [
-      "chunk-300b98bcb5cf291f067f9020ea7b265c"
-    ],
-    "count": 1,
-    "create_time": 1767907650,
-    "update_time": 1767907650,
-    "_id": "Diabetes Mellitus<SEP>Lifestyle Change Strategies and Techniques Development Programs Initiatives Initiatives"
-  },
-  "Insulina<SEP>Lipohipertrofia": {
-    "chunk_ids": [
-      "chunk-851e0a599efe470b7e37c9883ad1afef"
-    ],
-    "count": 1,
-    "create_time": 1767907650,
-    "update_time": 1767907650,
-    "_id": "Insulina<SEP>Lipohipertrofia"
-  },
-  "Agulha Nova<SEP>Insulina": {
-    "chunk_ids": [
-      "chunk-851e0a599efe470b7e37c9883ad1afef"
-    ],
-    "count": 1,
-    "create_time": 1767907650,
-    "update_time": 1767907650,
-    "_id": "Agulha Nova<SEP>Insulina"
-  },
-  "Conselho de Saúde<SEP>Insulina": {
-    "chunk_ids": [
-      "chunk-851e0a599efe470b7e37c9883ad1afef"
-    ],
-    "count": 1,
-    "create_time": 1767907650,
-    "update_time": 1767907650,
-    "_id": "Conselho de Saúde<SEP>Insulina"
-  },
-  "Insulina<SEP>Seringa U100": {
-    "chunk_ids": [
-      "chunk-851e0a599efe470b7e37c9883ad1afef"
-    ],
-    "count": 1,
-    "create_time": 1767907650,
-    "update_time": 1767907650,
-    "_id": "Insulina<SEP>Seringa U100"
-  },
-  "Agulha Fixa<SEP>Seringa U100": {
-    "chunk_ids": [
-      "chunk-851e0a599efe470b7e37c9883ad1afef"
-    ],
-    "count": 1,
-    "create_time": 1767907650,
-    "update_time": 1767907650,
-    "_id": "Agulha Fixa<SEP>Seringa U100"
-  },
-  "Dose Pares<SEP>Seringa U100": {
-    "chunk_ids": [
-      "chunk-851e0a599efe470b7e37c9883ad1afef"
-    ],
-    "count": 1,
-    "create_time": 1767907650,
-    "update_time": 1767907650,
-    "_id": "Dose Pares<SEP>Seringa U100"
-  },
-  "Dose Ímpares<SEP>Seringa U100": {
-    "chunk_ids": [
-      "chunk-851e0a599efe470b7e37c9883ad1afef"
-    ],
-    "count": 1,
-    "create_time": 1767907651,
-    "update_time": 1767907651,
-    "_id": "Dose Ímpares<SEP>Seringa U100"
-  },
-  "Agulha Removível<SEP>Seringa U100": {
-    "chunk_ids": [
-      "chunk-851e0a599efe470b7e37c9883ad1afef"
-    ],
-    "count": 1,
-    "create_time": 1767907651,
-    "update_time": 1767907651,
-    "_id": "Agulha Removível<SEP>Seringa U100"
-  },
-  "Insulina<SEP>Lugar Fresco": {
-    "chunk_ids": [
-      "chunk-851e0a599efe470b7e37c9883ad1afef"
-    ],
-    "count": 1,
-    "create_time": 1767907651,
-    "update_time": 1767907651,
-    "_id": "Insulina<SEP>Lugar Fresco"
-  },
-  "Dose Pequenas e Fracionadas<SEP>Seringa U100": {
-    "chunk_ids": [
-      "chunk-851e0a599efe470b7e37c9883ad1afef"
-    ],
-    "count": 1,
-    "create_time": 1767907651,
-    "update_time": 1767907651,
-    "_id": "Dose Pequenas e Fracionadas<SEP>Seringa U100"
-  },
-  "Conselso de Saúde<SEP>Insulina": {
-    "chunk_ids": [
-      "chunk-851e0a599efe470b7e37c9883ad1afef"
-    ],
-    "count": 1,
-    "create_time": 1767907651,
-    "update_time": 1767907651,
-    "_id": "Conselso de Saúde<SEP>Insulina"
-  },
-  "Insulina Regular<SEP>NPH Insulin": {
-    "chunk_ids": [
-      "chunk-f8817356b9ef0fc56e7f0ef0b009bb9a"
-    ],
-    "count": 1,
-    "create_time": 1767907651,
-    "update_time": 1767907651,
-    "_id": "Insulina Regular<SEP>NPH Insulin"
-  },
-  "Canetas de Insulina<SEP>Laboratórios": {
-    "chunk_ids": [
-      "chunk-f8817356b9ef0fc56e7f0ef0b009bb9a"
-    ],
-    "count": 1,
-    "create_time": 1767907651,
-    "update_time": 1767907651,
-    "_id": "Canetas de Insulina<SEP>Laboratórios"
-  },
-  "Caneta Descartável<SEP>Caneta Recarregável": {
-    "chunk_ids": [
-      "chunk-f8817356b9ef0fc56e7f0ef0b009bb9a"
-    ],
-    "count": 1,
-    "create_time": 1767907651,
-    "update_time": 1767907651,
-    "_id": "Caneta Descartável<SEP>Caneta Recarregável"
-  },
-  "Agulha<SEP>Canetas de Insulina": {
-    "chunk_ids": [
-      "chunk-f8817356b9ef0fc56e7f0ef0b009bb9a"
-    ],
-    "count": 1,
-    "create_time": 1767907651,
-    "update_time": 1767907651,
-    "_id": "Agulha<SEP>Canetas de Insulina"
-  },
-  "Caneta Recarregável<SEP>Refil": {
-    "chunk_ids": [
-      "chunk-f8817356b9ef0fc56e7f0ef0b009bb9a"
-    ],
-    "count": 1,
-    "create_time": 1767907651,
-    "update_time": 1767907651,
-    "_id": "Caneta Recarregável<SEP>Refil"
-  },
-  "Insulina NPH<SEP>Insulina Regular": {
-    "chunk_ids": [
-      "chunk-f8817356b9ef0fc56e7f0ef0b009bb9a"
-    ],
-    "count": 1,
-    "create_time": 1767907652,
-    "update_time": 1767907652,
-    "_id": "Insulina NPH<SEP>Insulina Regular"
-  },
-  "Caneta Recarregável<SEP>Refil de Insulina": {
-    "chunk_ids": [
-      "chunk-f8817356b9ef0fc56e7f0ef0b009bb9a"
-    ],
-    "count": 1,
-    "create_time": 1767907652,
-    "update_time": 1767907652,
-    "_id": "Caneta Recarregável<SEP>Refil de Insulina"
-  },
-  "Agulha de Insulina<SEP>Caneta de Insulina Recarregável": {
-    "chunk_ids": [
-      "chunk-f8817356b9ef0fc56e7f0ef0b009bb9a"
-    ],
-    "count": 1,
-    "create_time": 1767907652,
-    "update_time": 1767907652,
-    "_id": "Agulha de Insulina<SEP>Caneta de Insulina Recarregável"
+    "create_time": 1768244581,
+    "update_time": 1768244581,
+    "_id": "Abdômen<SEP>Pele"
   },
   "Insulina<SEP>Prega Subcutânea": {
     "chunk_ids": [
-      "chunk-831d33334b41ba1642f76488d25cd3ca"
+      "chunk-14a20edff579b0a517854d16cd546924"
     ],
     "count": 1,
-    "create_time": 1767907652,
-    "update_time": 1767907652,
+    "create_time": 1768244581,
+    "update_time": 1768244581,
     "_id": "Insulina<SEP>Prega Subcutânea"
   },
-  "Crianças<SEP>Prega Subcutânea": {
+  "Caneta<SEP>Álcool 70%": {
     "chunk_ids": [
-      "chunk-831d33334b41ba1642f76488d25cd3ca"
+      "chunk-583c4afe8f20e09ec0157315dbab4992"
     ],
     "count": 1,
-    "create_time": 1767907652,
-    "update_time": 1767907652,
-    "_id": "Crianças<SEP>Prega Subcutânea"
+    "create_time": 1768244581,
+    "update_time": 1768244581,
+    "_id": "Caneta<SEP>Álcool 70%"
   },
-  "Adolescentes e Adultos<SEP>Prega Subcutânea": {
+  "Gestante<SEP>Pele": {
     "chunk_ids": [
-      "chunk-831d33334b41ba1642f76488d25cd3ca"
+      "chunk-14a20edff579b0a517854d16cd546924"
     ],
     "count": 1,
-    "create_time": 1767907652,
-    "update_time": 1767907652,
-    "_id": "Adolescentes e Adultos<SEP>Prega Subcutânea"
+    "create_time": 1768244581,
+    "update_time": 1768244581,
+    "_id": "Gestante<SEP>Pele"
   },
-  "Gestantes<SEP>Prega Subcutânea": {
+  "Algodo<SEP>Caneta": {
     "chunk_ids": [
-      "chunk-831d33334b41ba1642f76488d25cd3ca"
+      "chunk-583c4afe8f20e09ec0157315dbab4992"
     ],
     "count": 1,
-    "create_time": 1767907652,
-    "update_time": 1767907652,
-    "_id": "Gestantes<SEP>Prega Subcutânea"
+    "create_time": 1768244581,
+    "update_time": 1768244581,
+    "_id": "Algodo<SEP>Caneta"
   },
-  "Prega Subcutânea<SEP>Rodízio dos Locais de Aplicação da Insulina": {
+  "Bebê<SEP>Pele": {
     "chunk_ids": [
-      "chunk-831d33334b41ba1642f76488d25cd3ca"
+      "chunk-14a20edff579b0a517854d16cd546924"
     ],
     "count": 1,
-    "create_time": 1767907652,
-    "update_time": 1767907652,
-    "_id": "Prega Subcutânea<SEP>Rodízio dos Locais de Aplicação da Insulina"
+    "create_time": 1768244582,
+    "update_time": 1768244582,
+    "_id": "Bebê<SEP>Pele"
   },
-  "Dicas para Fazer o Rodízio da Forma Correta<SEP>Rodízio dos Locais de Aplicação da Insulina": {
+  "Glicemia<SEP>Mulheres que usam sensor de glicose (CGM) durante a gravidez": {
     "chunk_ids": [
-      "chunk-831d33334b41ba1642f76488d25cd3ca"
+      "chunk-e6f6de4abe268656fba04970b00cea11"
     ],
     "count": 1,
-    "create_time": 1767907653,
-    "update_time": 1767907653,
-    "_id": "Dicas para Fazer o Rodízio da Forma Correta<SEP>Rodízio dos Locais de Aplicação da Insulina"
+    "create_time": 1768244582,
+    "update_time": 1768244582,
+    "_id": "Glicemia<SEP>Mulheres que usam sensor de glicose (CGM) durante a gravidez"
   },
-  "Dicas para Fazer o Rodízio da Forma Correta<SEP>Prega Subcutânea": {
+  "Insulina<SEP>Rodízio dos locais de aplicação da insulina": {
     "chunk_ids": [
-      "chunk-831d33334b41ba1642f76488d25cd3ca"
+      "chunk-14a20edff579b0a517854d16cd546924"
     ],
     "count": 1,
-    "create_time": 1767907653,
-    "update_time": 1767907653,
-    "_id": "Dicas para Fazer o Rodízio da Forma Correta<SEP>Prega Subcutânea"
+    "create_time": 1768244582,
+    "update_time": 1768244582,
+    "_id": "Insulina<SEP>Rodízio dos locais de aplicação da insulina"
   },
-  "Bagagem de Mão<SEP>Insulina": {
+  "Diabetes gestacional<SEP>Mãe": {
     "chunk_ids": [
-      "chunk-257773ac7e40978613581bca72baa6db"
+      "chunk-e6f6de4abe268656fba04970b00cea11"
     ],
     "count": 1,
-    "create_time": 1767907653,
-    "update_time": 1767907653,
-    "_id": "Bagagem de Mão<SEP>Insulina"
+    "create_time": 1768244582,
+    "update_time": 1768244582,
+    "_id": "Diabetes gestacional<SEP>Mãe"
   },
-  "Luz Solar Direta<SEP>Porta-Luvas": {
+  "Cuidador<SEP>Pele": {
     "chunk_ids": [
-      "chunk-257773ac7e40978613581bca72baa6db"
+      "chunk-14a20edff579b0a517854d16cd546924"
     ],
     "count": 1,
-    "create_time": 1767907653,
-    "update_time": 1767907653,
-    "_id": "Luz Solar Direta<SEP>Porta-Luvas"
+    "create_time": 1768244582,
+    "update_time": 1768244582,
+    "_id": "Cuidador<SEP>Pele"
   },
-  "Bagageiro de Carro ou Ônibus<SEP>Seringas e Agulhas Usadas": {
+  "Bebê<SEP>Mulheres que usam sensor de glicose (CGM) durante a gravidez": {
     "chunk_ids": [
-      "chunk-257773ac7e40978613581bca72baa6db"
+      "chunk-e6f6de4abe268656fba04970b00cea11"
     ],
     "count": 1,
-    "create_time": 1767907653,
-    "update_time": 1767907653,
-    "_id": "Bagageiro de Carro ou Ônibus<SEP>Seringas e Agulhas Usadas"
+    "create_time": 1768244582,
+    "update_time": 1768244582,
+    "_id": "Bebê<SEP>Mulheres que usam sensor de glicose (CGM) durante a gravidez"
   },
-  "Bolsas Térmicas com Gelox ou Gelo<SEP>Frascos Lacrados": {
+  "Mãe<SEP>Sensor de glicose (CGM)": {
     "chunk_ids": [
-      "chunk-257773ac7e40978613581bca72baa6db"
+      "chunk-e6f6de4abe268656fba04970b00cea11"
     ],
     "count": 1,
-    "create_time": 1767907653,
-    "update_time": 1767907653,
-    "_id": "Bolsas Térmicas com Gelox ou Gelo<SEP>Frascos Lacrados"
+    "create_time": 1768244582,
+    "update_time": 1768244582,
+    "_id": "Mãe<SEP>Sensor de glicose (CGM)"
   },
-  "Lancetas (aquelas agulhinhas do teste de glicemia)<SEP>Seringas e Agulhas Usadas": {
+  "Glicemia<SEP>UTI neonatal": {
     "chunk_ids": [
-      "chunk-257773ac7e40978613581bca72baa6db"
+      "chunk-e6f6de4abe268656fba04970b00cea11"
     ],
     "count": 1,
-    "create_time": 1767907653,
-    "update_time": 1767907653,
-    "_id": "Lancetas (aquelas agulhinhas do teste de glicemia)<SEP>Seringas e Agulhas Usadas"
+    "create_time": 1768244582,
+    "update_time": 1768244582,
+    "_id": "Glicemia<SEP>UTI neonatal"
   },
-  "Canetas de Insulina Descartáveis<SEP>Materiais da Bomba de Insulina": {
+  "Lipohipertrofia<SEP>Pele": {
     "chunk_ids": [
-      "chunk-257773ac7e40978613581bca72baa6db"
+      "chunk-14a20edff579b0a517854d16cd546924"
     ],
     "count": 1,
-    "create_time": 1767907653,
-    "update_time": 1767907653,
-    "_id": "Canetas de Insulina Descartáveis<SEP>Materiais da Bomba de Insulina"
+    "create_time": 1768244582,
+    "update_time": 1768244582,
+    "_id": "Lipohipertrofia<SEP>Pele"
   },
-  "Coletor para Material Perfurocortante<SEP>Seringas e Agulhas Usadas": {
+  "Cuidador<SEP>Prega Subcutânea": {
     "chunk_ids": [
-      "chunk-257773ac7e40978613581bca72baa6db"
+      "chunk-14a20edff579b0a517854d16cd546924"
     ],
     "count": 1,
-    "create_time": 1767907653,
-    "update_time": 1767907653,
-    "_id": "Coletor para Material Perfurocortante<SEP>Seringas e Agulhas Usadas"
+    "create_time": 1768244582,
+    "update_time": 1768244582,
+    "_id": "Cuidador<SEP>Prega Subcutânea"
   },
-  "Coletor para Material Perfurocortante<SEP>Unidade Básica de Saúde (UBS)": {
+  "ACOG (EUA)<SEP>Glicemia": {
     "chunk_ids": [
-      "chunk-257773ac7e40978613581bca72baa6db"
+      "chunk-e6f6de4abe268656fba04970b00cea11"
     ],
     "count": 1,
-    "create_time": 1767907654,
-    "update_time": 1767907654,
-    "_id": "Coletor para Material Perfurocortante<SEP>Unidade Básica de Saúde (UBS)"
+    "create_time": 1768244582,
+    "update_time": 1768244582,
+    "_id": "ACOG (EUA)<SEP>Glicemia"
   },
-  "Lipodistrofia<SEP>mudança no tecido da pele": {
+  "Bebê<SEP>Glicemia": {
     "chunk_ids": [
-      "chunk-257773ac7e40978613581bca72baa6db"
+      "chunk-e6f6de4abe268656fba04970b00cea11"
     ],
     "count": 1,
-    "create_time": 1767907654,
-    "update_time": 1767907654,
-    "_id": "Lipodistrofia<SEP>mudança no tecido da pele"
+    "create_time": 1768244582,
+    "update_time": 1768244582,
+    "_id": "Bebê<SEP>Glicemia"
   },
-  "Insulina Rápida ou Ultrarrápida<SEP>Médico": {
+  "ADA (EUA)<SEP>Glicemia": {
     "chunk_ids": [
-      "chunk-125d5a12b02dae085997df631045cabc"
+      "chunk-e6f6de4abe268656fba04970b00cea11"
     ],
     "count": 1,
-    "create_time": 1767907654,
-    "update_time": 1767907654,
-    "_id": "Insulina Rápida ou Ultrarrápida<SEP>Médico"
+    "create_time": 1768244582,
+    "update_time": 1768244582,
+    "_id": "ADA (EUA)<SEP>Glicemia"
   },
-  "Insulina Intermediária, Lenta ou Ultralenta<SEP>Médico": {
+  "CDA (Canadá)<SEP>Glicemia": {
     "chunk_ids": [
-      "chunk-125d5a12b02dae085997df631045cabc"
+      "chunk-e6f6de4abe268656fba04970b00cea11"
     ],
     "count": 1,
-    "create_time": 1767907654,
-    "update_time": 1767907654,
-    "_id": "Insulina Intermediária, Lenta ou Ultralenta<SEP>Médico"
+    "create_time": 1768244582,
+    "update_time": 1768244582,
+    "_id": "CDA (Canadá)<SEP>Glicemia"
   },
-  "Caneta de Insulina<SEP>Insulina Rápida ou Ultrarrápida": {
+  "Podem<SEP>neos": {
     "chunk_ids": [
-      "chunk-125d5a12b02dae085997df631045cabc"
+      "chunk-dd5ca4e6c5954b6bdeb9142a5ade4a3b"
     ],
     "count": 1,
-    "create_time": 1767907654,
-    "update_time": 1767907654,
-    "_id": "Caneta de Insulina<SEP>Insulina Rápida ou Ultrarrápida"
+    "create_time": 1768244582,
+    "update_time": 1768244582,
+    "_id": "Podem<SEP>neos"
   },
-  "Insulina Intermediária, Lenta ou Ultralenta<SEP>Seringa e Frasco": {
+  "Glicemia<SEP>IDF (Internacional)": {
     "chunk_ids": [
-      "chunk-125d5a12b02dae085997df631045cabc"
+      "chunk-e6f6de4abe268656fba04970b00cea11"
     ],
     "count": 1,
-    "create_time": 1767907654,
-    "update_time": 1767907654,
-    "_id": "Insulina Intermediária, Lenta ou Ultralenta<SEP>Seringa e Frasco"
+    "create_time": 1768244582,
+    "update_time": 1768244582,
+    "_id": "Glicemia<SEP>IDF (Internacional)"
   },
-  "Bomba de Insulina (SICI)<SEP>Insulina Rápida ou Ultrarrápida": {
+  "açúcar<SEP>médicos": {
     "chunk_ids": [
-      "chunk-125d5a12b02dae085997df631045cabc"
+      "chunk-dd5ca4e6c5954b6bdeb9142a5ade4a3b"
     ],
     "count": 1,
-    "create_time": 1767907654,
-    "update_time": 1767907654,
-    "_id": "Bomba de Insulina (SICI)<SEP>Insulina Rápida ou Ultrarrápida"
+    "create_time": 1768244582,
+    "update_time": 1768244582,
+    "_id": "açúcar<SEP>médicos"
   },
-  "Dose de Insulina<SEP>Peso Corporal": {
+  "diabetes<SEP>insulina": {
     "chunk_ids": [
-      "chunk-125d5a12b02dae085997df631045cabc"
+      "chunk-dd5ca4e6c5954b6bdeb9142a5ade4a3b"
     ],
     "count": 1,
-    "create_time": 1767907654,
-    "update_time": 1767907654,
-    "_id": "Dose de Insulina<SEP>Peso Corporal"
+    "create_time": 1768244582,
+    "update_time": 1768244582,
+    "_id": "diabetes<SEP>insulina"
   },
-  "Alimentação<SEP>Dose de Insulina": {
+  "Glicemia<SEP>NICE (Reino Unido)": {
     "chunk_ids": [
-      "chunk-125d5a12b02dae085997df631045cabc"
+      "chunk-e6f6de4abe268656fba04970b00cea11"
     ],
     "count": 1,
-    "create_time": 1767907655,
-    "update_time": 1767907655,
-    "_id": "Alimentação<SEP>Dose de Insulina"
+    "create_time": 1768244582,
+    "update_time": 1768244582,
+    "_id": "Glicemia<SEP>NICE (Reino Unido)"
   },
-  "Atividade Física<SEP>Dose de Insulina": {
+  "cães<SEP>insulina": {
     "chunk_ids": [
-      "chunk-125d5a12b02dae085997df631045cabc"
+      "chunk-dd5ca4e6c5954b6bdeb9142a5ade4a3b"
     ],
     "count": 1,
-    "create_time": 1767907655,
-    "update_time": 1767907655,
-    "_id": "Atividade Física<SEP>Dose de Insulina"
+    "create_time": 1768244582,
+    "update_time": 1768244582,
+    "_id": "cães<SEP>insulina"
   },
-  "Dose de Insulina<SEP>Idade e Fase da Vida": {
+  "açúcar<SEP>urina": {
     "chunk_ids": [
-      "chunk-125d5a12b02dae085997df631045cabc"
+      "chunk-dd5ca4e6c5954b6bdeb9142a5ade4a3b"
     ],
     "count": 1,
-    "create_time": 1767907655,
-    "update_time": 1767907655,
-    "_id": "Dose de Insulina<SEP>Idade e Fase da Vida"
+    "create_time": 1768244582,
+    "update_time": 1768244582,
+    "_id": "açúcar<SEP>urina"
   },
-  "Dose de Insulina<SEP>Situações Especiais": {
+  "dedo<SEP>furinho": {
     "chunk_ids": [
-      "chunk-125d5a12b02dae085997df631045cabc"
+      "chunk-dd5ca4e6c5954b6bdeb9142a5ade4a3b"
     ],
     "count": 1,
-    "create_time": 1767907655,
-    "update_time": 1767907655,
-    "_id": "Dose de Insulina<SEP>Situações Especiais"
+    "create_time": 1768244583,
+    "update_time": 1768244583,
+    "_id": "dedo<SEP>furinho"
   },
-  "Monitorização Contínua de Glicose (CGM)<SEP>Sensor de Glicose": {
+  "Glicemia<SEP>Jejum": {
     "chunk_ids": [
-      "chunk-e84e5532f518fcabd3a299c90090899c"
+      "chunk-e6f6de4abe268656fba04970b00cea11"
     ],
     "count": 1,
-    "create_time": 1767907655,
-    "update_time": 1767907655,
-    "_id": "Monitorização Contínua de Glicose (CGM)<SEP>Sensor de Glicose"
+    "create_time": 1768244583,
+    "update_time": 1768244583,
+    "_id": "Glicemia<SEP>Jejum"
   },
-  "Glicosímetro<SEP>Sensor de Glicose": {
+  "glicosímetro<SEP>sangue": {
     "chunk_ids": [
-      "chunk-e84e5532f518fcabd3a299c90090899c"
+      "chunk-dd5ca4e6c5954b6bdeb9142a5ade4a3b"
     ],
     "count": 1,
-    "create_time": 1767907655,
-    "update_time": 1767907655,
-    "_id": "Glicosímetro<SEP>Sensor de Glicose"
+    "create_time": 1768244583,
+    "update_time": 1768244583,
+    "_id": "glicosímetro<SEP>sangue"
   },
-  "Hipoglicemia<SEP>Monitorização Contínua de Glicose (CGM)": {
+  "pele<SEP>sensor": {
     "chunk_ids": [
-      "chunk-e84e5532f518fcabd3a299c90090899c"
+      "chunk-dd5ca4e6c5954b6bdeb9142a5ade4a3b"
     ],
     "count": 1,
-    "create_time": 1767907655,
-    "update_time": 1767907655,
-    "_id": "Hipoglicemia<SEP>Monitorização Contínua de Glicose (CGM)"
+    "create_time": 1768244583,
+    "update_time": 1768244583,
+    "_id": "pele<SEP>sensor"
   },
-  "Intersticial<SEP>Sensor de Glicose": {
+  "Federal Reserve<SEP>HbA1c": {
     "chunk_ids": [
-      "chunk-e84e5532f518fcabd3a299c90090899c"
+      "chunk-dd5ca4e6c5954b6bdeb9142a5ade4a3b"
     ],
     "count": 1,
-    "create_time": 1767907655,
-    "update_time": 1767907655,
-    "_id": "Intersticial<SEP>Sensor de Glicose"
+    "create_time": 1768244583,
+    "update_time": 1768244583,
+    "_id": "Federal Reserve<SEP>HbA1c"
   },
-  "Bomba de Insulina<SEP>Monitorização Contínua de Glicose (CGM)": {
+  "Glicemia<SEP>Refeição": {
     "chunk_ids": [
-      "chunk-e84e5532f518fcabd3a299c90090899c"
+      "chunk-e6f6de4abe268656fba04970b00cea11"
     ],
     "count": 1,
-    "create_time": 1767907655,
-    "update_time": 1767907655,
-    "_id": "Bomba de Insulina<SEP>Monitorização Contínua de Glicose (CGM)"
+    "create_time": 1768244583,
+    "update_time": 1768244583,
+    "_id": "Glicemia<SEP>Refeição"
   },
-  "Insulina<SEP>Sensor de Glicose": {
+  "Federal Reserve<SEP>World Athletics Championship": {
     "chunk_ids": [
-      "chunk-e84e5532f518fcabd3a299c90090899c"
+      "chunk-dd5ca4e6c5954b6bdeb9142a5ade4a3b"
     ],
     "count": 1,
-    "create_time": 1767907656,
-    "update_time": 1767907656,
-    "_id": "Insulina<SEP>Sensor de Glicose"
+    "create_time": 1768244583,
+    "update_time": 1768244583,
+    "_id": "Federal Reserve<SEP>World Athletics Championship"
   },
-  "Gestão da Diabetes<SEP>Monitorização Contínua de Glicose (CGM)": {
+  "Associação Americana de Diabetes<SEP>Insulina": {
     "chunk_ids": [
-      "chunk-e84e5532f518fcabd3a299c90090899c"
+      "chunk-30e579d5ccfc0135f92c7582f294d15f"
     ],
     "count": 1,
-    "create_time": 1767907656,
-    "update_time": 1767907656,
-    "_id": "Gestão da Diabetes<SEP>Monitorização Contínua de Glicose (CGM)"
+    "create_time": 1768244583,
+    "update_time": 1768244583,
+    "_id": "Associação Americana de Diabetes<SEP>Insulina"
   },
-  "Açúcar<SEP>Monitorização Contínua de Glicose (CGM)": {
+  "Glicemia<SEP>MG/dL": {
     "chunk_ids": [
-      "chunk-e84e5532f518fcabd3a299c90090899c"
+      "chunk-e6f6de4abe268656fba04970b00cea11"
     ],
     "count": 1,
-    "create_time": 1767907656,
-    "update_time": 1767907656,
-    "_id": "Açúcar<SEP>Monitorização Contínua de Glicose (CGM)"
+    "create_time": 1768244583,
+    "update_time": 1768244583,
+    "_id": "Glicemia<SEP>MG/dL"
   },
-  "Gestão Contínua de Glicose (CGM)<SEP>Monitorização Contínua de Glicose (CGM)": {
+  "Insulina<SEP>Rodizio": {
     "chunk_ids": [
-      "chunk-e84e5532f518fcabd3a299c90090899c"
+      "chunk-30e579d5ccfc0135f92c7582f294d15f"
     ],
     "count": 1,
-    "create_time": 1767907656,
-    "update_time": 1767907656,
-    "_id": "Gestão Contínua de Glicose (CGM)<SEP>Monitorização Contínua de Glicose (CGM)"
+    "create_time": 1768244583,
+    "update_time": 1768244583,
+    "_id": "Insulina<SEP>Rodizio"
   },
-  "fitinha<SEP>urina": {
+  "Federal Reserve<SEP>neos": {
     "chunk_ids": [
-      "chunk-f5d525f54d3aa4c70f0f6e4de5a2a295"
+      "chunk-dd5ca4e6c5954b6bdeb9142a5ade4a3b"
     ],
     "count": 1,
-    "create_time": 1767907656,
-    "update_time": 1767907656,
-    "_id": "fitinha<SEP>urina"
+    "create_time": 1768244583,
+    "update_time": 1768244583,
+    "_id": "Federal Reserve<SEP>neos"
   },
-  ">glicosímetro<SEP>sangue": {
+  "Glicemia<SEP>Mãe": {
     "chunk_ids": [
-      "chunk-f5d525f54d3aa4c70f0f6e4de5a2a295"
+      "chunk-e6f6de4abe268656fba04970b00cea11"
     ],
     "count": 1,
-    "create_time": 1767907656,
-    "update_time": 1767907656,
-    "_id": ">glicosímetro<SEP>sangue"
+    "create_time": 1768244583,
+    "update_time": 1768244583,
+    "_id": "Glicemia<SEP>Mãe"
   },
-  "SMCG<SEP>Sensor": {
+  "Caneta de Insulina<SEP>Seringa": {
     "chunk_ids": [
-      "chunk-e3ac418d44976633b1fd0dabb42792ba"
+      "chunk-30e579d5ccfc0135f92c7582f294d15f"
     ],
     "count": 1,
-    "create_time": 1767907656,
-    "update_time": 1767907656,
-    "_id": "SMCG<SEP>Sensor"
+    "create_time": 1768244583,
+    "update_time": 1768244583,
+    "_id": "Caneta de Insulina<SEP>Seringa"
   },
-  "Glicosímetro<SEP>Sensor": {
+  "Agulha<SEP>Rodizio": {
     "chunk_ids": [
-      "chunk-e3ac418d44976633b1fd0dabb42792ba"
+      "chunk-30e579d5ccfc0135f92c7582f294d15f"
     ],
     "count": 1,
-    "create_time": 1767907656,
-    "update_time": 1767907656,
-    "_id": "Glicosímetro<SEP>Sensor"
+    "create_time": 1768244583,
+    "update_time": 1768244583,
+    "_id": "Agulha<SEP>Rodizio"
   },
-  "Celular<SEP>SMCG": {
+  "Federal Reserve<SEP>Podem": {
     "chunk_ids": [
-      "chunk-e3ac418d44976633b1fd0dabb42792ba"
+      "chunk-dd5ca4e6c5954b6bdeb9142a5ade4a3b"
     ],
     "count": 1,
-    "create_time": 1767907656,
-    "update_time": 1767907656,
-    "_id": "Celular<SEP>SMCG"
+    "create_time": 1768244583,
+    "update_time": 1768244583,
+    "_id": "Federal Reserve<SEP>Podem"
   },
-  "Bomba de Insulina<SEP>Sensor": {
+  "Gordura<SEP>Músculo": {
     "chunk_ids": [
-      "chunk-e3ac418d44976633b1fd0dabb42792ba"
+      "chunk-30e579d5ccfc0135f92c7582f294d15f"
     ],
     "count": 1,
-    "create_time": 1767907656,
-    "update_time": 1767907656,
-    "_id": "Bomba de Insulina<SEP>Sensor"
-  },
-  "Insulina<SEP>SMCG": {
-    "chunk_ids": [
-      "chunk-e3ac418d44976633b1fd0dabb42792ba"
-    ],
-    "count": 1,
-    "create_time": 1767907656,
-    "update_time": 1767907656,
-    "_id": "Insulina<SEP>SMCG"
-  },
-  "Glicosímetro<SEP>SMCG": {
-    "chunk_ids": [
-      "chunk-e3ac418d44976633b1fd0dabb42792ba"
-    ],
-    "count": 1,
-    "create_time": 1767907657,
-    "update_time": 1767907657,
-    "_id": "Glicosímetro<SEP>SMCG"
-  },
-  "Bomba de Insulina<SEP>SMCG": {
-    "chunk_ids": [
-      "chunk-e3ac418d44976633b1fd0dabb42792ba"
-    ],
-    "count": 1,
-    "create_time": 1767907657,
-    "update_time": 1767907657,
-    "_id": "Bomba de Insulina<SEP>SMCG"
-  },
-  "Paciente<SEP>Profissionais de Saúde": {
-    "chunk_ids": [
-      "chunk-04636bf8225531316eb483ac0cb3d130"
-    ],
-    "count": 1,
-    "create_time": 1767907657,
-    "update_time": 1767907657,
-    "_id": "Paciente<SEP>Profissionais de Saúde"
-  },
-  "Insulina<SEP>Paciente": {
-    "chunk_ids": [
-      "chunk-04636bf8225531316eb483ac0cb3d130"
-    ],
-    "count": 1,
-    "create_time": 1767907657,
-    "update_time": 1767907657,
-    "_id": "Insulina<SEP>Paciente"
-  },
-  "Abreviações em Receitas Médicas<SEP>Profissionais de Saúde": {
-    "chunk_ids": [
-      "chunk-04636bf8225531316eb483ac0cb3d130"
-    ],
-    "count": 1,
-    "create_time": 1767907657,
-    "update_time": 1767907657,
-    "_id": "Abreviações em Receitas Médicas<SEP>Profissionais de Saúde"
-  },
-  "Caneta de Insulina<SEP>Paciente": {
-    "chunk_ids": [
-      "chunk-04636bf8225531316eb483ac0cb3d130"
-    ],
-    "count": 1,
-    "create_time": 1767907657,
-    "update_time": 1767907657,
-    "_id": "Caneta de Insulina<SEP>Paciente"
-  },
-  "Insulina<SEP>Transporte": {
-    "chunk_ids": [
-      "chunk-04636bf8225531316eb483ac0cb3d130"
-    ],
-    "count": 1,
-    "create_time": 1767907657,
-    "update_time": 1767907657,
-    "_id": "Insulina<SEP>Transporte"
-  },
-  "Diabetes<SEP>Paciente": {
-    "chunk_ids": [
-      "chunk-04636bf8225531316eb483ac0cb3d130"
-    ],
-    "count": 1,
-    "create_time": 1767907657,
-    "update_time": 1767907657,
-    "_id": "Diabetes<SEP>Paciente"
-  },
-  "Medicação<SEP>Profissionais de Saúde": {
-    "chunk_ids": [
-      "chunk-04636bf8225531316eb483ac0cb3d130"
-    ],
-    "count": 1,
-    "create_time": 1767907657,
-    "update_time": 1767907657,
-    "_id": "Medicação<SEP>Profissionais de Saúde"
-  },
-  "Hospital<SEP>Paciente": {
-    "chunk_ids": [
-      "chunk-04636bf8225531316eb483ac0cb3d130"
-    ],
-    "count": 1,
-    "create_time": 1767907658,
-    "update_time": 1767907658,
-    "_id": "Hospital<SEP>Paciente"
-  },
-  "Enfermidade<SEP>Paciente": {
-    "chunk_ids": [
-      "chunk-04636bf8225531316eb483ac0cb3d130"
-    ],
-    "count": 1,
-    "create_time": 1767907658,
-    "update_time": 1767907658,
-    "_id": "Enfermidade<SEP>Paciente"
-  },
-  "Profissionais de Saúde<SEP>Tratamento": {
-    "chunk_ids": [
-      "chunk-04636bf8225531316eb483ac0cb3d130"
-    ],
-    "count": 1,
-    "create_time": 1767907658,
-    "update_time": 1767907658,
-    "_id": "Profissionais de Saúde<SEP>Tratamento"
-  },
-  "Medicação<SEP>Paciente": {
-    "chunk_ids": [
-      "chunk-04636bf8225531316eb483ac0cb3d130"
-    ],
-    "count": 1,
-    "create_time": 1767907658,
-    "update_time": 1767907658,
-    "_id": "Medicação<SEP>Paciente"
-  },
-  "Açúcar no Sangue<SEP>Glicose Baixa": {
-    "chunk_ids": [
-      "chunk-8b4a3fc67c9fc17c6dd8529cb70bdc88"
-    ],
-    "count": 1,
-    "create_time": 1767907658,
-    "update_time": 1767907658,
-    "_id": "Açúcar no Sangue<SEP>Glicose Baixa"
-  },
-  "Hipoglicemia<SEP>Tempo": {
-    "chunk_ids": [
-      "chunk-8b4a3fc67c9fc17c6dd8529cb70bdc88"
-    ],
-    "count": 1,
-    "create_time": 1767907658,
-    "update_time": 1767907658,
-    "_id": "Hipoglicemia<SEP>Tempo"
-  },
-  "Carboidrato de Ação Rápida<SEP>Glicose Baixa": {
-    "chunk_ids": [
-      "chunk-8b4a3fc67c9fc17c6dd8529cb70bdc88"
-    ],
-    "count": 1,
-    "create_time": 1767907658,
-    "update_time": 1767907658,
-    "_id": "Carboidrato de Ação Rápida<SEP>Glicose Baixa"
-  },
-  "Refrigerante Comum<SEP>Suco de Laranja": {
-    "chunk_ids": [
-      "chunk-8b4a3fc67c9fc17c6dd8529cb70bdc88"
-    ],
-    "count": 1,
-    "create_time": 1767907658,
-    "update_time": 1767907658,
-    "_id": "Refrigerante Comum<SEP>Suco de Laranja"
-  },
-  "Açúcar Dissolvido em Água<SEP>Bala de Glicose": {
-    "chunk_ids": [
-      "chunk-8b4a3fc67c9fc17c6dd8529cb70bdc88"
-    ],
-    "count": 1,
-    "create_time": 1767907658,
-    "update_time": 1767907658,
-    "_id": "Açúcar Dissolvido em Água<SEP>Bala de Glicose"
-  },
-  "Cetonas<SEP>Gordura": {
-    "chunk_ids": [
-      "chunk-8b4a3fc67c9fc17c6dd8529cb70bdc88"
-    ],
-    "count": 1,
-    "create_time": 1767907658,
-    "update_time": 1767907658,
-    "_id": "Cetonas<SEP>Gordura"
-  },
-  "Casos de Diabetes<SEP>Diabetes Descompensado": {
-    "chunk_ids": [
-      "chunk-8b4a3fc67c9fc17c6dd8529cb70bdc88"
-    ],
-    "count": 1,
-    "create_time": 1767907658,
-    "update_time": 1767907658,
-    "_id": "Casos de Diabetes<SEP>Diabetes Descompensado"
-  },
-  "Cetoacidose Diabética<SEP>Cetonas": {
-    "chunk_ids": [
-      "chunk-8b4a3fc67c9fc17c6dd8529cb70bdc88"
-    ],
-    "count": 1,
-    "create_time": 1767907658,
-    "update_time": 1767907658,
-    "_id": "Cetoacidose Diabética<SEP>Cetonas"
+    "create_time": 1768244583,
+    "update_time": 1768244583,
+    "_id": "Gordura<SEP>Músculo"
   },
   "Caneta de Insulina<SEP>Insulina": {
     "chunk_ids": [
-      "chunk-4436a835dfb969a51419d3f9bc744a89"
+      "chunk-30e579d5ccfc0135f92c7582f294d15f"
     ],
     "count": 1,
-    "create_time": 1767907659,
-    "update_time": 1767907659,
+    "create_time": 1768244583,
+    "update_time": 1768244583,
     "_id": "Caneta de Insulina<SEP>Insulina"
   },
-  "Braços<SEP>Nádegas": {
+  "Agulha<SEP>Seringa": {
     "chunk_ids": [
-      "chunk-4436a835dfb969a51419d3f9bc744a89"
+      "chunk-30e579d5ccfc0135f92c7582f294d15f"
     ],
     "count": 1,
-    "create_time": 1767907659,
-    "update_time": 1767907659,
-    "_id": "Braços<SEP>Nádegas"
+    "create_time": 1768244583,
+    "update_time": 1768244583,
+    "_id": "Agulha<SEP>Seringa"
   },
-  "Abdômen (barriga)<SEP>Coxas": {
+  "Federal Reserve<SEP>médicos": {
     "chunk_ids": [
-      "chunk-4436a835dfb969a51419d3f9bc744a89"
+      "chunk-dd5ca4e6c5954b6bdeb9142a5ade4a3b"
     ],
     "count": 1,
-    "create_time": 1767907659,
-    "update_time": 1767907659,
-    "_id": "Abdômen (barriga)<SEP>Coxas"
+    "create_time": 1768244583,
+    "update_time": 1768244583,
+    "_id": "Federal Reserve<SEP>médicos"
   },
-  "Insulina<SEP>Pregas subcutâneas": {
+  "Músculo<SEP>Via Subcutânea": {
     "chunk_ids": [
-      "chunk-4436a835dfb969a51419d3f9bc744a89"
+      "chunk-30e579d5ccfc0135f92c7582f294d15f"
     ],
     "count": 1,
-    "create_time": 1767907659,
-    "update_time": 1767907659,
-    "_id": "Insulina<SEP>Pregas subcutâneas"
+    "create_time": 1768244583,
+    "update_time": 1768244583,
+    "_id": "Músculo<SEP>Via Subcutânea"
   },
-  "Pele<SEP>Álcool 70%": {
+  "Diabetes Tipo 1<SEP>Insuloterapia": {
     "chunk_ids": [
-      "chunk-4436a835dfb969a51419d3f9bc744a89"
+      "chunk-39d6a3c2463013fd9e732773c88b8db5"
     ],
     "count": 1,
-    "create_time": 1767907659,
-    "update_time": 1767907659,
-    "_id": "Pele<SEP>Álcool 70%"
+    "create_time": 1768244583,
+    "update_time": 1768244583,
+    "_id": "Diabetes Tipo 1<SEP>Insuloterapia"
+  },
+  "Insulina<SEP>Via Subcutânea": {
+    "chunk_ids": [
+      "chunk-30e579d5ccfc0135f92c7582f294d15f"
+    ],
+    "count": 1,
+    "create_time": 1768244584,
+    "update_time": 1768244584,
+    "_id": "Insulina<SEP>Via Subcutânea"
+  },
+  "Açúcar<SEP>Glicemia": {
+    "chunk_ids": [
+      "chunk-39d6a3c2463013fd9e732773c88b8db5"
+    ],
+    "count": 1,
+    "create_time": 1768244584,
+    "update_time": 1768244584,
+    "_id": "Açúcar<SEP>Glicemia"
+  },
+  "Diabetes Tipo 2<SEP>Insuloterapia": {
+    "chunk_ids": [
+      "chunk-39d6a3c2463013fd9e732773c88b8db5"
+    ],
+    "count": 1,
+    "create_time": 1768244584,
+    "update_time": 1768244584,
+    "_id": "Diabetes Tipo 2<SEP>Insuloterapia"
+  },
+  "Hospital<SEP>Insulina": {
+    "chunk_ids": [
+      "chunk-30e579d5ccfc0135f92c7582f294d15f"
+    ],
+    "count": 1,
+    "create_time": 1768244584,
+    "update_time": 1768244584,
+    "_id": "Hospital<SEP>Insulina"
+  },
+  "Bomba de Insulina<SEP>Seringa": {
+    "chunk_ids": [
+      "chunk-39d6a3c2463013fd9e732773c88b8db5"
+    ],
+    "count": 1,
+    "create_time": 1768244584,
+    "update_time": 1768244584,
+    "_id": "Bomba de Insulina<SEP>Seringa"
+  },
+  "Insuloterapia<SEP>Profissional de Saúde": {
+    "chunk_ids": [
+      "chunk-39d6a3c2463013fd9e732773c88b8db5"
+    ],
+    "count": 1,
+    "create_time": 1768244584,
+    "update_time": 1768244584,
+    "_id": "Insuloterapia<SEP>Profissional de Saúde"
+  },
+  "Abdômen<SEP>Insulina": {
+    "chunk_ids": [
+      "chunk-30e579d5ccfc0135f92c7582f294d15f"
+    ],
+    "count": 1,
+    "create_time": 1768244584,
+    "update_time": 1768244584,
+    "_id": "Abdômen<SEP>Insulina"
+  },
+  "Diabetes Gestacional<SEP>Insuloterapia": {
+    "chunk_ids": [
+      "chunk-39d6a3c2463013fd9e732773c88b8db5"
+    ],
+    "count": 1,
+    "create_time": 1768244584,
+    "update_time": 1768244584,
+    "_id": "Diabetes Gestacional<SEP>Insuloterapia"
+  },
+  "Insulina<SEP>Pâncreas": {
+    "chunk_ids": [
+      "chunk-39d6a3c2463013fd9e732773c88b8db5"
+    ],
+    "count": 1,
+    "create_time": 1768244584,
+    "update_time": 1768244584,
+    "_id": "Insulina<SEP>Pâncreas"
+  },
+  "Abdômen<SEP>Músculo": {
+    "chunk_ids": [
+      "chunk-30e579d5ccfc0135f92c7582f294d15f"
+    ],
+    "count": 1,
+    "create_time": 1768244584,
+    "update_time": 1768244584,
+    "_id": "Abdômen<SEP>Músculo"
+  },
+  "Febre<SEP>Insuloterapia": {
+    "chunk_ids": [
+      "chunk-39d6a3c2463013fd9e732773c88b8db5"
+    ],
+    "count": 1,
+    "create_time": 1768244584,
+    "update_time": 1768244584,
+    "_id": "Febre<SEP>Insuloterapia"
+  },
+  "Canetas<SEP>Paciente": {
+    "chunk_ids": [
+      "chunk-cc0de9ad82a2e98af005736e04ca654d"
+    ],
+    "count": 1,
+    "create_time": 1768244584,
+    "update_time": 1768244584,
+    "_id": "Canetas<SEP>Paciente"
+  },
+  "Infecção<SEP>Insuloterapia": {
+    "chunk_ids": [
+      "chunk-39d6a3c2463013fd9e732773c88b8db5"
+    ],
+    "count": 1,
+    "create_time": 1768244584,
+    "update_time": 1768244584,
+    "_id": "Infecção<SEP>Insuloterapia"
+  },
+  "Prega Subcutânea<SEP>Tamanho da agulha": {
+    "chunk_ids": [
+      "chunk-cc0de9ad82a2e98af005736e04ca654d"
+    ],
+    "count": 1,
+    "create_time": 1768244584,
+    "update_time": 1768244584,
+    "_id": "Prega Subcutânea<SEP>Tamanho da agulha"
+  },
+  "Insulina<SEP>Paciente": {
+    "chunk_ids": [
+      "chunk-cc0de9ad82a2e98af005736e04ca654d",
+      "chunk-84cbfc1493e013840892a69f8694a3ea"
+    ],
+    "count": 2,
+    "create_time": 1768244584,
+    "update_time": 1768244584,
+    "_id": "Insulina<SEP>Paciente"
+  },
+  "Canetas<SEP>Álcool 70%": {
+    "chunk_ids": [
+      "chunk-cc0de9ad82a2e98af005736e04ca654d"
+    ],
+    "count": 1,
+    "create_time": 1768244584,
+    "update_time": 1768244584,
+    "_id": "Canetas<SEP>Álcool 70%"
+  },
+  "Depósito rígido<SEP>Unidade de Saúde": {
+    "chunk_ids": [
+      "chunk-cc0de9ad82a2e98af005736e04ca654d"
+    ],
+    "count": 1,
+    "create_time": 1768244584,
+    "update_time": 1768244584,
+    "_id": "Depósito rígido<SEP>Unidade de Saúde"
+  },
+  "Insuloterapia<SEP>Pós-Operatório": {
+    "chunk_ids": [
+      "chunk-39d6a3c2463013fd9e732773c88b8db5"
+    ],
+    "count": 1,
+    "create_time": 1768244584,
+    "update_time": 1768244584,
+    "_id": "Insuloterapia<SEP>Pós-Operatório"
+  },
+  "Federal University of Health<SEP>Paciente": {
+    "chunk_ids": [
+      "chunk-cc0de9ad82a2e98af005736e04ca654d"
+    ],
+    "count": 1,
+    "create_time": 1768244584,
+    "update_time": 1768244584,
+    "_id": "Federal University of Health<SEP>Paciente"
+  },
+  "Crianças<SEP>Tamanho da agulha": {
+    "chunk_ids": [
+      "chunk-cc0de9ad82a2e98af005736e04ca654d"
+    ],
+    "count": 1,
+    "create_time": 1768244584,
+    "update_time": 1768244584,
+    "_id": "Crianças<SEP>Tamanho da agulha"
+  },
+  "Caroços<SEP>Insuloterapia": {
+    "chunk_ids": [
+      "chunk-39d6a3c2463013fd9e732773c88b8db5"
+    ],
+    "count": 1,
+    "create_time": 1768244584,
+    "update_time": 1768244584,
+    "_id": "Caroços<SEP>Insuloterapia"
+  },
+  "Paciente<SEP>Álcool 70%": {
+    "chunk_ids": [
+      "chunk-cc0de9ad82a2e98af005736e04ca654d"
+    ],
+    "count": 1,
+    "create_time": 1768244584,
+    "update_time": 1768244584,
+    "_id": "Paciente<SEP>Álcool 70%"
+  },
+  "Canetas<SEP>Federal University of Health": {
+    "chunk_ids": [
+      "chunk-cc0de9ad82a2e98af005736e04ca654d"
+    ],
+    "count": 1,
+    "create_time": 1768244584,
+    "update_time": 1768244584,
+    "_id": "Canetas<SEP>Federal University of Health"
+  },
+  "Continuous Glucose Monitoring (CGM)<SEP>Sensor em tempo real": {
+    "chunk_ids": [
+      "chunk-0998f8f3509f44ef35f1921ffc635f42"
+    ],
+    "count": 1,
+    "create_time": 1768244584,
+    "update_time": 1768244584,
+    "_id": "Continuous Glucose Monitoring (CGM)<SEP>Sensor em tempo real"
+  },
+  "Adolescentes<SEP>Tamanho da agulha": {
+    "chunk_ids": [
+      "chunk-cc0de9ad82a2e98af005736e04ca654d"
+    ],
+    "count": 1,
+    "create_time": 1768244585,
+    "update_time": 1768244585,
+    "_id": "Adolescentes<SEP>Tamanho da agulha"
+  },
+  "Insuloterapia<SEP>Lipohipertrofia": {
+    "chunk_ids": [
+      "chunk-39d6a3c2463013fd9e732773c88b8db5"
+    ],
+    "count": 1,
+    "create_time": 1768244585,
+    "update_time": 1768244585,
+    "_id": "Insuloterapia<SEP>Lipohipertrofia"
+  },
+  "Paciente<SEP>Prega Subcutânea": {
+    "chunk_ids": [
+      "chunk-cc0de9ad82a2e98af005736e04ca654d"
+    ],
+    "count": 1,
+    "create_time": 1768244585,
+    "update_time": 1768244585,
+    "_id": "Paciente<SEP>Prega Subcutânea"
+  },
+  "Dexcom<SEP>Sensor em tempo real": {
+    "chunk_ids": [
+      "chunk-0998f8f3509f44ef35f1921ffc635f42"
+    ],
+    "count": 1,
+    "create_time": 1768244585,
+    "update_time": 1768244585,
+    "_id": "Dexcom<SEP>Sensor em tempo real"
+  },
+  "FreeStyle Libre<SEP>Sensor em tempo real": {
+    "chunk_ids": [
+      "chunk-0998f8f3509f44ef35f1921ffc635f42"
+    ],
+    "count": 1,
+    "create_time": 1768244585,
+    "update_time": 1768244585,
+    "_id": "FreeStyle Libre<SEP>Sensor em tempo real"
+  },
+  "Noah Carter<SEP>World Athletics Championship": {
+    "chunk_ids": [
+      "chunk-0998f8f3509f44ef35f1921ffc635f42"
+    ],
+    "count": 1,
+    "create_time": 1768244585,
+    "update_time": 1768244585,
+    "_id": "Noah Carter<SEP>World Athletics Championship"
+  },
+  "Eversense<SEP>Sensor em tempo real": {
+    "chunk_ids": [
+      "chunk-0998f8f3509f44ef35f1921ffc635f42"
+    ],
+    "count": 1,
+    "create_time": 1768244585,
+    "update_time": 1768244585,
+    "_id": "Eversense<SEP>Sensor em tempo real"
+  },
+  "Tokyo<SEP>World Athletics Championship": {
+    "chunk_ids": [
+      "chunk-0998f8f3509f44ef35f1921ffc635f42"
+    ],
+    "count": 1,
+    "create_time": 1768244585,
+    "update_time": 1768244585,
+    "_id": "Tokyo<SEP>World Athletics Championship"
+  },
+  "Enlite<SEP>Sensor em tempo real": {
+    "chunk_ids": [
+      "chunk-0998f8f3509f44ef35f1921ffc635f42"
+    ],
+    "count": 1,
+    "create_time": 1768244585,
+    "update_time": 1768244585,
+    "_id": "Enlite<SEP>Sensor em tempo real"
+  },
+  "Bomba de insulina<SEP>Sensor em tempo real": {
+    "chunk_ids": [
+      "chunk-0998f8f3509f44ef35f1921ffc635f42"
+    ],
+    "count": 1,
+    "create_time": 1768244585,
+    "update_time": 1768244585,
+    "_id": "Bomba de insulina<SEP>Sensor em tempo real"
+  },
+  "Medtronic MiniMed<SEP>Sensor em tempo real": {
+    "chunk_ids": [
+      "chunk-0998f8f3509f44ef35f1921ffc635f42"
+    ],
+    "count": 1,
+    "create_time": 1768244585,
+    "update_time": 1768244585,
+    "_id": "Medtronic MiniMed<SEP>Sensor em tempo real"
+  },
+  "Médico<SEP>Paciente": {
+    "chunk_ids": [
+      "chunk-84cbfc1493e013840892a69f8694a3ea"
+    ],
+    "count": 1,
+    "create_time": 1768244585,
+    "update_time": 1768244585,
+    "_id": "Médico<SEP>Paciente"
+  },
+  "Glicosímetro<SEP>Sensor em tempo real": {
+    "chunk_ids": [
+      "chunk-0998f8f3509f44ef35f1921ffc635f42"
+    ],
+    "count": 1,
+    "create_time": 1768244585,
+    "update_time": 1768244585,
+    "_id": "Glicosímetro<SEP>Sensor em tempo real"
+  },
+  "Paciente<SEP>Sensor de Glicose": {
+    "chunk_ids": [
+      "chunk-84cbfc1493e013840892a69f8694a3ea"
+    ],
+    "count": 1,
+    "create_time": 1768244585,
+    "update_time": 1768244585,
+    "_id": "Paciente<SEP>Sensor de Glicose"
+  },
+  "Dexcom G6<SEP>Sensor em tempo real": {
+    "chunk_ids": [
+      "chunk-0998f8f3509f44ef35f1921ffc635f42"
+    ],
+    "count": 1,
+    "create_time": 1768244585,
+    "update_time": 1768244585,
+    "_id": "Dexcom G6<SEP>Sensor em tempo real"
+  },
+  "Glicosímetro<SEP>Paciente": {
+    "chunk_ids": [
+      "chunk-84cbfc1493e013840892a69f8694a3ea"
+    ],
+    "count": 1,
+    "create_time": 1768244585,
+    "update_time": 1768244585,
+    "_id": "Glicosímetro<SEP>Paciente"
+  },
+  "Caderninho<SEP>Paciente": {
+    "chunk_ids": [
+      "chunk-84cbfc1493e013840892a69f8694a3ea"
+    ],
+    "count": 1,
+    "create_time": 1768244586,
+    "update_time": 1768244586,
+    "_id": "Caderninho<SEP>Paciente"
+  },
+  "Glicosímetro<SEP>Médico": {
+    "chunk_ids": [
+      "chunk-84cbfc1493e013840892a69f8694a3ea"
+    ],
+    "count": 1,
+    "create_time": 1768244586,
+    "update_time": 1768244586,
+    "_id": "Glicosímetro<SEP>Médico"
+  },
+  "CGM<SEP>Sensor em tempo real": {
+    "chunk_ids": [
+      "chunk-0998f8f3509f44ef35f1921ffc635f42"
+    ],
+    "count": 1,
+    "create_time": 1768244586,
+    "update_time": 1768244586,
+    "_id": "CGM<SEP>Sensor em tempo real"
+  },
+  "Médico<SEP>Sensor de Glicose": {
+    "chunk_ids": [
+      "chunk-84cbfc1493e013840892a69f8694a3ea"
+    ],
+    "count": 1,
+    "create_time": 1768244586,
+    "update_time": 1768244586,
+    "_id": "Médico<SEP>Sensor de Glicose"
+  },
+  "Aplicativo de Celular<SEP>Paciente": {
+    "chunk_ids": [
+      "chunk-84cbfc1493e013840892a69f8694a3ea"
+    ],
+    "count": 1,
+    "create_time": 1768244586,
+    "update_time": 1768244586,
+    "_id": "Aplicativo de Celular<SEP>Paciente"
+  },
+  "Aparelho<SEP>Paciente": {
+    "chunk_ids": [
+      "chunk-84cbfc1493e013840892a69f8694a3ea"
+    ],
+    "count": 1,
+    "create_time": 1768244586,
+    "update_time": 1768244586,
+    "_id": "Aparelho<SEP>Paciente"
+  },
+  "Glicemia Capilar<SEP>Sensor de Glicose": {
+    "chunk_ids": [
+      "chunk-cb55aa00a7f60f489e74950ed04d190b"
+    ],
+    "count": 1,
+    "create_time": 1768244586,
+    "update_time": 1768244586,
+    "_id": "Glicemia Capilar<SEP>Sensor de Glicose"
+  },
+  "Intersticial Fluid<SEP>Sensor em tempo real": {
+    "chunk_ids": [
+      "chunk-0998f8f3509f44ef35f1921ffc635f42"
+    ],
+    "count": 1,
+    "create_time": 1768244586,
+    "update_time": 1768244586,
+    "_id": "Intersticial Fluid<SEP>Sensor em tempo real"
+  },
+  "Aparelho<SEP>Médico": {
+    "chunk_ids": [
+      "chunk-84cbfc1493e013840892a69f8694a3ea"
+    ],
+    "count": 1,
+    "create_time": 1768244586,
+    "update_time": 1768244586,
+    "_id": "Aparelho<SEP>Médico"
+  },
+  "Insulina<SEP>Sensor de Glicose": {
+    "chunk_ids": [
+      "chunk-cb55aa00a7f60f489e74950ed04d190b"
+    ],
+    "count": 1,
+    "create_time": 1768244586,
+    "update_time": 1768244586,
+    "_id": "Insulina<SEP>Sensor de Glicose"
+  },
+  "Hemoglobina Glicada (HbA1c)<SEP>Sensor em tempo real": {
+    "chunk_ids": [
+      "chunk-0998f8f3509f44ef35f1921ffc635f42"
+    ],
+    "count": 1,
+    "create_time": 1768244586,
+    "update_time": 1768244586,
+    "_id": "Hemoglobina Glicada (HbA1c)<SEP>Sensor em tempo real"
+  },
+  "Federal Medical Organization<SEP>Sensor de Glicose": {
+    "chunk_ids": [
+      "chunk-cb55aa00a7f60f489e74950ed04d190b"
+    ],
+    "count": 1,
+    "create_time": 1768244586,
+    "update_time": 1768244586,
+    "_id": "Federal Medical Organization<SEP>Sensor de Glicose"
+  },
+  "Continuous Glucose Monitoring (CGM)<SEP>Hemoglobina Glicada (HbA1c)": {
+    "chunk_ids": [
+      "chunk-0998f8f3509f44ef35f1921ffc635f42"
+    ],
+    "count": 1,
+    "create_time": 1768244586,
+    "update_time": 1768244586,
+    "_id": "Continuous Glucose Monitoring (CGM)<SEP>Hemoglobina Glicada (HbA1c)"
+  },
+  "Hemoglobina Glicada (HbA1c)<SEP>Sensor de Glicose": {
+    "chunk_ids": [
+      "chunk-cb55aa00a7f60f489e74950ed04d190b"
+    ],
+    "count": 1,
+    "create_time": 1768244586,
+    "update_time": 1768244586,
+    "_id": "Hemoglobina Glicada (HbA1c)<SEP>Sensor de Glicose"
+  },
+  "Federal Medical Organization<SEP>Hemoglobina Glicada (HbA1c)": {
+    "chunk_ids": [
+      "chunk-cb55aa00a7f60f489e74950ed04d190b"
+    ],
+    "count": 1,
+    "create_time": 1768244586,
+    "update_time": 1768244586,
+    "_id": "Federal Medical Organization<SEP>Hemoglobina Glicada (HbA1c)"
+  },
+  "Federal Medical Organization<SEP>Glicemia Capilar": {
+    "chunk_ids": [
+      "chunk-cb55aa00a7f60f489e74950ed04d190b"
+    ],
+    "count": 1,
+    "create_time": 1768244586,
+    "update_time": 1768244586,
+    "_id": "Federal Medical Organization<SEP>Glicemia Capilar"
+  },
+  "Federal Medical Organization<SEP>Insulina": {
+    "chunk_ids": [
+      "chunk-cb55aa00a7f60f489e74950ed04d190b"
+    ],
+    "count": 1,
+    "create_time": 1768244586,
+    "update_time": 1768244586,
+    "_id": "Federal Medical Organization<SEP>Insulina"
+  },
+  "DM1<SEP>Federal Medical Organization": {
+    "chunk_ids": [
+      "chunk-cb55aa00a7f60f489e74950ed04d190b"
+    ],
+    "count": 1,
+    "create_time": 1768244586,
+    "update_time": 1768244586,
+    "_id": "DM1<SEP>Federal Medical Organization"
+  },
+  "DM2<SEP>Federal Medical Organization": {
+    "chunk_ids": [
+      "chunk-cb55aa00a7f60f489e74950ed04d190b"
+    ],
+    "count": 1,
+    "create_time": 1768244587,
+    "update_time": 1768244587,
+    "_id": "DM2<SEP>Federal Medical Organization"
+  },
+  "Federal Medical Organization<SEP>Jejum": {
+    "chunk_ids": [
+      "chunk-cb55aa00a7f60f489e74950ed04d190b"
+    ],
+    "count": 1,
+    "create_time": 1768244587,
+    "update_time": 1768244587,
+    "_id": "Federal Medical Organization<SEP>Jejum"
+  },
+  "Federal Medical Organization<SEP>Hipoglicemia": {
+    "chunk_ids": [
+      "chunk-cb55aa00a7f60f489e74950ed04d190b"
+    ],
+    "count": 1,
+    "create_time": 1768244587,
+    "update_time": 1768244587,
+    "_id": "Federal Medical Organization<SEP>Hipoglicemia"
+  },
+  "Federal Medical Organization<SEP>Hiperglicemia": {
+    "chunk_ids": [
+      "chunk-cb55aa00a7f60f489e74950ed04d190b"
+    ],
+    "count": 1,
+    "create_time": 1768244587,
+    "update_time": 1768244587,
+    "_id": "Federal Medical Organization<SEP>Hiperglicemia"
   }
 }
