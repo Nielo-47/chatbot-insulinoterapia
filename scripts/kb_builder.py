@@ -16,6 +16,7 @@ RAW_DATA_DIR = "data/raw/"
 
 if not os.path.exists(WORKING_DIR):
     os.makedirs(WORKING_DIR, exist_ok=True)
+
 # Custom extraction prompt for medical/diabetes domain
 ENTITY_EXTRACTION_PROMPT = """---Task---
 Extract entities and relationships from the input text about diabetes and insulin therapy.
