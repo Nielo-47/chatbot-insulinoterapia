@@ -16,17 +16,101 @@ RAW_DATA_DIR = "data/raw/"
 
 if not os.path.exists(WORKING_DIR):
     os.makedirs(WORKING_DIR, exist_ok=True)
+# Custom extraction prompt for medical/diabetes domain
+ENTITY_EXTRACTION_PROMPT = """---Task---
+Extract entities and relationships from the input text about diabetes and insulin therapy.
+
+---Instructions---
+1. **Extract ONLY entities that are explicitly mentioned in the text**
+2. **DO NOT invent or hallucinate entities from other domains (sports, finance, technology, etc.)**
+3. **Focus on medical and healthcare entities only**
+4. Output entities first, then relationships
+5. End with <|COMPLETE|>
+
+---Valid Entity Types for Medical Domain---
+- Person: Healthcare professionals, patients (only if explicitly named)
+- Organization: Medical societies, health ministries, hospitals
+- Location: Body parts, anatomical locations (Abdômen, Braços, Coxas)
+- Concept: Medical conditions (Diabetes, Hipoglicemia, Lipodistrofia)
+- Method: Medical procedures, techniques (Aplicação, Rodízio)
+- Artifact: Medical equipment (Seringa, Agulha, Caneta, Glicosímetro)
+- Content: Medications (Insulina NPH, Insulina Regular)
+
+---Example (Medical Domain)---
+Input Text:
+```
+A insulina NPH deve ser aplicada com seringa no abdômen. O paciente deve fazer rodízio dos locais de aplicação para evitar lipodistrofia. A Sociedade Brasileira de Diabetes recomenda o uso de agulhas de 4mm.
+```
+
+Output:
+entity<|#|>Insulina NPH<|#|>Content<|#|>Insulina NPH is a type of insulin medication used in diabetes treatment.
+entity<|#|>Seringa<|#|>Artifact<|#|>Seringa (syringe) is a medical device used to inject insulin.
+entity<|#|>Abdômen<|#|>Location<|#|>Abdômen (abdomen) is a body region where insulin can be injected.
+entity<|#|>Lipodistrofia<|#|>Concept<|#|>Lipodistrofia is a complication from repeated insulin injections in the same location.
+entity<|#|>Sociedade Brasileira de Diabetes<|#|>Organization<|#|>Sociedade Brasileira de Diabetes is a Brazilian medical organization that provides diabetes treatment guidelines.
+entity<|#|>Rodízio<|#|>Method<|#|>Rodízio is the practice of rotating injection sites to prevent complications.
+entity<|#|>Agulha<|#|>Artifact<|#|>Agulha (needle) is a medical device component used for insulin injection.
+relation<|#|>Insulina NPH<|#|>Seringa<|#|>medical procedure, administration<|#|>Insulina NPH is administered using a seringa.
+relation<|#|>Seringa<|#|>Abdômen<|#|>injection site, application<|#|>Seringa is used to inject insulin in the abdômen.
+relation<|#|>Rodízio<|#|>Lipodistrofia<|#|>complication prevention, treatment method<|#|>Rodízio of injection sites helps prevent lipodistrofia.
+relation<|#|>Sociedade Brasileira de Diabetes<|#|>Agulha<|#|>medical recommendation, guideline<|#|>Sociedade Brasileira de Diabetes recommends specific needle sizes.
+<|COMPLETE|>
+
+---Data to be Processed---
+<Entity_types>
+[Person,Organization,Location,Concept,Method,Content,Artifact]
+
+<Input Text>
+```
+{input_text}
+```
+
+<Output>
+"""
 
 async def llm_model_func(
     prompt, system_prompt=None, history_messages=[], keyword_extraction=False, **kwargs
 ) -> str:
+    # Enhanced system prompt to reduce hallucinations
+    enhanced_system_prompt = """You are a medical information extraction specialist focused on diabetes and insulin therapy.
+
+CRITICAL RULES:
+1. Extract ONLY entities explicitly mentioned in the provided text
+2. DO NOT invent, fabricate, or hallucinate ANY information
+3. DO NOT add entities from sports, finance, technology, or other unrelated domains
+4. Focus ONLY on medical and healthcare-related entities
+5. If you're uncertain about an entity, DO NOT include it
+6. Use entity names exactly as they appear in the source text
+7. Maintain Portuguese terminology for medical terms when present in the source
+
+STRICTLY FORBIDDEN - Never extract these types of entities:
+- Athletes, sports events, championships, competitions
+- Financial markets, stocks, indexes, companies
+- Technology companies, products (unless medical devices)
+- Random person names not mentioned in the text
+- Geographic locations unrelated to the medical content
+
+ALLOWED - Only extract these types of entities:
+- Medical conditions and diseases
+- Insulin types and medications
+- Medical equipment and devices
+- Healthcare procedures and techniques
+- Body parts and anatomical locations
+- Healthcare organizations and professionals
+- Medical guidelines and recommendations
+"""
+    
+    if system_prompt:
+        enhanced_system_prompt = f"{enhanced_system_prompt}\n\n{system_prompt}"
+    
     return await openai_complete_if_cache(
         "hugging-quants/Meta-Llama-3.1-8B-Instruct-AWQ-INT4",
         prompt,
-        system_prompt=system_prompt,
+        system_prompt=enhanced_system_prompt,
         history_messages=history_messages,
         api_key="vllm-token-dummy",
         base_url="http://localhost:8000/v1",
+        temperature=0.1,  # Lower temperature for more deterministic output
         **kwargs,
     )
 
@@ -34,6 +118,12 @@ async def initialize_rag():
     rag = LightRAG(
         working_dir=WORKING_DIR,
         llm_model_func=llm_model_func,
+        summary_max_tokens=2048,
+        max_entity_tokens=3000,
+        max_relation_tokens=4000,
+        max_total_tokens=15000,
+        chunk_token_size=600,
+        chunk_overlap_token_size=150, 
         default_llm_timeout=600,
         embedding_func=EmbeddingFunc(
             embedding_dim=1024,
@@ -78,7 +168,7 @@ async def process_document(file_path, rag):
         print(f"Processing: {file_path}")
         print(f"{'='*80}")
         
-        loader = UnstructuredLoader(str(file_path))
+        loader = UnstructuredLoader(str(file_path), languages=["pt", "en"])
         docs = loader.load()
         
         pages = []
