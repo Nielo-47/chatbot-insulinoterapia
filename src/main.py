@@ -3,6 +3,7 @@ import queue
 import asyncio
 import multiprocessing as mp
 from typing import List
+import tiktoken
 
 import streamlit as st
 import nest_asyncio
@@ -10,6 +11,7 @@ from dotenv import load_dotenv
 from openai import OpenAI
 from lightrag import LightRAG, QueryParam
 from lightrag.utils import EmbeddingFunc
+import numpy as np
 
 # Configuration
 KG_DIR = os.getenv("WORKING_DIR", "data/processed/")
@@ -20,6 +22,7 @@ LLM_MODEL = os.getenv("LLM_MODEL_NAME", "meta-llama/Llama-3.2-3B-Instruct")
 EMBED_MODEL = os.getenv("EMBEDDING_MODEL_NAME", "BAAI/bge-m3")
 EMBEDDING_DIM = int(os.getenv("EMBEDDING_DIM", "384"))
 MAX_TOKENS = int(os.getenv("MAX_EMBED_TOKENS", "512"))
+MAX_CONTEXT_LENGTH = int(os.getenv("MAX_CONTEXT_LENGTH", "8192"))  # Default for Llama-3.2-3B
 
 # Initialize OpenAI clients for vLLM (LLM and Embeddings)
 vllm_llm_client = OpenAI(
@@ -42,6 +45,22 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+# Initialize tokenizer for token counting
+try:
+    # Try to use the exact model tokenizer
+    tokenizer = tiktoken.encoding_for_model("gpt-3.5-turbo")  # Fallback tokenizer
+except:
+    tokenizer = tiktoken.get_encoding("cl100k_base")  # Default encoding
+
+
+def count_tokens(text: str) -> int:
+    """Count tokens in a text string."""
+    try:
+        return len(tokenizer.encode(text))
+    except:
+        # Rough approximation: 1 token ≈ 4 characters
+        return len(text) // 4
+
 
 def get_event_loop():
     """Get or create an event loop."""
@@ -56,39 +75,57 @@ def get_event_loop():
     return loop
 
 
-async def vllm_model_complete(
-    prompt, system_prompt=None, history_messages=[], **kwargs
-) -> str:
+async def vllm_model_complete(prompt, system_prompt=None, history_messages=[], **kwargs) -> str:
     """Complete text using vLLM OpenAI-compatible API."""
     messages = []
-    
+
     if system_prompt:
         messages.append({"role": "system", "content": system_prompt})
-    
+
     messages.extend(history_messages)
     messages.append({"role": "user", "content": prompt})
-    
+
+    # Calculate token usage
+    total_tokens = sum(count_tokens(str(msg.get("content", ""))) for msg in messages)
+
+    print(f"Messages to vLLM (Total tokens: {total_tokens}/{MAX_CONTEXT_LENGTH}):", messages)
+
     response = vllm_llm_client.chat.completions.create(
         model=LLM_MODEL,
         messages=messages,
-        temperature=kwargs.get("temperature", 0.7),
+        temperature=kwargs.get("temperature", 0.1),
         max_tokens=kwargs.get("max_tokens", 2048),
     )
-    
+
+    # Store token usage in session state if available
+    try:
+        if hasattr(st.session_state, "last_token_usage"):
+            completion_tokens = count_tokens(response.choices[0].message.content)
+            st.session_state.last_token_usage = {
+                "prompt_tokens": total_tokens,
+                "completion_tokens": completion_tokens,
+                "total_tokens": total_tokens + completion_tokens,
+                "context_percentage": (total_tokens / MAX_CONTEXT_LENGTH) * 100,
+            }
+    except:
+        pass
+
     return response.choices[0].message.content
 
 
-async def vllm_embed_func(texts: List[str]) -> List[List[float]]:
+async def vllm_embed_func(texts: List[str]) -> np.ndarray:
     """Generate embeddings using vLLM OpenAI-compatible API."""
     if isinstance(texts, str):
         texts = [texts]
-    
+
+    print("Generating embeddings for texts:", texts)
+
     response = vllm_embed_client.embeddings.create(
         model=EMBED_MODEL,
         input=texts,
     )
-    
-    return [item.embedding for item in response.data]
+
+    return np.array([item.embedding for item in response.data])
 
 
 def initialize_rag():
@@ -97,7 +134,6 @@ def initialize_rag():
         working_dir=KG_DIR,
         llm_model_func=vllm_model_complete,
         llm_model_name=LLM_MODEL,
-        summary_max_tokens=MAX_TOKENS,
         llm_model_kwargs={
             "timeout": 300,
         },
@@ -122,8 +158,9 @@ def rag_worker(input_queue, output_queue):
             break
 
         try:
-            context = rag.query_data(query, param=QueryParam(mode="hybrid"))
-            output_queue.put(context)
+            # Use .query() instead of .query_data() to get the full generated response
+            response = rag.query(query, param=QueryParam(mode="hybrid"))
+            output_queue.put(response)
         except Exception as e:
             output_queue.put(e)
 
@@ -142,40 +179,19 @@ def initialize_session_state():
     st.session_state.output_queue = output_queue
     st.session_state.rag_process = rag_process
     st.session_state.messages = []
+    st.session_state.last_token_usage = None
+    st.session_state.token_history = []
 
 
-def get_rag_context(query):
-    """Query RAG and return context."""
+def get_rag_response(query):
+    """Query RAG and return complete response."""
     st.session_state.input_queue.put(query)
-    context = st.session_state.output_queue.get(timeout=RAG_TIMEOUT)
+    response = st.session_state.output_queue.get(timeout=RAG_TIMEOUT)
 
-    if isinstance(context, Exception):
-        raise context
+    if isinstance(response, Exception):
+        raise response
 
-    return context
-
-
-def chat_with_vllm(messages, stream=True):
-    """Chat with vLLM using OpenAI-compatible API."""
-    try:
-        response = vllm_llm_client.chat.completions.create(
-            model=LLM_MODEL,
-            messages=messages,
-            temperature=0.7,
-            max_tokens=2048,
-            stream=stream,
-        )
-        
-        if stream:
-            for chunk in response:
-                if chunk.choices[0].delta.content:
-                    yield chunk.choices[0].delta.content
-        else:
-            return response.choices[0].message.content
-            
-    except Exception as e:
-        st.error(f"Error calling vLLM: {e}")
-        yield ""
+    return response
 
 
 def display_chat_history():
@@ -197,29 +213,41 @@ def handle_user_input(query):
     # Generate assistant response
     with st.chat_message("assistant"):
         try:
-            # Get RAG context with status
+            # Get complete response from RAG with status
             with st.status("Processando sua pergunta...", expanded=True) as status:
                 st.write("🔍 Consultando base de conhecimento...")
-                context = get_rag_context(query)
-
                 st.write("💭 Gerando resposta...")
 
-                # Prepare messages with context
-                messages_for_llm = [
-                    {
-                        "role": "system",
-                        "content": f"Você é um assistente especializado em insulinoterapia. Use o seguinte contexto para responder:\n\n{context}",
-                    },
-                    *st.session_state.messages,
-                ]
+                response = get_rag_response(query)
 
                 status.update(label="Resposta gerada!", state="complete")
 
-            # Display the streaming response
-            response = st.write_stream(chat_with_vllm(messages_for_llm, stream=True))
+            # Display the response
+            st.markdown(response)
 
             # Store response
             st.session_state.messages.append({"role": "assistant", "content": response})
+
+            # Store token usage in history
+            if st.session_state.last_token_usage:
+                st.session_state.token_history.append(st.session_state.last_token_usage)
+
+                # Display token usage info
+                with st.expander("📊 Detalhes de Uso de Tokens"):
+                    usage = st.session_state.last_token_usage
+                    col1, col2, col3 = st.columns(3)
+                    with col1:
+                        st.metric("Tokens de Prompt", usage["prompt_tokens"])
+                    with col2:
+                        st.metric("Tokens de Resposta", usage["completion_tokens"])
+                    with col3:
+                        st.metric("Total de Tokens", usage["total_tokens"])
+
+                    # Context window usage
+                    st.progress(
+                        usage["context_percentage"] / 100,
+                        text=f"Uso da Janela de Contexto: {usage['context_percentage']:.1f}%",
+                    )
 
         except queue.Empty:
             st.error("⏱️ Tempo limite ao esperar resposta do RAG.")
@@ -244,18 +272,43 @@ def display_sidebar():
 
         st.header("📊 Estatísticas da Sessão")
         if st.session_state.messages:
-            user_msgs = len(
-                [m for m in st.session_state.messages if m["role"] == "user"]
-            )
-            assistant_msgs = len(
-                [m for m in st.session_state.messages if m["role"] == "assistant"]
-            )
+            user_msgs = len([m for m in st.session_state.messages if m["role"] == "user"])
+            assistant_msgs = len([m for m in st.session_state.messages if m["role"] == "assistant"])
 
             col1, col2 = st.columns(2)
             with col1:
                 st.metric("Perguntas", user_msgs)
             with col2:
                 st.metric("Respostas", assistant_msgs)
+
+            # Token usage statistics
+            if st.session_state.token_history:
+                st.subheader("📈 Uso de Tokens")
+                total_prompt_tokens = sum(t["prompt_tokens"] for t in st.session_state.token_history)
+                total_completion_tokens = sum(t["completion_tokens"] for t in st.session_state.token_history)
+                total_tokens = sum(t["total_tokens"] for t in st.session_state.token_history)
+                avg_context_usage = sum(t["context_percentage"] for t in st.session_state.token_history) / len(
+                    st.session_state.token_history
+                )
+
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.metric("Total de Tokens", f"{total_tokens:,}")
+                    st.metric("Tokens de Prompt", f"{total_prompt_tokens:,}")
+                with col2:
+                    st.metric("Uso Médio do Contexto", f"{avg_context_usage:.1f}%")
+                    st.metric("Tokens de Resposta", f"{total_completion_tokens:,}")
+
+                # Last query details
+                if st.session_state.last_token_usage:
+                    with st.expander("🔍 Última Consulta"):
+                        last = st.session_state.last_token_usage
+                        st.write(f"**Prompt:** {last['prompt_tokens']:,} tokens")
+                        st.write(f"**Resposta:** {last['completion_tokens']:,} tokens")
+                        st.write(f"**Total:** {last['total_tokens']:,} tokens")
+                        st.progress(
+                            last["context_percentage"] / 100, text=f"Contexto: {last['context_percentage']:.1f}%"
+                        )
         else:
             st.write("Nenhuma conversa ainda.")
 
@@ -263,6 +316,8 @@ def display_sidebar():
 
         if st.button("🗑️ Limpar Conversa", use_container_width=True, type="primary"):
             st.session_state.messages = []
+            st.session_state.token_history = []
+            st.session_state.last_token_usage = None
             st.rerun()
 
         st.divider()
@@ -273,7 +328,7 @@ def display_sidebar():
             llm_status = "🟢 Online"
         except:
             llm_status = "🔴 Offline"
-            
+
         try:
             vllm_embed_client.models.list()
             embed_status = "🟢 Online"
@@ -293,6 +348,7 @@ Host Embedding: {VLLM_EMBED_HOST}
 
 Dimensão: {EMBEDDING_DIM}
 Max Tokens: {MAX_TOKENS}
+Contexto Máximo: {MAX_CONTEXT_LENGTH:,} tokens
             """
             )
 

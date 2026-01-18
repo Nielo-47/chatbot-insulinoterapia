@@ -1,0 +1,315 @@
+{
+    "description": "Perguntas sobre tratamento de diabetes com erros de digitação e conceitos confusos - pacientes com baixa literacia médica",
+    "questions": [
+        {
+            "id": 1,
+            "question": "o que é diabete e pq tenho q tomar essa injecao todo dia?",
+            "category": "básico",
+            "difficulty": "iniciante",
+            "errors": [
+                "ortografia",
+                "abreviação informal"
+            ]
+        },
+        {
+            "id": 2,
+            "question": "quais os tipo de insulina tem? tipo assim tem diferença entre elas?",
+            "category": "básico",
+            "difficulty": "iniciante",
+            "errors": [
+                "gramática",
+                "linguagem coloquial"
+            ]
+        },
+        {
+            "id": 3,
+            "question": "posso deixar a insulina fora da geladeira ou estraga rapido?",
+            "category": "prático",
+            "difficulty": "iniciante",
+            "errors": [
+                "falta de pontuação",
+                "ortografia"
+            ]
+        },
+        {
+            "id": 4,
+            "question": "qual a diferensa entre insulina normal e a de tomar de manha? nao entendi direito",
+            "category": "básico",
+            "difficulty": "iniciante",
+            "errors": [
+                "ortografia",
+                "confusão conceitual"
+            ]
+        },
+        {
+            "id": 5,
+            "question": "onde q eu pico a insulina? so pode ser na barriga?",
+            "category": "prático",
+            "difficulty": "iniciante",
+            "errors": [
+                "abreviação",
+                "termo leigo 'picar'"
+            ]
+        },
+        {
+            "id": 6,
+            "question": "tenho q medir o açucar no sangue quantas vez por dia? ou so quando to ruim?",
+            "category": "monitoramento",
+            "difficulty": "iniciante",
+            "errors": [
+                "gramática",
+                "termo leigo 'açúcar'",
+                "linguagem coloquial"
+            ]
+        },
+        {
+            "id": 7,
+            "question": "quando da aquela tontura e suor frio é pq a glicose ta alta ou baixa? sempre confundo isso",
+            "category": "emergência",
+            "difficulty": "iniciante",
+            "errors": [
+                "falta de pontuação",
+                "confusão conceitual comum"
+            ]
+        },
+        {
+            "id": 8,
+            "question": "minha glicemia deu 300 ontem. isso é perigoso? q sintoma eu deveria ter sentido?",
+            "category": "emergência",
+            "difficulty": "iniciante",
+            "errors": [
+                "abreviação",
+                "confusão sobre sintomas"
+            ]
+        },
+        {
+            "id": 9,
+            "question": "posso mistura a insulina rapida com a lenta na mesma seringa pra da so uma picada?",
+            "category": "técnico",
+            "difficulty": "intermediário",
+            "errors": [
+                "ortografia",
+                "termos leigos 'rápida/lenta'"
+            ]
+        },
+        {
+            "id": 10,
+            "question": "como q eu sei quantas unidade de insulina tomar antes de come? tem alguma conta pra fazer?",
+            "category": "cálculo",
+            "difficulty": "intermediário",
+            "errors": [
+                "abreviação",
+                "gramática",
+                "confusão sobre cálculos"
+            ]
+        },
+        {
+            "id": 11,
+            "question": "o medico falou de relacao insulina carboidrato mas nao entendi nada. isso serve pra q?",
+            "category": "cálculo",
+            "difficulty": "intermediário",
+            "errors": [
+                "falta de acentuação",
+                "confusão conceitual"
+            ]
+        },
+        {
+            "id": 12,
+            "question": "posso comer logo depois de aplicar ou tem q espera um tempo?",
+            "category": "prático",
+            "difficulty": "iniciante",
+            "errors": [
+                "abreviação",
+                "gramática"
+            ]
+        },
+        {
+            "id": 13,
+            "question": "comecei academia, ai minha glicose fica caindo. tenho q para de fazer exercicio ou diminuo a insulina?",
+            "category": "estilo de vida",
+            "difficulty": "intermediário",
+            "errors": [
+                "falta de acentuação",
+                "confusão sobre manejo"
+            ]
+        },
+        {
+            "id": 14,
+            "question": "esqueci de toma a insulina do cafe da manha, posso tomar agora no almoço junto com a outra?",
+            "category": "emergência",
+            "difficulty": "intermediário",
+            "errors": [
+                "gramática",
+                "termo leigo",
+                "confusão sobre doses"
+            ]
+        },
+        {
+            "id": 15,
+            "question": "a insulina NPH é a mesma coisa q a basal? ou sao diferente? to confusa",
+            "category": "técnico",
+            "difficulty": "intermediário",
+            "errors": [
+                "abreviação",
+                "ortografia",
+                "confusão terminológica"
+            ]
+        },
+        {
+            "id": 16,
+            "question": "o q é esse tal de fator de sensibilidade? o medico falou mas fiquei perdida",
+            "category": "cálculo",
+            "difficulty": "intermediário",
+            "errors": [
+                "abreviação",
+                "confusão conceitual"
+            ]
+        },
+        {
+            "id": 17,
+            "question": "vo viajar de aviao semana q vem. como levo a insulina? pode passar no raio x?",
+            "category": "prático",
+            "difficulty": "iniciante",
+            "errors": [
+                "abreviação extrema",
+                "gramática",
+                "preocupação leiga"
+            ]
+        },
+        {
+            "id": 18,
+            "question": "pq nao posso sempre aplicar no mesmo lugar? é mais facil la",
+            "category": "técnico",
+            "difficulty": "intermediário",
+            "errors": [
+                "abreviação",
+                "falta de acentuação",
+                "termo leigo 'lá'"
+            ]
+        },
+        {
+            "id": 19,
+            "question": "acordo toda manha com a glicose alta mas durmo com ela boa. isso é normal ou a insulina da noite ta pouca?",
+            "category": "técnico",
+            "difficulty": "intermediário",
+            "errors": [
+                "falta de acentuação",
+                "abreviação",
+                "confusão conceitual"
+            ]
+        },
+        {
+            "id": 20,
+            "question": "to com gripe e febre. preciso aumenta a insulina ou deixo igual pq nao to comendo direito?",
+            "category": "ajuste",
+            "difficulty": "intermediário",
+            "errors": [
+                "abreviação",
+                "confusão sobre ajuste em doença"
+            ]
+        },
+        {
+            "id": 21,
+            "question": "contagem de carboidrato é tipo contar caloria? tenho q pesa tudo q como?",
+            "category": "nutrição",
+            "difficulty": "intermediário",
+            "errors": [
+                "confusão conceitual carboidrato/caloria",
+                "abreviação"
+            ]
+        },
+        {
+            "id": 22,
+            "question": "arroz e pao sobe mais a glicose do q carne né? ou é o contrario?",
+            "category": "nutrição",
+            "difficulty": "iniciante",
+            "errors": [
+                "falta de acentuação",
+                "abreviação",
+                "dúvida básica"
+            ]
+        },
+        {
+            "id": 23,
+            "question": "como sei se a insulina venceu? muda de cor ou fica turva?",
+            "category": "prático",
+            "difficulty": "iniciante",
+            "errors": [
+                "confusão sobre sinais de deterioração"
+            ]
+        },
+        {
+            "id": 24,
+            "question": "a noite minha glicose cai muito ai de manha ela sobe sozinha. pq isso acontece?",
+            "category": "técnico",
+            "difficulty": "avançado",
+            "errors": [
+                "falta de acentuação",
+                "descrição leiga do efeito Somogyi"
+            ]
+        },
+        {
+            "id": 25,
+            "question": "posso toma cerveja ou qualque bebida alcolica mexe com a insulina? ou so refrigerante q é ruim?",
+            "category": "estilo de vida",
+            "difficulty": "intermediário",
+            "errors": [
+                "ortografia múltipla",
+                "abreviação",
+                "confusão conceitual"
+            ]
+        },
+        {
+            "id": 26,
+            "question": "minha glicose oscila muito, tipo 80 ai sobe pra 250 depois volta. isso é normal do diabete?",
+            "category": "monitoramento",
+            "difficulty": "intermediário",
+            "errors": [
+                "ortografia",
+                "termo leigo 'oscila'",
+                "confusão sobre variabilidade"
+            ]
+        },
+        {
+            "id": 27,
+            "question": "insulina regular é a mesma q insulina rapida? ou tem diferença? me confundo com os nome",
+            "category": "básico",
+            "difficulty": "iniciante",
+            "errors": [
+                "abreviação",
+                "confusão terminológica comum"
+            ]
+        },
+        {
+            "id": 28,
+            "question": "posso reaproveita a agulha da seringa? tipo limpar ela e usar denovo pra economiza?",
+            "category": "prático",
+            "difficulty": "iniciante",
+            "errors": [
+                "ortografia",
+                "prática perigosa comum"
+            ]
+        },
+        {
+            "id": 29,
+            "question": "quando minha glicemia ta 150 preciso aplica insulina ou so quando passa de 200?",
+            "category": "manejo",
+            "difficulty": "intermediário",
+            "errors": [
+                "abreviação",
+                "confusão sobre alvos glicêmicos"
+            ]
+        },
+        {
+            "id": 30,
+            "question": "canela e cha verde ajuda a controla o diabete? posso diminui a insulina se toma eles?",
+            "category": "estilo de vida",
+            "difficulty": "intermediário",
+            "errors": [
+                "falta de acentuação",
+                "crença popular",
+                "confusão perigosa"
+            ]
+        }
+    ]
+}

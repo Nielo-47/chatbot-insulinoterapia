@@ -1,0 +1,526 @@
+{
+    "description": "Perguntas contextuais com erros de digitação e conceitos confusos - pacientes com baixa literacia médica",
+    "conversations": [
+        {
+            "id": 1,
+            "context": [
+                {
+                    "role": "user",
+                    "content": "descobri q tenho diabete a 2 semana. o medico me deu uma insulina pra toma de manha e de noite, acho q chama NPH"
+                },
+                {
+                    "role": "assistant",
+                    "content": "Entendo que você está começando o tratamento com insulina NPH. A NPH é uma insulina de ação intermediária que ajuda a controlar sua glicemia ao longo do dia."
+                }
+            ],
+            "question": "mas eu continuo com muita sede e indo no banheiro toda hora. a insulina nao ta funcionano?",
+            "category": "ajuste_tratamento",
+            "expected_context": "diabetes tipo 1, NPH, sintomas persistentes",
+            "errors": [
+                "ortografia",
+                "abreviação",
+                "confusão sobre eficácia"
+            ]
+        },
+        {
+            "id": 2,
+            "context": [
+                {
+                    "role": "user",
+                    "content": "medi a glicose em jejum hj de manha e deu 180"
+                },
+                {
+                    "role": "assistant",
+                    "content": "Uma glicemia de jejum de 180 mg/dL está acima do ideal. O objetivo geralmente é manter entre 80-130 mg/dL."
+                }
+            ],
+            "question": "quanto de insulina eu tomo pra fazer baixa esse 180? posso da uma picadinha extra?",
+            "category": "cálculo_dose",
+            "expected_context": "glicemia 180, correção, fator de sensibilidade",
+            "errors": [
+                "abreviação",
+                "termo leigo 'picadinha'",
+                "automedicação"
+            ]
+        },
+        {
+            "id": 3,
+            "context": [
+                {
+                    "role": "user",
+                    "content": "vo viaja pra europa mes q vem e fico la 2 semana"
+                },
+                {
+                    "role": "assistant",
+                    "content": "Viagens exigem planejamento especial quando você usa insulina. É importante levar insulina suficiente e pensar no armazenamento."
+                }
+            ],
+            "question": "la tem 5 hora de diferença. eu aplico no mesmo horario daqui ou mudo tudo? to confuso",
+            "category": "viagem",
+            "expected_context": "viagem Europa, fuso horário, ajuste horários",
+            "errors": [
+                "falta de acentuação",
+                "abreviação",
+                "confusão temporal"
+            ]
+        },
+        {
+            "id": 4,
+            "context": [
+                {
+                    "role": "user",
+                    "content": "comecei faze academia 3x na semana, treino dura 1 hora"
+                },
+                {
+                    "role": "assistant",
+                    "content": "Exercícios físicos são excelentes para o controle do diabetes, mas podem afetar sua glicemia."
+                }
+            ],
+            "question": "minha glicose cai mt durante o treino. sera q tenho q come alguma coisa antes ou diminuo a picada?",
+            "category": "exercício",
+            "expected_context": "academia, hipoglicemia durante exercício, ajuste de dose",
+            "errors": [
+                "abreviação extrema",
+                "termo leigo 'picada'",
+                "dúvida sobre estratégia"
+            ]
+        },
+        {
+            "id": 5,
+            "context": [
+                {
+                    "role": "user",
+                    "content": "eu uso lantus 20 unidade de noite e novorapid antes das refeiçao"
+                },
+                {
+                    "role": "assistant",
+                    "content": "Esse é um esquema basal-bolus, onde a Lantus fornece cobertura de 24 horas e a NovoRapid cobre as refeições."
+                }
+            ],
+            "question": "posso pica as 2 insulina no mesmo lugá ou tem q ser em lugar diferente cada uma?",
+            "category": "técnica_aplicação",
+            "expected_context": "Lantus, NovoRapid, locais de aplicação",
+            "errors": [
+                "ortografia",
+                "abreviação",
+                "termo leigo 'picar'"
+            ]
+        },
+        {
+            "id": 6,
+            "context": [
+                {
+                    "role": "user",
+                    "content": "todo dia acordo com a glicose tipo 160-180 mas quando vo dormi ela ta 120"
+                },
+                {
+                    "role": "assistant",
+                    "content": "Isso pode indicar o fenômeno do alvorecer ou uma dose insuficiente de insulina basal."
+                }
+            ],
+            "question": "q fenomeno é esse do alvorecer? tipo meu corpo aumenta o açucar sozinho de manha?",
+            "category": "compreensão_técnica",
+            "expected_context": "fenômeno alvorecer, glicemia alta manhã",
+            "errors": [
+                "abreviação",
+                "termo leigo 'açúcar'",
+                "confusão conceitual"
+            ]
+        },
+        {
+            "id": 7,
+            "context": [
+                {
+                    "role": "user",
+                    "content": "to gravida de 3 mes e o obstetra falo q tem q controla mais rigido agora"
+                },
+                {
+                    "role": "assistant",
+                    "content": "Durante a gravidez, os alvos glicêmicos são mais rigorosos para proteger você e o bebê."
+                }
+            ],
+            "question": "vo precisar toma mais insulina conforme a barriga cresce? ou continua a mesma dose?",
+            "category": "gravidez",
+            "expected_context": "gravidez, ajuste doses, necessidades aumentadas",
+            "errors": [
+                "abreviação extrema",
+                "confusão sobre progressão"
+            ]
+        },
+        {
+            "id": 8,
+            "context": [
+                {
+                    "role": "user",
+                    "content": "meu fator de correçao é 1:50 e a relacao insulina carboidrato é 1:10, acho q é isso"
+                },
+                {
+                    "role": "assistant",
+                    "content": "Ótimo! Isso significa que 1 unidade de insulina reduz sua glicemia em 50 mg/dL e cobre 10g de carboidratos."
+                }
+            ],
+            "question": "vo almoça um prato com 60g de carboidrato e minha glicose ta 200. qtas unidade eu tomo? nao sei fazer essa conta",
+            "category": "cálculo_complexo",
+            "expected_context": "fator 1:50, relação 1:10, cálculo dose total",
+            "errors": [
+                "abreviação múltipla",
+                "dificuldade com matemática"
+            ]
+        },
+        {
+            "id": 9,
+            "context": [
+                {
+                    "role": "user",
+                    "content": "apareceu umas bolinha dura na minha barriga onde eu sempre aplico a insulina"
+                },
+                {
+                    "role": "assistant",
+                    "content": "Isso pode ser lipohipertrofia, que acontece quando aplicamos insulina repetidamente no mesmo local."
+                }
+            ],
+            "question": "isso estraga a absorçao da insulina? tenho q para de usa essa parte da barriga?",
+            "category": "complicação_local",
+            "expected_context": "lipohipertrofia, absorção alterada, rotação locais",
+            "errors": [
+                "falta de acentuação",
+                "abreviação",
+                "termo leigo"
+            ]
+        },
+        {
+            "id": 10,
+            "context": [
+                {
+                    "role": "user",
+                    "content": "to gripada a 3 dia com febre de 38 grau"
+                },
+                {
+                    "role": "assistant",
+                    "content": "Doenças e febre podem aumentar a resistência à insulina e elevar sua glicemia."
+                }
+            ],
+            "question": "minha glicose ta mais alta q o normal msm sem come mt. aumento a insulina ou deixo normal ja q nao to comendo?",
+            "category": "doença",
+            "expected_context": "doença, febre, resistência à insulina aumentada",
+            "errors": [
+                "abreviação múltipla",
+                "confusão comum sobre ajuste"
+            ]
+        },
+        {
+            "id": 11,
+            "context": [
+                {
+                    "role": "user",
+                    "content": "trabalho em turno, as vez de dia as vez de noite. fica dificil controla"
+                },
+                {
+                    "role": "assistant",
+                    "content": "Turnos alternados podem dificultar o controle glicêmico pela mudança nos horários de sono e alimentação."
+                }
+            ],
+            "question": "como ajusto os horario da insulina quando mudo de turno? faço tipo uma transiçao aos poucos?",
+            "category": "rotina_irregular",
+            "expected_context": "turnos alternados, ajuste horários, rotina irregular",
+            "errors": [
+                "falta de acentuação",
+                "ortografia",
+                "confusão prática"
+            ]
+        },
+        {
+            "id": 12,
+            "context": [
+                {
+                    "role": "user",
+                    "content": "comecei usa bomba de insulina faz 1 mes"
+                },
+                {
+                    "role": "assistant",
+                    "content": "A bomba de insulina oferece maior flexibilidade no controle glicêmico com infusão contínua."
+                }
+            ],
+            "question": "qtos dia posso deixa o mesmo cateter sem troca? ele pode entope se fica mt tempo?",
+            "category": "bomba_insulina",
+            "expected_context": "bomba de insulina, troca de cateter, manutenção",
+            "errors": [
+                "abreviação extrema",
+                "termo leigo 'entupir'",
+                "confusão técnica"
+            ]
+        },
+        {
+            "id": 13,
+            "context": [
+                {
+                    "role": "user",
+                    "content": "meu filho de 8 ano foi diagnosticado com diabete tipo 1"
+                },
+                {
+                    "role": "assistant",
+                    "content": "O tratamento em crianças requer atenção especial, pois elas têm necessidades diferentes dos adultos."
+                }
+            ],
+            "question": "a dose de insulina pra criança é calculada igual adulto ou tem diferença? ele é pequeno ainda",
+            "category": "diabetes_pediátrico",
+            "expected_context": "criança 8 anos, diabetes tipo 1, doses pediátricas",
+            "errors": [
+                "ortografia",
+                "preocupação parental típica"
+            ]
+        },
+        {
+            "id": 14,
+            "context": [
+                {
+                    "role": "user",
+                    "content": "acordo as 3 da manha com tremor, suor gelado e coraçao disparado"
+                },
+                {
+                    "role": "assistant",
+                    "content": "Esses são sintomas clássicos de hipoglicemia noturna. É importante medir sua glicemia nesses momentos."
+                }
+            ],
+            "question": "isso acontece umas 2-3x por semana. sera q a insulina da noite ta muito alta? devo diminui sozinha?",
+            "category": "hipoglicemia_noturna",
+            "expected_context": "hipoglicemia noturna, sintomas, ajuste insulina noite",
+            "errors": [
+                "falta de acentuação",
+                "abreviação",
+                "tentativa de automedicação"
+            ]
+        },
+        {
+            "id": 15,
+            "context": [
+                {
+                    "role": "user",
+                    "content": "to usando um sensor continuo de glicose faz 2 semana"
+                },
+                {
+                    "role": "assistant",
+                    "content": "O CGM (monitoramento contínuo de glicose) fornece dados muito mais detalhados sobre suas variações glicêmicas."
+                }
+            ],
+            "question": "o sensor mostra q depois do cafe da manha sobe mt mas no almoço nao. pq sera? cafe da manha tem mais açuca?",
+            "category": "padrões_glicêmicos",
+            "expected_context": "CGM, variação pós-prandial, café da manhã vs almoço",
+            "errors": [
+                "abreviação",
+                "ortografia",
+                "confusão conceitual"
+            ]
+        },
+        {
+            "id": 16,
+            "context": [
+                {
+                    "role": "user",
+                    "content": "vo fazer cirurgia de vesicula semana q vem"
+                },
+                {
+                    "role": "assistant",
+                    "content": "Cirurgias requerem planejamento especial para o manejo da insulina, já que você ficará em jejum."
+                }
+            ],
+            "question": "no dia da cirurgia nao posso come nada. como faço com a insulina? aplico so a metade ou pulo?",
+            "category": "cirurgia",
+            "expected_context": "cirurgia, jejum, manejo insulina perioperatório",
+            "errors": [
+                "abreviação",
+                "confusão perigosa sobre manejo"
+            ]
+        },
+        {
+            "id": 17,
+            "context": [
+                {
+                    "role": "user",
+                    "content": "minha emoglobina glicada do ultimo exame deu 8.5%"
+                },
+                {
+                    "role": "assistant",
+                    "content": "Uma HbA1c de 8.5% indica que o controle glicêmico pode ser melhorado. O ideal é manter abaixo de 7%."
+                }
+            ],
+            "question": "preciso aumenta muito as dose pra baixa esse numero? ou é so ajusta um pouquinho?",
+            "category": "ajuste_tratamento",
+            "expected_context": "HbA1c 8.5%, controle inadequado, ajuste doses",
+            "errors": [
+                "ortografia",
+                "abreviação",
+                "confusão sobre magnitude do ajuste"
+            ]
+        },
+        {
+            "id": 18,
+            "context": [
+                {
+                    "role": "user",
+                    "content": "percebi q quando como pizza minha glicose sobe mt so algumas hora depois"
+                },
+                {
+                    "role": "assistant",
+                    "content": "Alimentos gordurosos como pizza podem causar elevação tardia da glicemia devido à digestão mais lenta."
+                }
+            ],
+            "question": "entao é melhor aplica a insulina depois de come a pizza ao inves de antes? ou aplico as duas vez?",
+            "category": "timing_insulina",
+            "expected_context": "pizza, alimentos gordurosos, elevação tardia glicemia",
+            "errors": [
+                "falta de acentuação",
+                "confusão sobre timing",
+                "dose duplicada"
+            ]
+        },
+        {
+            "id": 19,
+            "context": [
+                {
+                    "role": "user",
+                    "content": "tenho mt medo de agulha e fico ancioso demais na hora de aplica"
+                },
+                {
+                    "role": "assistant",
+                    "content": "É comum ter apreensão, especialmente no início do tratamento. Existem técnicas para minimizar o desconforto."
+                }
+            ],
+            "question": "tem algum aparelho q facilita pra qm tem esse panico? tipo uma coisa q aperta sozinha?",
+            "category": "apoio_psicológico",
+            "expected_context": "medo de agulhas, ansiedade, dispositivos de aplicação",
+            "errors": [
+                "abreviação múltipla",
+                "ortografia",
+                "confusão sobre dispositivos"
+            ]
+        },
+        {
+            "id": 20,
+            "context": [
+                {
+                    "role": "user",
+                    "content": "minha medica disse q preciso começa faze contagem de carboidrato"
+                },
+                {
+                    "role": "assistant",
+                    "content": "A contagem de carboidratos permite ajustar a dose de insulina com base no que você vai comer, oferecendo mais flexibilidade."
+                }
+            ],
+            "question": "como aprendo estima os carboidrato sem precisa pesa tudo? tipo assim, da pra ve no olho?",
+            "category": "educação_nutricional",
+            "expected_context": "contagem de carboidratos, estimativa visual, prática",
+            "errors": [
+                "falta de acentuação",
+                "abreviação",
+                "linguagem coloquial"
+            ]
+        },
+        {
+            "id": 21,
+            "context": [
+                {
+                    "role": "user",
+                    "content": "minha glicose varia mt, tipo uma hora ta 90 ai sobe pra 240 do nada"
+                },
+                {
+                    "role": "assistant",
+                    "content": "Variações grandes podem indicar problemas com as doses de insulina ou com a alimentação."
+                }
+            ],
+            "question": "mas as vez eu nao como nada e ela sobe assim. sera q é o figado q solta açuca? ouvi fala disso",
+            "category": "fisiologia",
+            "expected_context": "variabilidade glicêmica, produção hepática de glicose",
+            "errors": [
+                "falta de acentuação",
+                "abreviação",
+                "confusão fisiológica",
+                "ortografia"
+            ]
+        },
+        {
+            "id": 22,
+            "context": [
+                {
+                    "role": "user",
+                    "content": "a enfermeira falo q tenho q roda os local de aplicaçao"
+                },
+                {
+                    "role": "assistant",
+                    "content": "Sim, é importante alternar os locais para evitar problemas como lipohipertrofia."
+                }
+            ],
+            "question": "mas eu so aplico na barriga pq é mais facil. se eu roda na barriga msm tipo esquerda direita em cima em baixo resolve?",
+            "category": "técnica_aplicação",
+            "expected_context": "rotação de locais, lipohipertrofia, técnica adequada",
+            "errors": [
+                "ortografia",
+                "falta de pontuação",
+                "rotação insuficiente"
+            ]
+        },
+        {
+            "id": 23,
+            "context": [
+                {
+                    "role": "user",
+                    "content": "vi na internet q chas e receitas naturais ajuda controla diabete"
+                },
+                {
+                    "role": "assistant",
+                    "content": "Alguns alimentos podem ajudar, mas nunca substituem a insulina. É importante conversar com seu médico."
+                }
+            ],
+            "question": "mas se eu toma cha de pata de vaca todo dia posso ir diminuindo a insulina aos poucos ne?",
+            "category": "crenças_populares",
+            "expected_context": "tratamento alternativo, risco de substituição, orientação médica",
+            "errors": [
+                "confusão perigosa",
+                "crença popular forte",
+                "risco de abandono"
+            ]
+        },
+        {
+            "id": 24,
+            "context": [
+                {
+                    "role": "user",
+                    "content": "minha insulina ta acabando e so consigo pega mais mes q vem no posto"
+                },
+                {
+                    "role": "assistant",
+                    "content": "É muito importante não ficar sem insulina. Você pode tentar conseguir com antecedência no posto."
+                }
+            ],
+            "question": "se acabar antes, posso diminui a dose pra dura mais? tipo ao inves de 20 unidade aplico so 15?",
+            "category": "acesso_tratamento",
+            "expected_context": "acesso à insulina, ajuste inadequado, risco grave",
+            "errors": [
+                "abreviação",
+                "estratégia perigosa comum",
+                "desespero"
+            ]
+        },
+        {
+            "id": 25,
+            "context": [
+                {
+                    "role": "user",
+                    "content": "as agulha ta cara demais, nao consigo compra toda semana"
+                },
+                {
+                    "role": "assistant",
+                    "content": "Entendo a dificuldade financeira. O ideal é usar agulha nova a cada aplicação para evitar problemas."
+                }
+            ],
+            "question": "quantas vez da pra reusa a mesma agulha? eu limpo com alcool e guardo na geladeira, da certo?",
+            "category": "economia_acesso",
+            "expected_context": "reutilização de agulhas, riscos, realidade econômica",
+            "errors": [
+                "ortografia",
+                "prática perigosa comum",
+                "limpeza inadequada"
+            ]
+        }
+    ]
+}

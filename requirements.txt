@@ -4,3 +4,4 @@ pypdf
 langchain-unstructured
 unstructured
 streamlit
+tiktoken
