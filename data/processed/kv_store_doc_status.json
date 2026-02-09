@@ -950,5 +950,253 @@
       "processing_start_time": 1768264238,
       "processing_end_time": 1768265645
     }
+  },
+  "doc-f9c56f17541a30d9d3e6a056f5271b9e": {
+    "status": "processed",
+    "chunks_count": 4,
+    "chunks_list": [
+      "chunk-23b594c5a1fa38dcf4561c687857d178",
+      "chunk-884a19a3f8a6dc025e65c20612b36651",
+      "chunk-27fa71c8e4f5579d5dffc3fc8da80a26",
+      "chunk-e9f82b68674ff6d712897cfbc86f820e"
+    ],
+    "content_summary": "Uso de tecnologia para melhor gerenciamento da glicemia\n\nIntroducao\n\npartir do final do século XX, aconteceram grandes avan-\n\ncos tecnoldgicos no tratamento do diabetes. Esses avan-\n\ncos permitiram que milhares de pacientes pudessem ter melhorias nos...",
+    "content_length": 14097,
+    "created_at": "2026-02-04T12:23:56.965191+00:00",
+    "updated_at": "2026-02-04T12:24:58.028565+00:00",
+    "file_path": "data/raw/MONITORIZAÇÃO GLICÊMICA/CGM/monitoramento contínuo de glicose.pdf",
+    "track_id": "insert_20260204_122356_e44a10c3",
+    "metadata": {
+      "processing_start_time": 1770207836,
+      "processing_end_time": 1770207898
+    }
+  },
+  "doc-1d5363ed9f3f1440e51c037fad79d040": {
+    "status": "processed",
+    "chunks_count": 4,
+    "chunks_list": [
+      "chunk-b680eacdfb555aa0bcc8de9689c8be98",
+      "chunk-d6edb14783588f33400c8ef21b6523f2",
+      "chunk-2537111262f518ef488e910a9a72d9e1",
+      "chunk-6665bad7db06fd17d4e04690fd56b102"
+    ],
+    "content_summary": "Sociedade Brasileira de Diabetes\n\nDepartamento de Enfermagem\n\nGestão 2022-2023\n\nORIENTAÇÕES SOBRE GLICEMIA\n\nCAPILAR PARA PROFISSIONAIS\n\nDE SAÚDE\n\n2023\n\nCOORDENADORAS:\n\nMaria Gabriela Secco Cavicchioli\n\nSherida Karanini Paz de Oliveira\n\nAUTORAS:\n\nAnto...",
+    "content_length": 16383,
+    "created_at": "2026-02-04T12:25:02.441228+00:00",
+    "updated_at": "2026-02-04T12:27:11.576173+00:00",
+    "file_path": "data/raw/MONITORIZAÇÃO GLICÊMICA/GLICEMIAS CAPILARES/Orientacoes_Glicemia_SBD.pdf",
+    "track_id": "insert_20260204_122502_a099765a",
+    "metadata": {
+      "processing_start_time": 1770207902,
+      "processing_end_time": 1770208031
+    }
+  },
+  "doc-c02f371092325cf0bcb454cf42fe266b": {
+    "status": "processed",
+    "chunks_count": 5,
+    "chunks_list": [
+      "chunk-e7d2fedfda2770a0c1d0da724b2340e7",
+      "chunk-1e4857c197260d4e0fe3930d829f0e40",
+      "chunk-94c439748fa7d6c84be45d88281a2ff2",
+      "chunk-7ad725fd0b642f1df1e1e8636686d2e6",
+      "chunk-70c4b996bdb68daf6c3fac08be42ca47"
+    ],
+    "content_summary": "Metodos para avaliacao do\n\ncontrole glicémico\n\nIntroducao\n\ndiabetes mellitus (DM) é um disturbio metabdlico com-\n\nplexo, resultante da destruicéo imunomediada de cé-\n\nlulas produtoras de insulina nas ilhotas de Langerhans (DM1) ou da combinagao de re...",
+    "content_length": 19500,
+    "created_at": "2026-02-04T12:27:52.486978+00:00",
+    "updated_at": "2026-02-04T12:30:05.507248+00:00",
+    "file_path": "data/raw/MONITORIZAÇÃO GLICÊMICA/GLICEMIAS CAPILARES/glicemias capilares.pdf",
+    "track_id": "insert_20260204_122752_80796333",
+    "metadata": {
+      "processing_start_time": 1770208072,
+      "processing_end_time": 1770208205
+    }
+  },
+  "doc-986076c3d9f00fc7ac81b1c5c95061d1": {
+    "status": "processed",
+    "chunks_count": 13,
+    "chunks_list": [
+      "chunk-7a8e0365faa30050c56d8ecd18655ba3",
+      "chunk-07ce3dfb3a4bb1ebb3d70ca23dfa8b2f",
+      "chunk-30e6c0304fbc457721c1773ec90f1c3a",
+      "chunk-ccd63accdc73d14812925f2d754ebea2",
+      "chunk-19450eaef32f8aaf2164d45f63e4fbbf",
+      "chunk-a2113d94eb30d1ba55a4bf215bc6d4eb",
+      "chunk-7f01bb4eaac3b954dc0fc5511f29c5dd",
+      "chunk-8776a1e03eeca2e843693d88ebfec04f",
+      "chunk-28603155c6f5434e32d7474fa2140712",
+      "chunk-ba30caf571e3a866ff636cbcbbbd30da",
+      "chunk-2dbafc28939bcb9074c92d80d0395511",
+      "chunk-e32032246905f54b5ae0a13f5085eff2",
+      "chunk-fa9662ac9d6048ab344fd21dbc60f517"
+    ],
+    "content_summary": "Classiﬁcação do diabetes\n\nResumo das recomendações\n\nAutores: Melanie Rodacki, Milena Teles, Monica Gabbay, Rodrigo Lamounier Editor de Seção: Renan Montenegro Editor Chefe: Marcello Bertoluci Última revisão em: 14/12/2023 DOI: 10.29327/557753.2022-1 ...",
+    "content_length": 51676,
+    "created_at": "2026-02-04T12:30:15.822771+00:00",
+    "updated_at": "2026-02-04T14:13:19.555661+00:00",
+    "file_path": "data/raw/MONITORIZAÇÃO GLICÊMICA/METAS GLICÊMICAS/Diagnostico e Classificação/Classificação do diabetes.pdf",
+    "track_id": "insert_20260204_123015_c2b89c38",
+    "metadata": {
+      "processing_start_time": 1770214302,
+      "processing_end_time": 1770214399
+    }
+  },
+  "doc-a79918ff8fe5a21b7ade6526a41109be": {
+    "status": "processed",
+    "chunks_count": 2,
+    "chunks_list": [
+      "chunk-8682d5d12ee4750c4059f7845780136e",
+      "chunk-493ede8be4782e7c359c63bdcbcc062b"
+    ],
+    "content_summary": "01/07/25, 18:41 Signs, Symptoms, and Treatment for Hypoglycemia (Low Blood Glucose) | American Diabetes Association\n\nAmerican Diabetes » Association.\n\nHome Life With Diabetes Low Blood Glucose (Hypoglycemia) Signs, Symptoms, and Treatment For Hypogly...",
+    "content_length": 9567,
+    "created_at": "2026-02-04T12:35:55.420840+00:00",
+    "updated_at": "2026-02-04T14:13:24.013974+00:00",
+    "file_path": "data/raw/MONITORIZAÇÃO GLICÊMICA/METAS GLICÊMICAS/hipoglicemia.pdf",
+    "track_id": "insert_20260204_123555_f72a881a",
+    "metadata": {
+      "processing_start_time": 1770214362,
+      "processing_end_time": 1770214404
+    }
+  },
+  "doc-415e98b3eb77421388fecad8993472c6": {
+    "status": "processed",
+    "chunks_count": 4,
+    "chunks_list": [
+      "chunk-b680eacdfb555aa0bcc8de9689c8be98",
+      "chunk-d6edb14783588f33400c8ef21b6523f2",
+      "chunk-2537111262f518ef488e910a9a72d9e1",
+      "chunk-64bc1d226f888a988612f5ff67df946a"
+    ],
+    "content_summary": "Sociedade Brasileira de Diabetes\n\nDepartamento de Enfermagem\n\nGestão 2022-2023\n\nORIENTAÇÕES SOBRE GLICEMIA\n\nCAPILAR PARA PROFISSIONAIS\n\nDE SAÚDE\n\n2023\n\nCOORDENADORAS:\n\nMaria Gabriela Secco Cavicchioli\n\nSherida Karanini Paz de Oliveira\n\nAUTORAS:\n\nAnto...",
+    "content_length": 16343,
+    "created_at": "2026-02-04T13:22:01.829442+00:00",
+    "updated_at": "2026-02-04T14:12:42.348897+00:00",
+    "file_path": "data/raw/MONITORIZAÇÃO GLICÊMICA/GLICEMIAS CAPILARES/Orientacoes_Glicemia_SBD.pdf",
+    "track_id": "insert_20260204_132201_65f970aa",
+    "metadata": {
+      "processing_start_time": 1770214299,
+      "processing_end_time": 1770214362
+    }
+  },
+  "doc-3473f804029236822e06a8b0f15d0166": {
+    "status": "processed",
+    "chunks_count": 4,
+    "chunks_list": [
+      "chunk-b680eacdfb555aa0bcc8de9689c8be98",
+      "chunk-d6edb14783588f33400c8ef21b6523f2",
+      "chunk-c650c1071b4f88939d186384015af116",
+      "chunk-861d5ba96591a437cdd33d52ace69eaf"
+    ],
+    "content_summary": "Sociedade Brasileira de Diabetes\n\nDepartamento de Enfermagem\n\nGestão 2022-2023\n\nORIENTAÇÕES SOBRE GLICEMIA\n\nCAPILAR PARA PROFISSIONAIS\n\nDE SAÚDE\n\n2023\n\nCOORDENADORAS:\n\nMaria Gabriela Secco Cavicchioli\n\nSherida Karanini Paz de Oliveira\n\nAUTORAS:\n\nAnto...",
+    "content_length": 16374,
+    "created_at": "2026-02-04T14:15:03.029163+00:00",
+    "updated_at": "2026-02-04T14:15:49.847584+00:00",
+    "file_path": "data/raw/MONITORIZAÇÃO GLICÊMICA/GLICEMIAS CAPILARES/Orientacoes_Glicemia_SBD.pdf",
+    "track_id": "insert_20260204_141503_abc7a1cc",
+    "metadata": {
+      "processing_start_time": 1770214503,
+      "processing_end_time": 1770214549
+    }
+  },
+  "doc-7d3417c4706b95cee6eea5c31287a3b7": {
+    "status": "processed",
+    "chunks_count": 4,
+    "chunks_list": [
+      "chunk-b680eacdfb555aa0bcc8de9689c8be98",
+      "chunk-d6edb14783588f33400c8ef21b6523f2",
+      "chunk-c650c1071b4f88939d186384015af116",
+      "chunk-e8782f4bcde41a03c06acc1a1c0e7ee3"
+    ],
+    "content_summary": "Sociedade Brasileira de Diabetes\n\nDepartamento de Enfermagem\n\nGestão 2022-2023\n\nORIENTAÇÕES SOBRE GLICEMIA\n\nCAPILAR PARA PROFISSIONAIS\n\nDE SAÚDE\n\n2023\n\nCOORDENADORAS:\n\nMaria Gabriela Secco Cavicchioli\n\nSherida Karanini Paz de Oliveira\n\nAUTORAS:\n\nAnto...",
+    "content_length": 16381,
+    "created_at": "2026-02-04T16:17:06.835369+00:00",
+    "updated_at": "2026-02-04T16:17:43.462291+00:00",
+    "file_path": "data/raw/MONITORIZAÇÃO GLICÊMICA/GLICEMIAS CAPILARES/Orientacoes_Glicemia_SBD.pdf",
+    "track_id": "insert_20260204_161706_c1c23cb3",
+    "metadata": {
+      "processing_start_time": 1770221826,
+      "processing_end_time": 1770221863
+    }
+  },
+  "doc-6eb0f3659d62c9881b3c6a1fd9bee1ad": {
+    "status": "processed",
+    "chunks_count": 4,
+    "chunks_list": [
+      "chunk-b680eacdfb555aa0bcc8de9689c8be98",
+      "chunk-d6edb14783588f33400c8ef21b6523f2",
+      "chunk-ae30096a75343798c35d741036b08d55",
+      "chunk-861d5ba96591a437cdd33d52ace69eaf"
+    ],
+    "content_summary": "Sociedade Brasileira de Diabetes\n\nDepartamento de Enfermagem\n\nGestão 2022-2023\n\nORIENTAÇÕES SOBRE GLICEMIA\n\nCAPILAR PARA PROFISSIONAIS\n\nDE SAÚDE\n\n2023\n\nCOORDENADORAS:\n\nMaria Gabriela Secco Cavicchioli\n\nSherida Karanini Paz de Oliveira\n\nAUTORAS:\n\nAnto...",
+    "content_length": 16379,
+    "created_at": "2026-02-05T13:11:06.454496+00:00",
+    "updated_at": "2026-02-05T13:11:56.588625+00:00",
+    "file_path": "data/raw/MONITORIZAÇÃO GLICÊMICA/GLICEMIAS CAPILARES/Orientacoes_Glicemia_SBD.pdf",
+    "track_id": "insert_20260205_131106_2f426f62",
+    "metadata": {
+      "processing_start_time": 1770297066,
+      "processing_end_time": 1770297116
+    }
+  },
+  "doc-9b7a61ceb294356bc8844719094904a3": {
+    "status": "processed",
+    "chunks_count": 4,
+    "chunks_list": [
+      "chunk-b680eacdfb555aa0bcc8de9689c8be98",
+      "chunk-d6edb14783588f33400c8ef21b6523f2",
+      "chunk-94b457b8d09d8a9ef65ef0308847842e",
+      "chunk-d0f5e8a8d544c7d96648f3b9522cec40"
+    ],
+    "content_summary": "Sociedade Brasileira de Diabetes\n\nDepartamento de Enfermagem\n\nGestão 2022-2023\n\nORIENTAÇÕES SOBRE GLICEMIA\n\nCAPILAR PARA PROFISSIONAIS\n\nDE SAÚDE\n\n2023\n\nCOORDENADORAS:\n\nMaria Gabriela Secco Cavicchioli\n\nSherida Karanini Paz de Oliveira\n\nAUTORAS:\n\nAnto...",
+    "content_length": 16371,
+    "created_at": "2026-02-05T15:02:48.425885+00:00",
+    "updated_at": "2026-02-05T15:03:35.549629+00:00",
+    "file_path": "data/raw/MONITORIZAÇÃO GLICÊMICA/GLICEMIAS CAPILARES/Orientacoes_Glicemia_SBD.pdf",
+    "track_id": "insert_20260205_150248_7bc85ae4",
+    "metadata": {
+      "processing_start_time": 1770303768,
+      "processing_end_time": 1770303815
+    }
+  },
+  "doc-abb82963cab8a281e178b9070fa024fa": {
+    "status": "processed",
+    "chunks_count": 4,
+    "chunks_list": [
+      "chunk-b680eacdfb555aa0bcc8de9689c8be98",
+      "chunk-d6edb14783588f33400c8ef21b6523f2",
+      "chunk-c650c1071b4f88939d186384015af116",
+      "chunk-4683d7f1b14125cd9cd9bf57e8b9e925"
+    ],
+    "content_summary": "Sociedade Brasileira de Diabetes\n\nDepartamento de Enfermagem\n\nGestão 2022-2023\n\nORIENTAÇÕES SOBRE GLICEMIA\n\nCAPILAR PARA PROFISSIONAIS\n\nDE SAÚDE\n\n2023\n\nCOORDENADORAS:\n\nMaria Gabriela Secco Cavicchioli\n\nSherida Karanini Paz de Oliveira\n\nAUTORAS:\n\nAnto...",
+    "content_length": 16389,
+    "created_at": "2026-02-05T15:12:11.559752+00:00",
+    "updated_at": "2026-02-05T15:12:53.690510+00:00",
+    "file_path": "data/raw/MONITORIZAÇÃO GLICÊMICA/GLICEMIAS CAPILARES/Orientacoes_Glicemia_SBD.pdf",
+    "track_id": "insert_20260205_151211_305c80ed",
+    "metadata": {
+      "processing_start_time": 1770304331,
+      "processing_end_time": 1770304373
+    }
+  },
+  "doc-6a8fd3b8ff15892cea23696360d1b4a4": {
+    "status": "processed",
+    "chunks_count": 4,
+    "chunks_list": [
+      "chunk-b680eacdfb555aa0bcc8de9689c8be98",
+      "chunk-d6edb14783588f33400c8ef21b6523f2",
+      "chunk-2537111262f518ef488e910a9a72d9e1",
+      "chunk-5ac117d2c9c2fe9b2d52ccbb0c81d74f"
+    ],
+    "content_summary": "Sociedade Brasileira de Diabetes\n\nDepartamento de Enfermagem\n\nGestão 2022-2023\n\nORIENTAÇÕES SOBRE GLICEMIA\n\nCAPILAR PARA PROFISSIONAIS\n\nDE SAÚDE\n\n2023\n\nCOORDENADORAS:\n\nMaria Gabriela Secco Cavicchioli\n\nSherida Karanini Paz de Oliveira\n\nAUTORAS:\n\nAnto...",
+    "content_length": 16376,
+    "created_at": "2026-02-05T15:50:14.848425+00:00",
+    "updated_at": "2026-02-05T15:51:56.209672+00:00",
+    "file_path": "data/raw/MONITORIZAÇÃO GLICÊMICA/GLICEMIAS CAPILARES/Orientacoes_Glicemia_SBD.pdf",
+    "track_id": "insert_20260205_155014_6aa98784",
+    "metadata": {
+      "processing_start_time": 1770306614,
+      "processing_end_time": 1770306716
+    }
   }
 }

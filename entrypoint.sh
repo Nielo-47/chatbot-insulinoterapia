@@ -12,7 +12,7 @@ wait_for_tcp() {
     echo "[entrypoint] ✓ $1 is ready"
 }
 
-# HTTP Check (For Qdrant/vLLM)
+# HTTP Check (For Qdrant/Embedding services)
 wait_for_http() {
     echo "[entrypoint] Waiting for HTTP $1 at $2:$3..."
     until curl -s "http://$2:$3/health" >/dev/null 2>&1; do
@@ -33,10 +33,9 @@ wait_for_tcp "Neo4j" "neo4j" 7687
 # 2. Check Vector DB (HTTP)
 wait_for_http "Qdrant" "qdrant" 6333
 
-# 3. Check vLLM Servers (Assuming they are already running)
-echo "[entrypoint] Verifying vLLM availability..."
-wait_for_http "vLLM-LLM" "host.docker.internal" 8000
-wait_for_http "vLLM-Embed" "host.docker.internal" 8001
+# 3. Embedding/Languages servers (no local vLLM checks required - embeddings served by TEI)
+# Note: If you run separate local LLM/embed servers, add explicit checks here.
 
 echo "[entrypoint] ✓ All services found. Launching Streamlit..."
+# Always bind to the container internal port 8080; host port is controlled via docker-compose PORT env var
 exec streamlit run src/main.py --server.port=8080 --server.address=0.0.0.0

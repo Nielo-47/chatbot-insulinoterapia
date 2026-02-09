@@ -2,6 +2,8 @@ lightrag-hku[api]
 nest-asyncio
 pypdf
 langchain-unstructured
-unstructured
+unstructured[pdf]
 streamlit
 tiktoken
+transformers
+torch

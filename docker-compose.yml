@@ -1,79 +1,100 @@
 services:
-  chatbot-diabetes:
+  kb_builder:
     build: .
-    container_name: health_chatbot_api
     depends_on:
-      - redis
-      - qdrant
-      - neo4j
+      redis:
+        condition: service_healthy
+      tei:
+        condition: service_healthy
     env_file: .env
     environment:
+      - KV_STORAGE=RedisKVStorage
+      - VECTOR_STORAGE=QdrantVectorDBStorage
+      - GRAPH_STORAGE=Neo4JStorage
       - REDIS_URI=redis://redis:6379/0
       - QDRANT_URL=http://qdrant:6333
       - NEO4J_URI=bolt://neo4j:7687
       - NEO4J_USERNAME=neo4j
       - NEO4J_PASSWORD=${NEO4J_PASSWORD:-password}
-      - LLM_BINDING_HOST=${LLM_BINDING_HOST:-http://host.docker.internal:11434}
-      - EMBEDDING_BINDING_HOST=${EMBEDDING_BINDING_HOST:-http://host.docker.internal:11434}
-      - PORT=8080
-      - PYTHONUNBUFFERED=1
-      - HUGGING_FACE_HUB_TOKEN=${HUGGING_FACE_HUB_TOKEN}
-    ports:
-      - "8080:8080"
+      - EMBEDDING_BINDING_HOST=http://tei:8080/v1
     volumes:
       - ./data:/app/data
-      - ./src:/app/src
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    networks:
-      - chatbot_network
+    command: ["python", "scripts/kb_builder.py"]
+
+  tei:
+    image: ghcr.io/huggingface/text-embeddings-inference:cuda-1.6
+    restart: unless-stopped
+    runtime: nvidia
+    environment:
+      - HF_HOME=/data
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/ || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+      start_period: 240s
+    command: ["--model-id", "${EMBEDDING_MODEL:-BAAI/bge-m3}", "--port", "8080"]
+    volumes:
+      - tei_data:/data
 
   redis:
     image: redis:alpine
-    container_name: redis_storage
     restart: always
     command: redis-server --save 60 1 --loglevel warning
-    ports:
-      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 2s
+      retries: 5
+      start_period: 5s
     volumes:
       - redis_data:/data
-    networks:
-      - chatbot_network
 
   qdrant:
     image: qdrant/qdrant:latest
-    container_name: qdrant_storage
     restart: always
-    ports:
-      - "6333:6333"
     volumes:
       - qdrant_data:/qdrant/storage
-    networks:
-      - chatbot_network
 
   neo4j:
     image: neo4j:latest
-    container_name: neo4j_storage
     restart: always
     environment:
       - NEO4J_AUTH=neo4j/${NEO4J_PASSWORD:-password}
       - NEO4J_PLUGINS=["apoc"]
       - NEO4J_dbms_security_procedures_unrestricted=apoc.*
-    ports:
-      - "7474:7474"
-      - "7687:7687"
     volumes:
       - neo4j_data:/data
       - neo4j_logs:/logs
-    networks:
-      - chatbot_network
 
-networks:
-  chatbot_network:
-    driver: bridge
+  app:
+    build: .
+    env_file: .env
+    restart: unless-stopped
+    environment:
+      - EMBEDDING_BINDING_HOST=http://tei:8080/v1
+      - PYTHONPATH=/app
+    volumes:
+      - ./data:/app/data
+    ports:
+      - "${PORT}:8080"
+    depends_on:
+      redis:
+        condition: service_healthy
+      tei:
+        condition: service_healthy
+      qdrant:
+        condition: service_started
+      neo4j:
+        condition: service_started
+    # Entrypoint will start Streamlit (checks dependencies)
+    command: ["bash", "/app/entrypoint.sh"]
 
 volumes:
   redis_data:
   qdrant_data:
   neo4j_data:
   neo4j_logs:
+  tei_data:

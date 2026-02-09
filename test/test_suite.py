@@ -3,131 +3,28 @@ import json
 import asyncio
 import time
 from datetime import datetime
-from typing import List, Dict, Any
-import nest_asyncio
-from dotenv import load_dotenv
-from openai import OpenAI
-from lightrag import LightRAG, QueryParam
-from lightrag.utils import EmbeddingFunc
-import numpy as np
+from typing import Dict, Any
 
-# Enable nested event loops
+from src.chatbot import Chatbot
+import nest_asyncio
+
 nest_asyncio.apply()
-load_dotenv()
+
 
 # Configuration
-# Use absolute path based on script location or current directory
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-DEFAULT_KG_DIR = os.path.join(os.path.dirname(SCRIPT_DIR), "data", "processed")
-KG_DIR = os.getenv("WORKING_DIR_TEST", DEFAULT_KG_DIR)
-
-VLLM_LLM_HOST = os.getenv("LLM_BINDING_HOST_TEST", "http://localhost:8000")
-VLLM_EMBED_HOST = os.getenv("EMBEDDING_BINDING_HOST_TEST", "http://localhost:8001")
-LLM_MODEL = os.getenv("LLM_MODEL_NAME", "meta-llama/Llama-3.2-3B-Instruct")
-EMBED_MODEL = os.getenv("EMBEDDING_MODEL_NAME", "BAAI/bge-m3")
-EMBEDDING_DIM = int(os.getenv("EMBEDDING_DIM", "384"))
-MAX_TOKENS = int(os.getenv("MAX_EMBED_TOKENS", "512"))
-
-# Ensure the working directory exists and is writable
-os.makedirs(KG_DIR, exist_ok=True)
-
-# Initialize OpenAI clients for vLLM
-vllm_llm_client = OpenAI(
-    api_key="EMPTY",
-    base_url=f"{VLLM_LLM_HOST}/v1",
-)
-
-vllm_embed_client = OpenAI(
-    api_key="EMPTY",
-    base_url=f"{VLLM_EMBED_HOST}/v1",
-)
-
-
-async def vllm_model_complete(prompt, system_prompt=None, history_messages=[], **kwargs) -> str:
-    """Complete text using vLLM OpenAI-compatible API."""
-    messages = []
-
-    # Default system prompt for diabetes assistant
-    default_system_prompt = """Você é um assistente especializado em diabetes e insulinoterapia. 
-
-Diretrizes:
-- Responda APENAS perguntas relacionadas a diabetes, insulina, glicemia e tratamento usando o contexto fornecido
-- Se a pergunta for sobre outro assunto, explique educadamente que você só pode ajudar com questões sobre diabetes
-- Aceite saudações (olá, bom dia, etc.) e seja cordial
-- Use linguagem clara, amigável e acessível para pessoas com baixa literacia médica
-- Corrija gentilmente conceitos errados sem ser condescendente
-- Seja paciente com erros de digitação e termos leigos
-- SEMPRE baseie suas respostas no contexto fornecido
-- Se não tiver informação suficiente no contexto, diga que não tem essa informação específica
-
-Seja empático, claro e útil."""
-
-    if system_prompt:
-        # Combine default with custom system prompt
-        messages.append({"role": "system", "content": f"{default_system_prompt}\n\n{system_prompt}"})
-    else:
-        messages.append({"role": "system", "content": default_system_prompt})
-
-    messages.extend(history_messages)
-    messages.append({"role": "user", "content": prompt})
-
-    response = vllm_llm_client.chat.completions.create(
-        model=LLM_MODEL,
-        messages=messages,
-        temperature=kwargs.get("temperature", 0.1),
-        max_tokens=kwargs.get("max_tokens", 2048),
-    )
-
-    return response.choices[0].message.content
-
-
-async def vllm_embed_func(texts: List[str]) -> np.ndarray:
-    """Generate embeddings using vLLM OpenAI-compatible API."""
-    if isinstance(texts, str):
-        texts = [texts]
-
-    response = vllm_embed_client.embeddings.create(
-        model=EMBED_MODEL,
-        input=texts,
-    )
-
-    return np.array([item.embedding for item in response.data])
-
-
-def initialize_rag():
-    """Initialize LightRAG with vLLM configuration."""
-    return LightRAG(
-        working_dir=KG_DIR,
-        llm_model_func=vllm_model_complete,
-        llm_model_name=LLM_MODEL,
-        llm_model_kwargs={
-            "timeout": 300,
-        },
-        enable_llm_cache=False,
-        embedding_func=EmbeddingFunc(
-            embedding_dim=EMBEDDING_DIM,
-            max_token_size=MAX_TOKENS,
-            func=vllm_embed_func,
-        ),
-    )
 
 
 class DiabetesTestSuite:
     """Test suite for diabetes treatment RAG system."""
 
     def __init__(self):
-        self.rag = initialize_rag()
+        self.chatbot = Chatbot()
         self.results = {
             "test_run_info": {
                 "start_time": None,
                 "end_time": None,
                 "duration_seconds": None,
-                "model_info": {
-                    "llm_model": LLM_MODEL,
-                    "embed_model": EMBED_MODEL,
-                    "llm_host": VLLM_LLM_HOST,
-                    "embed_host": VLLM_EMBED_HOST,
-                },
             },
             "basic_questions": {
                 "total": 0,
@@ -153,10 +50,9 @@ class DiabetesTestSuite:
         }
 
     async def initialize(self):
-        """Initialize RAG storage."""
+        """Initialize RAG system."""
         print("Inicializando sistema RAG...")
-        loop = asyncio.get_event_loop()
-        await loop.create_task(self.rag.initialize_storages())
+        await self.chatbot.initialize_rag()
         print("Sistema RAG inicializado com sucesso!\n")
 
     def load_questions(self, filepath: str) -> Dict[str, Any]:
@@ -164,7 +60,9 @@ class DiabetesTestSuite:
         with open(filepath, "r", encoding="utf-8") as f:
             return json.load(f)
 
-    async def test_basic_question(self, question_data: Dict[str, Any], index: int) -> Dict[str, Any]:
+    async def test_basic_question(
+        self, question_data: Dict[str, Any], index: int
+    ) -> Dict[str, Any]:
         """Test a single basic question."""
         question = question_data["question"]
         print(f"\n[TESTE BÁSICO {index + 1}] Pergunta: {question[:80]}...")
@@ -182,8 +80,8 @@ class DiabetesTestSuite:
         }
 
         try:
-            # Query using LightRAG
-            response = self.rag.query(question, param=QueryParam(mode="hybrid"))
+            # Query using Chatbot
+            response = self.chatbot.query(question)
             response_time = time.time() - start_time
 
             result["response"] = response
@@ -203,7 +101,9 @@ class DiabetesTestSuite:
 
         return result
 
-    async def test_contextual_question(self, conv_data: Dict[str, Any], index: int) -> Dict[str, Any]:
+    async def test_contextual_question(
+        self, conv_data: Dict[str, Any], index: int
+    ) -> Dict[str, Any]:
         """Test a single contextual question."""
         question = conv_data["question"]
         context_messages = conv_data.get("context", [])
@@ -226,12 +126,14 @@ class DiabetesTestSuite:
         }
 
         try:
-            # Build query with context
-            context_text = "\n".join([f"{msg['role']}: {msg['content']}" for msg in context_messages])
-            full_query = f"Contexto da conversa:\n{context_text}\n\nPergunta atual: {question}"
+            # Build query with context - keep it concise
+            context_text = "\n".join(
+                [f"{msg['role']}: {msg['content'][:200]}" for msg in context_messages]
+            )
+            full_query = f"Contexto: {context_text}\n\nPergunta: {question}"
 
-            # Query using LightRAG
-            response = self.rag.query(full_query, param=QueryParam(mode="hybrid"))
+            # Query using Chatbot
+            response = self.chatbot.query(full_query)
             response_time = time.time() - start_time
 
             result["response"] = response
@@ -283,7 +185,9 @@ class DiabetesTestSuite:
 
         # Calculate average response time
         response_times = [
-            r["response_time"] for r in self.results["basic_questions"]["results"] if r["status"] == "success"
+            r["response_time"]
+            for r in self.results["basic_questions"]["results"]
+            if r["status"] == "success"
         ]
         if response_times:
             self.results["basic_questions"]["average_response_time"] = round(
@@ -312,7 +216,9 @@ class DiabetesTestSuite:
 
         # Calculate average response time
         response_times = [
-            r["response_time"] for r in self.results["contextual_questions"]["results"] if r["status"] == "success"
+            r["response_time"]
+            for r in self.results["contextual_questions"]["results"]
+            if r["status"] == "success"
         ]
         if response_times:
             self.results["contextual_questions"]["average_response_time"] = round(
@@ -321,18 +227,33 @@ class DiabetesTestSuite:
 
     def calculate_summary(self):
         """Calculate overall test summary."""
-        total_tests = self.results["basic_questions"]["total"] + self.results["contextual_questions"]["total"]
-        total_passed = self.results["basic_questions"]["completed"] + self.results["contextual_questions"]["completed"]
-        total_failed = self.results["basic_questions"]["failed"] + self.results["contextual_questions"]["failed"]
+        total_tests = (
+            self.results["basic_questions"]["total"]
+            + self.results["contextual_questions"]["total"]
+        )
+        total_passed = (
+            self.results["basic_questions"]["completed"]
+            + self.results["contextual_questions"]["completed"]
+        )
+        total_failed = (
+            self.results["basic_questions"]["failed"]
+            + self.results["contextual_questions"]["failed"]
+        )
 
         self.results["summary"] = {
             "total_tests": total_tests,
             "total_passed": total_passed,
             "total_failed": total_failed,
-            "success_rate": round((total_passed / total_tests * 100) if total_tests > 0 else 0, 2),
+            "success_rate": round(
+                (total_passed / total_tests * 100) if total_tests > 0 else 0, 2
+            ),
             "basic_success_rate": round(
                 (
-                    (self.results["basic_questions"]["completed"] / self.results["basic_questions"]["total"] * 100)
+                    (
+                        self.results["basic_questions"]["completed"]
+                        / self.results["basic_questions"]["total"]
+                        * 100
+                    )
                     if self.results["basic_questions"]["total"] > 0
                     else 0
                 ),
@@ -350,24 +271,37 @@ class DiabetesTestSuite:
                 ),
                 2,
             ),
-            "average_response_time_basic": self.results["basic_questions"]["average_response_time"],
-            "average_response_time_contextual": self.results["contextual_questions"]["average_response_time"],
+            "average_response_time_basic": self.results["basic_questions"][
+                "average_response_time"
+            ],
+            "average_response_time_contextual": self.results["contextual_questions"][
+                "average_response_time"
+            ],
         }
 
         # Calculate context detection stats
         contextual_results = self.results["contextual_questions"]["results"]
-        context_detected_count = sum(1 for r in contextual_results if r.get("context_detected", False))
+        context_detected_count = sum(
+            1 for r in contextual_results if r.get("context_detected", False)
+        )
         avg_context_relevance = (
-            sum(r.get("context_relevance_score", 0) for r in contextual_results) / len(contextual_results)
+            sum(r.get("context_relevance_score", 0) for r in contextual_results)
+            / len(contextual_results)
             if contextual_results
             else 0
         )
 
         self.results["summary"]["context_detection_rate"] = round(
-            (context_detected_count / len(contextual_results) * 100) if contextual_results else 0,
+            (
+                (context_detected_count / len(contextual_results) * 100)
+                if contextual_results
+                else 0
+            ),
             2,
         )
-        self.results["summary"]["average_context_relevance"] = round(avg_context_relevance, 2)
+        self.results["summary"]["average_context_relevance"] = round(
+            avg_context_relevance, 2
+        )
 
     def print_summary(self):
         """Print test summary to console."""
@@ -394,11 +328,15 @@ class DiabetesTestSuite:
         print(f"  Completados: {self.results['contextual_questions']['completed']}")
         print(f"  Falhados: {self.results['contextual_questions']['failed']}")
         print(f"  Taxa de Sucesso: {summary['contextual_success_rate']}%")
-        print(f"  Tempo Médio de Resposta: {summary['average_response_time_contextual']}s")
+        print(
+            f"  Tempo Médio de Resposta: {summary['average_response_time_contextual']}s"
+        )
         print(f"  Taxa de Detecção de Contexto: {summary['context_detection_rate']}%")
         print(f"  Relevância Contextual Média: {summary['average_context_relevance']}%")
 
-        print(f"\n⏱️  Duração Total dos Testes: {self.results['test_run_info']['duration_seconds']:.2f}s")
+        print(
+            f"\n⏱️  Duração Total dos Testes: {self.results['test_run_info']['duration_seconds']:.2f}s"
+        )
         print("=" * 80 + "\n")
 
     def save_results(self, output_file: str = "test_results.json"):
@@ -417,8 +355,6 @@ class DiabetesTestSuite:
 
 - **Data/Hora:** {self.results['test_run_info']['start_time']}
 - **Duração:** {self.results['test_run_info']['duration_seconds']:.2f} segundos
-- **Modelo LLM:** {self.results['test_run_info']['model_info']['llm_model']}
-- **Modelo Embedding:** {self.results['test_run_info']['model_info']['embed_model']}
 
 ## Resumo Geral
 
@@ -455,7 +391,9 @@ class DiabetesTestSuite:
                 basic_by_category[cat]["failed"] += 1
 
         for cat, stats in basic_by_category.items():
-            success_rate = (stats["success"] / stats["total"] * 100) if stats["total"] > 0 else 0
+            success_rate = (
+                (stats["success"] / stats["total"] * 100) if stats["total"] > 0 else 0
+            )
             report += f"- **{cat}**: {stats['success']}/{stats['total']} ({success_rate:.1f}%)\n"
 
         report += f"""
@@ -493,13 +431,23 @@ class DiabetesTestSuite:
                 contextual_by_category[cat]["failed"] += 1
             if result.get("context_detected", False):
                 contextual_by_category[cat]["context_detected"] += 1
-            contextual_by_category[cat]["relevance_scores"].append(result.get("context_relevance_score", 0))
+            contextual_by_category[cat]["relevance_scores"].append(
+                result.get("context_relevance_score", 0)
+            )
 
         for cat, stats in contextual_by_category.items():
-            success_rate = (stats["success"] / stats["total"] * 100) if stats["total"] > 0 else 0
-            context_rate = (stats["context_detected"] / stats["total"] * 100) if stats["total"] > 0 else 0
+            success_rate = (
+                (stats["success"] / stats["total"] * 100) if stats["total"] > 0 else 0
+            )
+            context_rate = (
+                (stats["context_detected"] / stats["total"] * 100)
+                if stats["total"] > 0
+                else 0
+            )
             avg_relevance = (
-                sum(stats["relevance_scores"]) / len(stats["relevance_scores"]) if stats["relevance_scores"] else 0
+                sum(stats["relevance_scores"]) / len(stats["relevance_scores"])
+                if stats["relevance_scores"]
+                else 0
             )
             report += f"- **{cat}**: {stats['success']}/{stats['total']} ({success_rate:.1f}%) | Contexto: {context_rate:.1f}% | Relevância: {avg_relevance:.1f}%\n"
 
@@ -509,11 +457,18 @@ class DiabetesTestSuite:
 """
         # Collect all errors
         all_errors = []
-        for result in self.results["basic_questions"]["results"] + self.results["contextual_questions"]["results"]:
+        for result in (
+            self.results["basic_questions"]["results"]
+            + self.results["contextual_questions"]["results"]
+        ):
             if result["status"] == "failed":
                 all_errors.append(
                     {
-                        "type": "Básica" if result in self.results["basic_questions"]["results"] else "Contextual",
+                        "type": (
+                            "Básica"
+                            if result in self.results["basic_questions"]["results"]
+                            else "Contextual"
+                        ),
                         "question": result["question"][:100],
                         "error": result["error"],
                     }
@@ -531,7 +486,9 @@ class DiabetesTestSuite:
 
 """
         if summary["success_rate"] >= 90:
-            report += "✅ **Excelente desempenho!** O sistema está funcionando muito bem.\n"
+            report += (
+                "✅ **Excelente desempenho!** O sistema está funcionando muito bem.\n"
+            )
         elif summary["success_rate"] >= 70:
             report += "⚠️ **Bom desempenho**, mas há espaço para melhorias.\n"
         else:
@@ -559,7 +516,10 @@ class DiabetesTestSuite:
         print(f"✓ Relatório markdown gerado: {output_file}")
 
     async def run_all_tests(
-        self, basic_questions_file: str, contextual_questions_file: str, output_prefix: str = "test"
+        self,
+        basic_questions_file: str,
+        contextual_questions_file: str,
+        output_prefix: str = "test",
     ):
         """Run all tests and generate reports."""
         self.results["test_run_info"]["start_time"] = datetime.now().isoformat()
@@ -575,7 +535,9 @@ class DiabetesTestSuite:
         # Calculate results
         end_time = time.time()
         self.results["test_run_info"]["end_time"] = datetime.now().isoformat()
-        self.results["test_run_info"]["duration_seconds"] = round(end_time - start_time, 2)
+        self.results["test_run_info"]["duration_seconds"] = round(
+            end_time - start_time, 2
+        )
 
         self.calculate_summary()
 
@@ -592,36 +554,44 @@ async def main():
     print("=" * 80 + "\n")
 
     # File paths - look for JSON files in the same directory as the script
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    basic_questions_file = os.path.join(script_dir, "diabetes_questions.json")
-    contextual_questions_file = os.path.join(script_dir, "diabetes_contextual_questions.json")
+    basic_questions_file = os.path.join(SCRIPT_DIR, "diabetes_questions.json")
+    contextual_questions_file = os.path.join(
+        SCRIPT_DIR, "diabetes_contextual_questions.json"
+    )
 
     # Check if question files exist
     if not os.path.exists(basic_questions_file):
         print(f"❌ Erro: Arquivo não encontrado: {basic_questions_file}")
-        print(f"   Por favor, crie o arquivo 'diabetes_questions.json' no diretório: {script_dir}")
+        print(
+            f"   Por favor, crie o arquivo 'diabetes_questions.json' no diretório: {SCRIPT_DIR}"
+        )
         return
 
     if not os.path.exists(contextual_questions_file):
         print(f"❌ Erro: Arquivo não encontrado: {contextual_questions_file}")
-        print(f"   Por favor, crie o arquivo 'diabetes_contextual_questions.json' no diretório: {script_dir}")
+        print(
+            f"   Por favor, crie o arquivo 'diabetes_contextual_questions.json' no diretório: {SCRIPT_DIR}"
+        )
         return
 
-    print(f"📂 Diretório de trabalho do RAG: {KG_DIR}")
-    print(f"📂 Diretório dos testes: {script_dir}\n")
+    print(f"📂 Diretório dos testes: {SCRIPT_DIR}\n")
 
     # Create and run test suite
     test_suite = DiabetesTestSuite()
     await test_suite.run_all_tests(
         basic_questions_file=basic_questions_file,
         contextual_questions_file=contextual_questions_file,
-        output_prefix=os.path.join(script_dir, "diabetes_rag_test"),
+        output_prefix=os.path.join(SCRIPT_DIR, "diabetes_rag_test"),
     )
 
     print("\n✓ Todos os testes foram concluídos!")
     print("\nArquivos gerados:")
-    print(f"  - {os.path.join(script_dir, 'diabetes_rag_test_results.json')} (resultados detalhados em JSON)")
-    print(f"  - {os.path.join(script_dir, 'diabetes_rag_test_report.md')} (relatório em Markdown)")
+    print(
+        f"  - {os.path.join(SCRIPT_DIR, 'diabetes_rag_test_results.json')} (resultados detalhados em JSON)"
+    )
+    print(
+        f"  - {os.path.join(SCRIPT_DIR, 'diabetes_rag_test_report.md')} (relatório em Markdown)"
+    )
     print(f"\n📊 Verifique os resultados nos arquivos acima!")
 
 
