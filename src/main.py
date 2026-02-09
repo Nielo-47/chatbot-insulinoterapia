@@ -1,8 +1,6 @@
-import os
-import queue
 import asyncio
 import multiprocessing as mp
-import time
+import uuid
 
 import streamlit as st
 import nest_asyncio
@@ -23,8 +21,8 @@ load_dotenv()
 st.set_page_config(
     page_title="Assistente de Insulinoterapia",
     page_icon="🩺",
-    layout="wide",
-    initial_sidebar_state="expanded",
+    layout="centered",
+    initial_sidebar_state="collapsed",
 )
 
 
@@ -62,16 +60,31 @@ def rag_worker(input_queue, output_queue):
     logging.info("[DEBUG] RAG worker ready, entering message loop...")
 
     while True:
-        query = input_queue.get()
-        if query is None:  # Stop sentinel
+        qobj = input_queue.get()
+        if qobj is None:  # Stop sentinel
             logging.info("[DEBUG] RAG worker received stop signal")
             break
 
+        # Accept either a plain string or a dict with keys like {"query": ..., "session_id": ...}
+        if isinstance(qobj, dict):
+            query_text = qobj.get("query")
+            session_id = qobj.get("session_id")
+        else:
+            query_text = qobj
+            session_id = None
+
         try:
-            logging.info("[DEBUG] RAG worker processing query: %s...", query[:50])
-            response = chatbot.query(query)
-            logging.info("[DEBUG] RAG worker sending response: %s chars", len(response))
-            output_queue.put(response)
+            logging.info("[DEBUG] RAG worker processing query: %s...", (query_text or "")[:50])
+            result = chatbot.query(query_text, session_id=session_id)
+            # result is now a dict with {"response": ..., "sources": ..., "source_count": ..., "summarized": ...}
+            was_summarized = result.get("summarized", False)
+            logging.info(
+                "[DEBUG] RAG worker sending result: response=%d chars, sources=%d%s",
+                len(result.get("response", "")),
+                result.get("source_count", 0),
+                ", CONVERSATION SUMMARIZED" if was_summarized else "",
+            )
+            output_queue.put(result)
         except Exception as e:
             logging.error("[ERROR] RAG worker exception: %s: %s", type(e).__name__, e)
             import traceback
@@ -107,270 +120,90 @@ def initialize_session_state():
 
     # Initialize persistent conversation state only if missing
     st.session_state.setdefault("messages", [])
-    st.session_state.setdefault("last_token_usage", None)
-    st.session_state.setdefault("token_history", [])
+    st.session_state.setdefault("session_id", str(uuid.uuid4()))
 
 
 def get_rag_response(query):
-    """Query RAG and return complete response."""
+    """Query RAG and return complete response with sources."""
     logging.info("[DEBUG] get_rag_response called, timeout=%s", Config.RAG_TIMEOUT)
-    st.session_state.input_queue.put(query)
-    logging.info("[DEBUG] Query sent to worker, waiting for response...")
+    st.session_state.input_queue.put({"query": query, "session_id": st.session_state.session_id})
+    logging.info("[DEBUG] Query sent to worker (with session_id), waiting for response...")
 
     try:
-        response = st.session_state.output_queue.get(timeout=Config.RAG_TIMEOUT)
-        logging.info("[DEBUG] Received response from worker")
+        result = st.session_state.output_queue.get(timeout=Config.RAG_TIMEOUT)
+        logging.info("[DEBUG] Received result from worker")
     except Exception as e:
-        logging.error(
-            "[ERROR] Timeout or error waiting for response: %s: %s", type(e).__name__, e
-        )
+        logging.error("[ERROR] Timeout or error waiting for response: %s: %s", type(e).__name__, e)
         raise
 
-    if isinstance(response, Exception):
+    if isinstance(result, Exception):
         logging.error(
             "[ERROR] Worker returned exception: %s: %s",
-            type(response).__name__,
-            response,
+            type(result).__name__,
+            result,
         )
-        raise response
+        raise result
 
-    return response
-
-
-def display_chat_history():
-    """Display all messages in chat history."""
-    for message in st.session_state.messages:
-        with st.chat_message(message["role"]):
-            st.markdown(message["content"])
+    # Result should now be a dict with response, sources, source_count
+    return result
 
 
 def handle_user_input(query):
     """Process user query and generate response."""
-    # Append user message to session history
     st.session_state.messages.append({"role": "user", "content": query})
+    with st.chat_message("user"):
+        st.markdown(query)
 
-    # Re-render chat history immediately so user sees their message
-    display_chat_history()
+    with st.chat_message("assistant"):
+        with st.spinner("💭 Pensando..."):
+            try:
+                result = get_rag_response(query)
 
-    try:
-        start_total = time.perf_counter()
-        status_placeholder = st.empty()
+                # Unpack the result dict
+                if isinstance(result, dict):
+                    response_text = result.get("response", "")
+                    sources = result.get("sources", [])
+                    source_count = result.get("source_count", 0)
+                    was_summarized = result.get("summarized", False)
+                else:
+                    # Fallback for backward compatibility if somehow a string is returned
+                    response_text = result
+                    sources = []
+                    source_count = 0
+                    was_summarized = False
 
-        # Step 1: Context retrieval (RAG)
-        step_1_start = time.perf_counter()
-        status_placeholder.markdown(
-            "🔍 **Consultando base de conhecimento...**\n\n" f"⏱️ Tempo: 0.00s"
-        )
+                # Display summarization warning if it just happened
+                if was_summarized:
+                    st.info("📋 Conversa resumida - histórico condensado para melhor desempenho")
 
-        response = get_rag_response(query)
-        step_1_elapsed = time.perf_counter() - step_1_start
+                # Display the response
+                st.markdown(response_text)
 
-        # Step 2: Response generation (if additional processing required)
-        step_2_start = time.perf_counter()
-        status_placeholder.markdown(
-            "✅ **Contexto obtido**\n"
-            f"⏱️ Tempo: {step_1_elapsed:.2f}s\n\n"
-            "💭 **Gerando resposta...**\n\n"
-            "⏱️ Tempo: 0.00s"
-        )
+                # Display sources in an expander if any exist
+                if sources and source_count > 0:
+                    with st.expander(f"📚 Referências consultadas ({source_count})"):
+                        for i, source in enumerate(sources, 1):
+                            st.markdown(f"{i}. {source}")
 
-        # No extra processing here; capture elapsed
-        step_2_elapsed = time.perf_counter() - step_2_start
-        total_elapsed = time.perf_counter() - start_total
-
-        # Append assistant response and re-render chat
-        st.session_state.messages.append({"role": "assistant", "content": response})
-        display_chat_history()
-
-        # Update and clear status promptly to avoid lingering UI
-        status_placeholder.markdown(
-            "✅ **Contexto obtido**\n"
-            f"⏱️ Tempo: {step_1_elapsed:.2f}s\n\n"
-            "✅ **Resposta gerada**\n"
-            f"⏱️ Tempo: {step_2_elapsed:.2f}s\n\n"
-            f"**Tempo total:** {total_elapsed:.2f}s"
-        )
-        # Small pause so users see timings, then clear
-        time.sleep(0.25)
-        status_placeholder.empty()
-
-        # Store token usage in history
-        if st.session_state.last_token_usage:
-            st.session_state.token_history.append(st.session_state.last_token_usage)
-
-            # Display token usage info
-            with st.expander("📊 Detalhes de Uso de Tokens"):
-                usage = st.session_state.last_token_usage
-                col1, col2, col3 = st.columns(3)
-                with col1:
-                    st.metric("Tokens de Prompt", usage["prompt_tokens"])
-                with col2:
-                    st.metric("Tokens de Resposta", usage["completion_tokens"])
-                with col3:
-                    st.metric("Total de Tokens", usage["total_tokens"])
-
-                # Context window usage
-                st.progress(
-                    usage["context_percentage"] / 100,
-                    text=f"Uso da Janela de Contexto: {usage['context_percentage']:.1f}%",
-                )
-
-    except queue.Empty:
-        st.error("⏱️ Tempo limite ao esperar resposta do RAG.")
-    except asyncio.TimeoutError:
-        st.error("⏱️ Tempo limite ao consultar o modelo. Tente novamente.")
-    except Exception as e:
-        st.error(f"❌ Erro: {str(e)}")
-
-
-def display_sidebar():
-    """Display sidebar with information and controls."""
-    with st.sidebar:
-        st.header("ℹ️ Sobre o Assistente")
-        st.info(
-            """
-        Este assistente utiliza IA para responder perguntas sobre insulinoterapia, 
-        consultando uma base de conhecimento especializada.
-        """
-        )
-
-        st.divider()
-
-        st.header("📊 Estatísticas da Sessão")
-        if st.session_state.messages:
-            user_msgs = len(
-                [m for m in st.session_state.messages if m["role"] == "user"]
-            )
-            assistant_msgs = len(
-                [m for m in st.session_state.messages if m["role"] == "assistant"]
-            )
-
-            col1, col2 = st.columns(2)
-            with col1:
-                st.metric("Perguntas", user_msgs)
-            with col2:
-                st.metric("Respostas", assistant_msgs)
-
-            # Token usage statistics
-            if st.session_state.token_history:
-                st.subheader("📈 Uso de Tokens")
-                total_prompt_tokens = sum(
-                    t["prompt_tokens"] for t in st.session_state.token_history
-                )
-                total_completion_tokens = sum(
-                    t["completion_tokens"] for t in st.session_state.token_history
-                )
-                total_tokens = sum(
-                    t["total_tokens"] for t in st.session_state.token_history
-                )
-                avg_context_usage = sum(
-                    t["context_percentage"] for t in st.session_state.token_history
-                ) / len(st.session_state.token_history)
-
-                col1, col2 = st.columns(2)
-                with col1:
-                    st.metric("Total de Tokens", f"{total_tokens:,}")
-                    st.metric("Tokens de Prompt", f"{total_prompt_tokens:,}")
-                with col2:
-                    st.metric("Uso Médio do Contexto", f"{avg_context_usage:.1f}%")
-                    st.metric("Tokens de Resposta", f"{total_completion_tokens:,}")
-
-                # Last query details
-                if st.session_state.last_token_usage:
-                    with st.expander("🔍 Última Consulta"):
-                        last = st.session_state.last_token_usage
-                        st.write(f"**Prompt:** {last['prompt_tokens']:,} tokens")
-                        st.write(f"**Resposta:** {last['completion_tokens']:,} tokens")
-                        st.write(f"**Total:** {last['total_tokens']:,} tokens")
-                        st.progress(
-                            last["context_percentage"] / 100,
-                            text=f"Contexto: {last['context_percentage']:.1f}%",
-                        )
-        else:
-            st.write("Nenhuma conversa ainda.")
-
-        st.divider()
-
-        if st.button("🗑️ Limpar Conversa", use_container_width=True, type="primary"):
-            st.session_state.messages = []
-            st.session_state.token_history = []
-            st.session_state.last_token_usage = None
-            st.rerun()
-
-        st.divider()
-
-        # LLM/Embedding status (vLLM removed): LLMs use OpenRouter; embeddings served by TEI
-        llm_status = "OpenRouter (remote)"
-        embed_status = "TEI (embedding service)"
-
-        with st.expander("⚙️ Configurações do Sistema"):
-            st.code(
-                f"""
-Modelo LLM: {Config.LLM_MODEL}
-Status LLM: {llm_status}
-Host LLM: {Config.OPENROUTER_BASE_URL}
-
-Modelo Embedding: {Config.EMBED_MODEL}
-Status Embedding: {embed_status}
-Host Embedding:     {Config.EMBED_HOST} (TEI)
-
-Dimensão: {Config.EMBEDDING_DIM}
-Max Tokens: {Config.MAX_TOKENS}
-Contexto Máximo: {Config.MAX_CONTEXT_LENGTH:,} tokens
-            """
-            )
-
-
-def display_welcome_message():
-    """Display welcome message when chat is empty."""
-    if not st.session_state.messages:
-        st.info("👋 **Bem-vindo ao Assistente de Insulinoterapia!**")
-
-        col1, col2 = st.columns(2)
-
-        with col1:
-            st.subheader("📚 Tópicos Disponíveis")
-            st.markdown(
-                """
-            - Tipos de insulina
-            - Protocolos de dosagem
-            - Ajustes e monitoramento
-            - Orientações clínicas
-            """
-            )
-
-        with col2:
-            st.subheader("💡 Dicas de Uso")
-            st.markdown(
-                """
-            - Faça perguntas específicas
-            - Use linguagem clara
-            - Consulte o histórico na barra lateral
-            - Limpe a conversa quando necessário
-            """
-            )
-
-        st.divider()
+                # Store message (only response text, not sources)
+                st.session_state.messages.append({"role": "assistant", "content": response_text})
+            except Exception as e:
+                error_msg = f"Erro ao processar: {str(e)}"
+                st.error(error_msg)
+                st.session_state.messages.append({"role": "assistant", "content": error_msg})
 
 
 def main():
     """Main application entry point."""
     initialize_session_state()
 
-    # Header
     st.title("🩺 Assistente de Insulinoterapia")
 
-    # Sidebar
-    display_sidebar()
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
 
-    # Welcome message
-    display_welcome_message()
-
-    # Chat history
-    display_chat_history()
-
-    # Chat input
-    if query := st.chat_input("💬 Digite sua pergunta sobre insulinoterapia..."):
+    if query := st.chat_input("Digite sua pergunta..."):
         handle_user_input(query)
 
 
