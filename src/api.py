@@ -1,6 +1,7 @@
 """FastAPI Backend for Diabetes Chatbot - Exposes RAG functionality via REST API."""
 import asyncio
 import logging
+import os
 import uuid
 from contextlib import asynccontextmanager
 from typing import Dict, List, Optional
@@ -13,6 +14,11 @@ from pydantic import BaseModel
 
 from src.chatbot import Chatbot
 from src.config import Config
+
+
+def _parse_frontend_origins() -> List[str]:
+    raw_origins = os.getenv("FRONTEND_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000")
+    return [origin.strip() for origin in raw_origins.split(",") if origin.strip()]
 
 # Initialize
 try:
@@ -57,7 +63,7 @@ app = FastAPI(
 # Configure CORS for communication with UI container
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, specify the UI container URL
+    allow_origins=_parse_frontend_origins(),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

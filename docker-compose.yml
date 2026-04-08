@@ -1,6 +1,8 @@
 services:
   kb_builder:
-    build: .
+    build:
+      context: .
+      dockerfile: dockerfile.backend
     depends_on:
       redis:
         condition: service_healthy
@@ -20,6 +22,8 @@ services:
     volumes:
       - ./data:/app/data
     command: ["python", "scripts/kb_builder.py"]
+    profiles:
+      - kb
 
   tei:
     image: ghcr.io/huggingface/text-embeddings-inference:cuda-1.6
@@ -107,23 +111,23 @@ services:
       retries: 3
       start_period: 60s
 
-  # UI - Streamlit frontend
+  # UI - React frontend
   ui:
     build:
       context: .
       dockerfile: dockerfile.ui
+      args:
+        - VITE_API_URL=${VITE_API_URL:-/api}
+        - VITE_REQUEST_TIMEOUT_MS=${VITE_REQUEST_TIMEOUT_MS:-60000}
     restart: unless-stopped
     env_file: .env
-    environment:
-      - BACKEND_URL=http://backend:8000
-      - REQUEST_TIMEOUT=${REQUEST_TIMEOUT:-60}
     ports:
-      - "${UI_PORT:-8501}:8501"
+      - "${UI_PORT:-3000}:3000"
     depends_on:
       backend:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8501/_stcore/health || exit 1"]
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:3000/ || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
