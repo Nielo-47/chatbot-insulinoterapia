@@ -38,4 +38,8 @@ wait_for_http "Qdrant" "qdrant" 6333
 
 echo "[entrypoint] ✓ All services found. Launching Streamlit..."
 # Always bind to the container internal port 8080; host port is controlled via docker-compose PORT env var
-exec streamlit run src/main.py --server.port=8080 --server.address=0.0.0.0
+exec streamlit run src/main.py \
+    --server.port=8080 \
+    --server.address=0.0.0.0 \
+    --server.enableCORS=false \
+    --server.enableXsrfProtection=false

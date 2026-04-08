@@ -5,7 +5,7 @@ from openai import OpenAI
 from lightrag import LightRAG, QueryParam
 from lightrag.utils import EmbeddingFunc
 from typing import List, Dict
-from config import Config
+from src.config import Config
 from lightrag.prompt import PROMPTS
 import asyncio
 
@@ -367,6 +367,7 @@ class Chatbot:
                 prompt=prompt,
                 system_prompt=system_prompt,
                 history_messages=history_messages,
+                max_tokens=500,
             )
 
         async def tei_embed_func(texts: List[str]) -> np.ndarray:

@@ -1,0 +1,4 @@
+# UI requirements - Streamlit frontend only
+streamlit
+requests
+python-dotenv

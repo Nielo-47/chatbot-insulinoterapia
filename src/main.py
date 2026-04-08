@@ -1,23 +1,16 @@
-import asyncio
-import multiprocessing as mp
+import os
 import uuid
+import logging
 
 import streamlit as st
-import nest_asyncio
-import logging
+import requests
 from dotenv import load_dotenv
-from src.chatbot import Chatbot
-from src.config import Config
 
 # Initialize
-try:
-    nest_asyncio.apply()
-except ValueError as e:
-    logging.getLogger(__name__).warning(
-        "nest_asyncio could not patch the event loop (likely uvloop): %s. Continuing without nest_asyncio.",
-        e,
-    )
 load_dotenv()
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 st.set_page_config(
     page_title="Assistente de Insulinoterapia",
     page_icon="🩺",
@@ -25,127 +18,64 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
+# Backend API configuration
+BACKEND_URL = os.getenv("BACKEND_URL", "http://backend:8000")
+REQUEST_TIMEOUT = int(os.getenv("REQUEST_TIMEOUT", "60"))
 
-def get_event_loop():
-    """Get or create an event loop, avoiding nest_asyncio patched version."""
-    # In worker processes or when nest_asyncio failed to patch uvloop,
-    # directly create a new event loop to avoid the patched get_event_loop
+
+def check_backend_health():
+    """Check if backend API is available."""
     try:
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        return loop
+        response = requests.get(f"{BACKEND_URL}/health", timeout=5)
+        return response.status_code == 200
     except Exception as e:
-        logging.getLogger(__name__).error("Failed to create event loop: %s", e)
-        raise
-
-
-def rag_worker(input_queue, output_queue):
-    """Process RAG queries in a separate process."""
-    logging.info("[DEBUG] RAG worker starting...")
-    try:
-        nest_asyncio.apply()
-    except ValueError as e:
-        logging.getLogger(__name__).warning(
-            "nest_asyncio could not patch the event loop in worker (likely uvloop): %s. Continuing without nest_asyncio.",
-            e,
-        )
-
-    logging.info("[DEBUG] Creating Chatbot instance...")
-    chatbot = Chatbot()
-
-    logging.info("[DEBUG] Getting event loop...")
-    loop = get_event_loop()
-    logging.info("[DEBUG] Running chatbot.initialize_rag()...")
-    loop.run_until_complete(chatbot.initialize_rag())
-    logging.info("[DEBUG] RAG worker ready, entering message loop...")
-
-    while True:
-        qobj = input_queue.get()
-        if qobj is None:  # Stop sentinel
-            logging.info("[DEBUG] RAG worker received stop signal")
-            break
-
-        # Accept either a plain string or a dict with keys like {"query": ..., "session_id": ...}
-        if isinstance(qobj, dict):
-            query_text = qobj.get("query")
-            session_id = qobj.get("session_id")
-        else:
-            query_text = qobj
-            session_id = None
-
-        try:
-            logging.info("[DEBUG] RAG worker processing query: %s...", (query_text or "")[:50])
-            result = chatbot.query(query_text, session_id=session_id)
-            # result is now a dict with {"response": ..., "sources": ..., "source_count": ..., "summarized": ...}
-            was_summarized = result.get("summarized", False)
-            logging.info(
-                "[DEBUG] RAG worker sending result: response=%d chars, sources=%d%s",
-                len(result.get("response", "")),
-                result.get("source_count", 0),
-                ", CONVERSATION SUMMARIZED" if was_summarized else "",
-            )
-            output_queue.put(result)
-        except Exception as e:
-            logging.error("[ERROR] RAG worker exception: %s: %s", type(e).__name__, e)
-            import traceback
-
-            traceback.print_exc()
-            output_queue.put(e)
+        logger.error(f"Backend health check failed: {e}")
+        return False
 
 
 def initialize_session_state():
-    """Initialize RAG process and session state.
-
-    Preserve existing messages and token history if present. If a previous
-    RAG process exists but is not alive, recreate it without clearing
-    the conversation state.
-    """
-    rag_proc = st.session_state.get("rag_process")
-    if rag_proc is not None:
-        try:
-            if getattr(rag_proc, "is_alive", lambda: False)():
-                return
-        except Exception:
-            # If checking fails, proceed to recreate
-            pass
-
-    input_queue = mp.Queue()
-    output_queue = mp.Queue()
-    rag_process = mp.Process(target=rag_worker, args=(input_queue, output_queue))
-    rag_process.start()
-
-    st.session_state.input_queue = input_queue
-    st.session_state.output_queue = output_queue
-    st.session_state.rag_process = rag_process
-
+    """Initialize session state for UI."""
     # Initialize persistent conversation state only if missing
     st.session_state.setdefault("messages", [])
     st.session_state.setdefault("session_id", str(uuid.uuid4()))
+    st.session_state.setdefault("backend_available", None)
 
 
 def get_rag_response(query):
-    """Query RAG and return complete response with sources."""
-    logging.info("[DEBUG] get_rag_response called, timeout=%s", Config.RAG_TIMEOUT)
-    st.session_state.input_queue.put({"query": query, "session_id": st.session_state.session_id})
-    logging.info("[DEBUG] Query sent to worker (with session_id), waiting for response...")
-
+    """Query backend API and return complete response with sources."""
+    logger.info(f"Querying backend API with session_id: {st.session_state.session_id}")
+    
     try:
-        result = st.session_state.output_queue.get(timeout=Config.RAG_TIMEOUT)
-        logging.info("[DEBUG] Received result from worker")
-    except Exception as e:
-        logging.error("[ERROR] Timeout or error waiting for response: %s: %s", type(e).__name__, e)
-        raise
-
-    if isinstance(result, Exception):
-        logging.error(
-            "[ERROR] Worker returned exception: %s: %s",
-            type(result).__name__,
-            result,
+        response = requests.post(
+            f"{BACKEND_URL}/query",
+            json={
+                "query": query,
+                "session_id": st.session_state.session_id
+            },
+            timeout=REQUEST_TIMEOUT
         )
-        raise result
-
-    # Result should now be a dict with response, sources, source_count
-    return result
+        response.raise_for_status()
+        
+        result = response.json()
+        logger.info(
+            f"Received response: {len(result.get('response', ''))} chars, "
+            f"{result.get('source_count', 0)} sources"
+        )
+        
+        return result
+    
+    except requests.exceptions.Timeout:
+        logger.error("Request to backend timed out")
+        raise Exception("O servidor demorou muito para responder. Tente novamente.")
+    except requests.exceptions.ConnectionError:
+        logger.error("Could not connect to backend")
+        raise Exception("Não foi possível conectar ao servidor. Verifique se o serviço está ativo.")
+    except requests.exceptions.HTTPError as e:
+        logger.error(f"HTTP error from backend: {e}")
+        raise Exception(f"Erro no servidor: {e}")
+    except Exception as e:
+        logger.error(f"Unexpected error: {e}")
+        raise
 
 
 def handle_user_input(query):
@@ -196,6 +126,19 @@ def handle_user_input(query):
 def main():
     """Main application entry point."""
     initialize_session_state()
+
+    # Check backend health on first load
+    if st.session_state.backend_available is None:
+        with st.spinner("🔄 Conectando ao servidor..."):
+            st.session_state.backend_available = check_backend_health()
+    
+    # Show warning if backend is not available
+    if not st.session_state.backend_available:
+        st.error("⚠️ Não foi possível conectar ao servidor do chatbot. Verifique se o serviço backend está ativo.")
+        if st.button("🔄 Tentar reconectar"):
+            st.session_state.backend_available = check_backend_health()
+            st.rerun()
+        return
 
     st.title("🩺 Assistente de Insulinoterapia")
 

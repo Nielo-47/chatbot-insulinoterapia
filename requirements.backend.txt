@@ -1,0 +1,13 @@
+# Backend requirements - Full chatbot with RAG functionality
+lightrag-hku[api]
+nest-asyncio
+pypdf
+langchain-unstructured
+unstructured[pdf]
+tiktoken
+transformers
+torch
+fastapi
+uvicorn[standard]
+pydantic
+python-dotenv
