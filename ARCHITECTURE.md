@@ -1,82 +1,67 @@
-# Diabetes Chatbot - Backend/UI Separation Architecture
+# Diabetes Chatbot - React + FastAPI Architecture
 
 ## Overview
 
-The application has been refactored into a **microservices architecture** with separate backend and UI containers:
+The application follows a microservices architecture with a React SPA frontend and a FastAPI backend.
 
-### Architecture Components
-
-```
-┌─────────────┐
-│  Browser    │
-└──────┬──────┘
-       │ HTTP :8501
-       ▼
-┌─────────────┐
-│  UI (ui)    │  Streamlit Frontend
-│  Port: 8501 │
-└──────┬──────┘
-       │ HTTP :8000 (internal)
-       ▼
-┌─────────────┐
-│Backend (api)│  FastAPI + RAG
-│  Port: 8000 │
-└──────┬──────┘
-       │
-   ┌───┴────────────────┬──────────┬─────────┐
-   ▼                    ▼          ▼         ▼
-┌────────┐  ┌────────┐  ┌───────┐  ┌──────┐
-│ Redis  │  │ Qdrant │  │ Neo4j │  │ TEI  │
-└────────┘  └────────┘  └───────┘  └──────┘
+```text
+Browser
+  |
+  | HTTP :3000
+  v
+UI Container (React + Vite build served by Nginx)
+  |
+  | HTTP :8000 (internal Docker network)
+  v
+Backend Container (FastAPI + RAG)
+  |
+  +--> Redis
+  +--> Qdrant
+  +--> Neo4j
+  +--> TEI (embeddings)
 ```
 
 ## Services
 
-### 1. **Backend** (`backend` service)
-- **Technology**: FastAPI + uvicorn
-- **Port**: 8000 (internal: `backend:8000`)
-- **Dockerfile**: `dockerfile.backend`
-- **Requirements**: `requirements.backend.txt`
-- **Responsibilities**:
-  - RAG (Retrieval-Augmented Generation) engine
-  - LightRAG integration
-  - Session management
-  - Database connections (Redis, Qdrant, Neo4j)
-  - Document processing and embeddings
+### 1. backend
+- Technology: FastAPI + uvicorn
+- Port: 8000
+- Dockerfile: dockerfile.backend
+- Responsibilities:
+  - Query processing with RAG
+  - Session memory (in-process)
+  - Integration with Redis/Qdrant/Neo4j/TEI
+  - REST API contract for chat UI
 
-### 2. **UI** (`ui` service)
-- **Technology**: Streamlit
-- **Port**: 8501 (exposed to host)
-- **Dockerfile**: `dockerfile.ui`
-- **Requirements**: `requirements.ui.txt`
-- **Responsibilities**:
-  - User interface
-  - HTTP requests to backend API
-  - Message history display
-  - Session state management
+### 2. ui
+- Technology: React + TypeScript + TailwindCSS (built with Vite)
+- Runtime: Nginx static file serving
+- Port: 3000
+- Dockerfile: dockerfile.ui
+- Responsibilities:
+  - Chat interface and interaction state
+  - Session identifier persistence in browser storage
+  - API communication with backend
+  - Source list visualization and conversation reset flow
 
-### 3. **Supporting Services**
-- **Redis**: Key-value storage
-- **Qdrant**: Vector database
-- **Neo4j**: Graph database
-- **TEI**: Text embeddings inference (GPU-enabled)
+### 3. Supporting services
+- Redis: key-value data
+- Qdrant: vector storage
+- Neo4j: graph storage
+- TEI: embedding inference
 
-## API Endpoints
+## Backend API Contract
 
-### Backend API (`http://backend:8000`)
-
-#### `POST /query`
-Query the chatbot with a question.
-
-**Request:**
+### POST /query
+Request:
 ```json
 {
   "query": "Como aplicar insulina?",
-  "session_id": "optional-session-uuid"
+  "session_id": "optional-uuid"
 }
 ```
 
-**Response:**
+Response:
 ```json
 {
   "response": "Para aplicar insulina...",
@@ -87,10 +72,8 @@ Query the chatbot with a question.
 }
 ```
 
-#### `GET /health`
-Health check endpoint.
-
-**Response:**
+### GET /health
+Response:
 ```json
 {
   "status": "healthy",
@@ -98,127 +81,76 @@ Health check endpoint.
 }
 ```
 
-#### `DELETE /session/{session_id}`
-Clear conversation history for a session.
-
-**Response:**
+### DELETE /session/{session_id}
+Response:
 ```json
 {
   "message": "Session {session_id} cleared successfully"
 }
 ```
 
-## Running the Application
+## Frontend Structure
 
-### Development Mode (Separated Services)
-
-```bash
-# Start all services with the new architecture
-docker-compose up --build
-
-# Access the UI
-# http://localhost:8501
-
-# Access the backend API docs
-# http://localhost:8000/docs
-```
-
-### Legacy Mode (Monolithic)
-
-If you need to run the old monolithic version:
-
-```bash
-docker-compose --profile legacy up app
+```text
+frontend/
+  src/
+    app/
+      App.tsx
+    features/
+      chat/
+        ChatPage.tsx
+        components/
+          Composer.tsx
+          MessageBubble.tsx
+          SourceDrawer.tsx
+    lib/
+      api.ts
+      env.ts
+      storage.ts
+    types/
+      chat.ts
+    index.css
+    main.tsx
 ```
 
 ## Environment Variables
 
-Create a `.env` file based on `.env.example`:
+Root .env:
+- BACKEND_PORT=8000
+- UI_PORT=3000
+- VITE_API_URL=/api
+- VITE_REQUEST_TIMEOUT_MS=60000
+- FRONTEND_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
 
+Frontend .env (optional for local dev):
+- VITE_API_URL=/api
+- VITE_REQUEST_TIMEOUT_MS=60000
+
+## Running
+
+### Docker Compose
 ```bash
-# Backend API port (exposed to host)
-BACKEND_PORT=8000
-
-# UI port (exposed to host)
-UI_PORT=8501
-
-# Request timeout for UI -> Backend communication
-REQUEST_TIMEOUT=60
-
-# OpenRouter API credentials (required)
-OPENROUTER_API_KEY=your_key_here
-OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
-
-# LLM Model
-LLM_MODEL=openai/gpt-4
-
-# Neo4j password
-NEO4J_PASSWORD=password
+docker-compose up --build
 ```
 
-## Benefits of This Architecture
+- UI: http://localhost:3000
+- Backend docs: http://localhost:8000/docs
 
-1. **Scalability**: Backend and UI can scale independently
-2. **Separation of Concerns**: Clear boundary between API logic and presentation
-3. **Development**: Can develop/test backend and UI separately
-4. **Deployment**: Can deploy UI and backend on different servers/regions
-5. **Resource Efficiency**: UI container is lightweight (no heavy ML dependencies)
-6. **API Reusability**: Backend API can be consumed by other clients (mobile, etc.)
-
-## Health Checks
-
-- **Backend**: `curl http://localhost:8000/health`
-- **UI**: `curl http://localhost:8501/_stcore/health`
-
-## Logs
+The `kb_builder` service is now optional and only runs when requested via profile:
 
 ```bash
-# View backend logs
-docker-compose logs -f backend
-
-# View UI logs
-docker-compose logs -f ui
+docker compose --profile kb up --build kb_builder
 ```
 
-## Development Tips
-
-### Testing Backend Independently
-
+### Frontend local dev (without Docker)
 ```bash
-# Start only backend and dependencies
-docker-compose up redis qdrant neo4j tei backend
-
-# Test API
-curl http://localhost:8000/health
-
-# Access API docs
-# http://localhost:8000/docs
+cd frontend
+npm install
+npm run dev
 ```
 
-### Testing UI Independently
+## Security Notes
 
-```bash
-# Ensure backend is running first
-docker-compose up backend
-
-# In another terminal
-docker-compose up ui
-```
-
-## Migration Notes
-
-### From Monolithic to Microservices
-
-The previous `app` service has been split into:
-- `backend`: Handles all RAG/chatbot logic
-- `ui`: Streamlit interface only
-
-**Key Changes:**
-1. `src/main.py`: Now uses HTTP requests instead of multiprocessing
-2. `src/api.py`: New FastAPI backend service
-3. `dockerfile.backend`: Backend-specific Dockerfile
-4. `dockerfile.ui`: UI-specific Dockerfile
-5. `requirements.backend.txt`: Backend dependencies (heavy ML libraries)
-6. `requirements.ui.txt`: UI dependencies (lightweight)
-
-The old monolithic service is still available via `--profile legacy` for backward compatibility.
+- CORS uses explicit origins through FRONTEND_ORIGINS.
+- API currently has no authentication layer.
+- Session history is in-memory and resets when backend restarts.
