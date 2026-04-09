@@ -106,6 +106,20 @@ class ConversationService:
         self.cache.invalidate(conversation_id=conversation_id)
         return True
 
+    def delete_user(self, session_id: str) -> bool:
+        if not session_id:
+            return False
+
+        user_id = self._resolve_user_id(session_id=session_id, create_if_missing=False)
+        if user_id is None:
+            return False
+
+        conversation_id = self.conversations_repository.get_conversation_id_by_user(user_id)
+        if conversation_id is not None:
+            self.cache.invalidate(conversation_id=conversation_id)
+
+        return self.users_repository.delete_user_by_id(user_id)
+
     def replace_with_summary(self, session_id: str, summary: str) -> None:
         if not session_id:
             return

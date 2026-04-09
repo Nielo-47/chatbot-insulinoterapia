@@ -1,6 +1,6 @@
 from typing import Optional
 
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.exc import IntegrityError
 
 from backend.src.db.models import User
@@ -28,3 +28,12 @@ class UsersRepository:
             except IntegrityError:
                 db.rollback()
                 return db.execute(existing_stmt).scalar_one()
+
+    def delete_user_by_id(self, user_id: int) -> bool:
+        with get_db_session() as db:
+            user = db.get(User, user_id)
+            if user is None:
+                return False
+
+            db.delete(user)
+            return True
