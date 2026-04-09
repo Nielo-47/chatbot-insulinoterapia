@@ -1,6 +1,6 @@
 from typing import Optional
 
-from sqlalchemy import delete, select
+from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 
 from backend.src.db.models import User

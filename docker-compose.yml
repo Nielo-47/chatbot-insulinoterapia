@@ -156,32 +156,6 @@ services:
       retries: 3
       start_period: 30s
 
-  # DEPRECATED: Old monolithic app container - kept for reference, remove if not needed
-  app:
-    build: .
-    env_file: .env
-    restart: unless-stopped
-    environment:
-      - EMBEDDING_BINDING_HOST=http://tei:8080/v1
-      - PYTHONPATH=/app
-    volumes:
-      - ./data:/app/data
-    ports:
-      - "${PORT:-8080}:8080"
-    depends_on:
-      redis:
-        condition: service_healthy
-      tei:
-        condition: service_healthy
-      qdrant:
-        condition: service_started
-      neo4j:
-        condition: service_started
-    # Entrypoint will start Streamlit (checks dependencies)
-    command: ["bash", "/app/entrypoint.sh"]
-    profiles:
-      - legacy  # Only start this with --profile legacy
-
 volumes:
   redis_data:
   postgres_data:

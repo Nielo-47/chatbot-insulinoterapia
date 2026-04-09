@@ -25,13 +25,13 @@ RUN apt-get update && apt-get install -y \
 RUN pip install --upgrade pip
 
 # Copy requirements file
-COPY requirements.backend.txt .
+COPY backend/requirements.txt .
 
 # Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.backend.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
-COPY src/ ./src/
+COPY backend/src/ ./src/
 COPY scripts/ ./scripts/
 
 # Create data directory

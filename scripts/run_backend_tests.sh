@@ -21,6 +21,11 @@ cd "$ROOT_DIR"
 echo "Starting PostgreSQL container for integration tests..."
 docker compose up -d postgres >/dev/null
 
+echo "Waiting for PostgreSQL to be ready..."
+until docker compose exec -T postgres pg_isready -U "$POSTGRES_USER" -d "${POSTGRES_DB:-chatbot}" >/dev/null 2>&1; do
+  sleep 1
+done
+
 echo "Ensuring dedicated test database exists (${POSTGRES_TEST_DB})..."
 docker compose exec -T postgres psql -U "$POSTGRES_USER" -d postgres -c "CREATE DATABASE ${POSTGRES_TEST_DB};" >/dev/null 2>&1 || true
 
