@@ -5,7 +5,7 @@ from openai import OpenAI
 from lightrag import LightRAG, QueryParam
 from lightrag.utils import EmbeddingFunc
 from typing import List, Dict
-from src.config import Config
+from backend.src.config import Config
 from lightrag.prompt import PROMPTS
 import asyncio
 

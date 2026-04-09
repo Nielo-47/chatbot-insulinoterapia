@@ -12,8 +12,8 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from src.chatbot import Chatbot
-from src.config import Config
+from backend.src.chatbot import Chatbot
+from backend.src.config import Config
 
 
 def _parse_frontend_origins() -> List[str]:
