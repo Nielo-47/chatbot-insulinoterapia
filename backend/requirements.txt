@@ -1,0 +1,17 @@
+lightrag-hku[api]
+nest-asyncio
+pypdf
+langchain-unstructured
+unstructured[pdf]
+streamlit
+tiktoken
+transformers
+torch
+fastapi
+uvicorn[standard]
+pydantic
+python-dotenv
+sqlalchemy
+psycopg[binary]
+alembic
+redis

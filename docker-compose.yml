@@ -56,6 +56,24 @@ services:
     volumes:
       - redis_data:/data
 
+  postgres:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB:-chatbot}
+      - POSTGRES_USER=${POSTGRES_USER:-chatbot}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-chatbot}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-chatbot} -d ${POSTGRES_DB:-chatbot}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
   qdrant:
     image: qdrant/qdrant:latest
     restart: always
@@ -85,6 +103,9 @@ services:
       - VECTOR_STORAGE=QdrantVectorDBStorage
       - GRAPH_STORAGE=Neo4JStorage
       - REDIS_URI=redis://redis:6379/0
+      - DATABASE_URL=${DATABASE_URL:-postgresql+psycopg://chatbot:chatbot@postgres:5432/chatbot}
+      - CHAT_CACHE_REDIS_URL=${CHAT_CACHE_REDIS_URL:-redis://redis:6379/1}
+      - CHAT_CACHE_TTL_SECONDS=${CHAT_CACHE_TTL_SECONDS:-300}
       - QDRANT_URL=http://qdrant:6333
       - NEO4J_URI=bolt://neo4j:7687
       - NEO4J_USERNAME=neo4j
@@ -97,6 +118,8 @@ services:
       - "${BACKEND_PORT:-8000}:8000"
     depends_on:
       redis:
+        condition: service_healthy
+      postgres:
         condition: service_healthy
       tei:
         condition: service_healthy
@@ -133,34 +156,9 @@ services:
       retries: 3
       start_period: 30s
 
-  # DEPRECATED: Old monolithic app container - kept for reference, remove if not needed
-  app:
-    build: .
-    env_file: .env
-    restart: unless-stopped
-    environment:
-      - EMBEDDING_BINDING_HOST=http://tei:8080/v1
-      - PYTHONPATH=/app
-    volumes:
-      - ./data:/app/data
-    ports:
-      - "${PORT:-8080}:8080"
-    depends_on:
-      redis:
-        condition: service_healthy
-      tei:
-        condition: service_healthy
-      qdrant:
-        condition: service_started
-      neo4j:
-        condition: service_started
-    # Entrypoint will start Streamlit (checks dependencies)
-    command: ["bash", "/app/entrypoint.sh"]
-    profiles:
-      - legacy  # Only start this with --profile legacy
-
 volumes:
   redis_data:
+  postgres_data:
   qdrant_data:
   neo4j_data:
   neo4j_logs:
