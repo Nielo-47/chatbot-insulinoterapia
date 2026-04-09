@@ -1,10 +1,9 @@
 """FastAPI Backend for Diabetes Chatbot - Exposes RAG functionality via REST API."""
-import asyncio
 import logging
 import os
 import uuid
 from contextlib import asynccontextmanager
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 import nest_asyncio
 from dotenv import load_dotenv
@@ -13,7 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from backend.src.chatbot import Chatbot
-from backend.src.config import Config
+from backend.src.db import initialize_database
 
 
 def _parse_frontend_origins() -> List[str]:
@@ -46,6 +45,8 @@ async def lifespan(app: FastAPI):
     """Manage chatbot lifecycle."""
     global chatbot_instance
     logger.info("Initializing chatbot...")
+    initialize_database()
+    logger.info("Database initialized successfully")
     chatbot_instance = Chatbot()
     await chatbot_instance.initialize_rag()
     logger.info("Chatbot initialized successfully")
@@ -136,12 +137,11 @@ async def clear_session(session_id: str):
         raise HTTPException(status_code=503, detail="Chatbot not initialized")
     
     try:
-        if session_id in chatbot_instance.conversations:
-            del chatbot_instance.conversations[session_id]
+        cleared = chatbot_instance.reset_conversation(session_id)
+        if cleared:
             logger.info(f"Cleared session {session_id}")
             return {"message": f"Session {session_id} cleared successfully"}
-        else:
-            return {"message": f"Session {session_id} not found"}
+        return {"message": f"Session {session_id} not found"}
     except Exception as e:
         logger.error(f"Error clearing session: {type(e).__name__}: {e}")
         raise HTTPException(status_code=500, detail=f"Error clearing session: {str(e)}")

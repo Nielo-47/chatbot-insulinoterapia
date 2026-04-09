@@ -4,35 +4,33 @@ import numpy as np
 from openai import OpenAI
 from lightrag import LightRAG, QueryParam
 from lightrag.utils import EmbeddingFunc
-from typing import List, Dict
+from typing import Any, Dict, List, Literal, Optional
 from backend.src.config import Config
+from backend.src.services import ConversationService, build_conversation_service
 from lightrag.prompt import PROMPTS
 import asyncio
 
 
+QueryMode = Literal["local", "global", "hybrid", "naive", "mix", "bypass"]
+
+
 class Chatbot:
-    def __init__(self):
+    def __init__(self, conversation_service: Optional[ConversationService] = None):
         if not Config.OPENROUTER_API_KEY:
             raise RuntimeError("OPENROUTER_API_KEY is required. Set the OPENROUTER_API_KEY environment variable.")
 
-        self.llm_config = {
-            "api_key": Config.OPENROUTER_API_KEY,
-            "base_url": Config.OPENROUTER_BASE_URL,
-        }
-
-        self.embed_config = {
-            "api_key": os.getenv("EMBEDDING_API_KEY", ""),
-            "base_url": f"{Config.EMBED_HOST}/v1",
-        }
+        self.llm_api_key = Config.OPENROUTER_API_KEY
+        self.llm_base_url = Config.OPENROUTER_BASE_URL
+        self.embed_api_key = os.getenv("EMBEDDING_API_KEY", "")
+        self.embed_base_url = f"{Config.EMBED_HOST}/v1"
 
         print(f"[DEBUG] Chatbot initialized")
-        print(f"[DEBUG] LLM config: base_url={self.llm_config['base_url']}")
-        print(f"[DEBUG] Embed config: base_url={self.embed_config['base_url']}")
+        print(f"[DEBUG] LLM config: base_url={self.llm_base_url}")
+        print(f"[DEBUG] Embed config: base_url={self.embed_base_url}")
         print(f"[DEBUG] Config.EMBED_HOST={Config.EMBED_HOST}")
 
-        self.rag = None
-        # Store per-session conversation histories (session_id -> list of messages)
-        self.conversations: Dict[str, List[Dict]] = {}
+        self.rag: Optional[LightRAG] = None
+        self.conversation_service = conversation_service or build_conversation_service()
         # Track which sessions were just summarized
         self.sessions_summarized: set = set()
 
@@ -45,13 +43,13 @@ class Chatbot:
     async def _call_llm(
         self,
         prompt: str,
-        system_prompt: str = None,
-        history_messages: List[Dict] = None,
+        system_prompt: Optional[str] = None,
+        history_messages: Optional[List[Dict[str, str]]] = None,
         temperature: float = 0.1,
         max_tokens: int = 800,
     ) -> str:
         """Internal method to call LLM directly without RAG."""
-        client = OpenAI(**self.llm_config)
+        client = OpenAI(api_key=self.llm_api_key, base_url=self.llm_base_url)
 
         messages = []
         # Add system prompt if provided
@@ -88,17 +86,16 @@ class Chatbot:
                 },
             )
 
-            res_content = response.choices[0].message.content
-
-            return res_content.strip()
+            res_content = response.choices[0].message.content or ""
+            return str(res_content).strip()
 
         except Exception as e:
             print(f"Erro na chamada ao OpenRouter: {e}")
             return "Tive um problema técnico. Por favor, tente perguntar de outra forma."
 
     async def _critique_response(
-        self, original_query: str, response: str, history_messages: List[Dict] = None
-    ) -> Dict[str, any]:
+        self, original_query: str, response: str, history_messages: Optional[List[Dict[str, str]]] = None
+    ) -> Dict[str, Any]:
         """Critique a response for safety, accuracy, and quality using direct LLM call."""
         critique_prompt = Config.CRITIQUE_PROMPT.format(original_query=original_query, response=response)
 
@@ -142,7 +139,7 @@ class Chatbot:
                 "needs_refinement": False,
             }
 
-    def _build_refinement_query(self, original_query: str, previous_response: str, critique: Dict[str, any]) -> str:
+    def _build_refinement_query(self, original_query: str, previous_response: str, critique: Dict[str, Any]) -> str:
         """Build a refinement query for RAG."""
         issues_text = "\n- ".join(critique.get("issues", ["Nenhum problema identificado"]))
         suggestions_text = "\n- ".join(critique.get("suggestions", ["Mantenha a qualidade atual"]))
@@ -160,19 +157,18 @@ class Chatbot:
     def _init_session_if_missing(self, session_id: str):
         if not session_id:
             return
-        if session_id not in self.conversations:
-            self.conversations[session_id] = []
+        self.conversation_service.ensure_conversation(session_id)
 
     def _add_message_to_session(self, session_id: str, role: str, content: str):
         """Add a message to session history and trigger auto-summarization if needed."""
         if not session_id:
             return
-        self._init_session_if_missing(session_id)
-        self.conversations[session_id].append({"role": role, "content": content})
+        self.conversation_service.add_message(session_id=session_id, role=role, content=content)
 
         # Trigger summarization if too many messages
         try:
-            if len(self.conversations[session_id]) >= Config.SUMMARIZE_MAX_MESSAGES:
+            # Trigger summarization after assistant messages to avoid summarizing on partial turns.
+            if role == "assistant" and self.conversation_service.count_messages(session_id) >= Config.SUMMARIZE_MAX_MESSAGES:
                 self.summarize_session(session_id)
                 # Mark that this session was just summarized
                 self.sessions_summarized.add(session_id)
@@ -190,14 +186,14 @@ class Chatbot:
     def get_conversation(self, session_id: str) -> List[Dict]:
         if not session_id:
             return []
-        return list(self.conversations.get(session_id, []))
+        return self.conversation_service.get_conversation(session_id=session_id)
 
     def reset_conversation(self, session_id: str):
         if not session_id:
-            return
-        self.conversations[session_id] = []
+            return False
+        return self.conversation_service.reset_conversation(session_id=session_id)
 
-    def summarize_session(self, session_id: str, max_messages: int = None) -> str:
+    def summarize_session(self, session_id: str, max_messages: Optional[int] = None) -> str:
         """Summarize the conversation for the given session and replace the history with a single assistant message.
 
         Returns the summary text.
@@ -205,7 +201,7 @@ class Chatbot:
         if not session_id:
             return ""
         self._init_session_if_missing(session_id)
-        msgs = self.conversations.get(session_id, [])
+        msgs = self.conversation_service.get_conversation(session_id=session_id)
         if not msgs:
             return ""
 
@@ -235,8 +231,7 @@ class Chatbot:
             )
             summary = summary.strip()
             if summary:
-                # Replace conversation with a single assistant message containing the summary
-                self.conversations[session_id] = [{"role": "assistant", "content": summary}]
+                self.conversation_service.replace_with_summary(session_id=session_id, summary=summary)
                 logging.getLogger(__name__).info("Session %s summarized into one message", session_id)
                 return summary
         except Exception as e:
@@ -373,10 +368,10 @@ class Chatbot:
         async def tei_embed_func(texts: List[str]) -> np.ndarray:
             """Generate embeddings using TEI OpenAI-compatible API."""
             print(f"[DEBUG] tei_embed_func called with {len(texts) if isinstance(texts, list) else 1} text(s)")
-            print(f"[DEBUG] Using embed base_url: {self.embed_config['base_url']}")
+            print(f"[DEBUG] Using embed base_url: {self.embed_base_url}")
 
             try:
-                client = OpenAI(**self.embed_config)
+                client = OpenAI(api_key=self.embed_api_key, base_url=self.embed_base_url)
 
                 if isinstance(texts, str):
                     texts = [texts]
@@ -411,7 +406,13 @@ class Chatbot:
         await self.rag.initialize_storages()
         print("[DEBUG] RAG initialization complete")
 
-    def query(self, query: str, mode: str = "hybrid", session_id: str = None, **query_params) -> Dict:
+    def query(
+        self,
+        query: str,
+        mode: QueryMode = "hybrid",
+        session_id: Optional[str] = None,
+        **query_params,
+    ) -> Dict[str, Any]:
         """Query RAG with single-round refinement and return response with sources.
 
         If a session_id is provided, the method will use and update per-session conversation history
@@ -441,6 +442,9 @@ class Chatbot:
         # Step 1: Generate initial response using RAG
         logging.info("[Step 1/3] Generating initial response with RAG...")
         try:
+            if self.rag is None:
+                raise RuntimeError("RAG is not initialized")
+
             rag_data = self.rag.query_data(
                 query,
                 param=QueryParam(
@@ -485,57 +489,51 @@ class Chatbot:
             traceback.print_exc()
             raise
 
-        # Append assistant message to session history (user message added by UI)
+        final_response = initial_response
+
+        if initial_response != PROMPTS["fail_response"]:
+            # Step 2: Critique the response (no RAG, just LLM)
+            logging.info("[Step 2/3] Analyzing response quality...")
+
+            history_for_critique = list(conversation_history)
+            history_for_critique.extend(
+                [
+                    {"role": "user", "content": query},
+                    {"role": "assistant", "content": initial_response},
+                ]
+            )
+            critique = asyncio.run(
+                self._critique_response(query, initial_response, history_messages=history_for_critique)
+            )
+
+            # Check if refinement is needed
+            if not critique.get("needs_refinement", False):
+                logging.info("Response approved - no refinement needed")
+            else:
+                # Log issues found
+                if critique.get("issues"):
+                    logging.warning(f"Issues found: {', '.join(critique['issues'])}")
+
+                # Step 3: Refine response using RAG with refinement query
+                logging.info("[Step 3/3] Refining response...")
+                refinement_query = self._build_refinement_query(query, initial_response, critique)
+                final_response = asyncio.run(self._call_llm(refinement_query, history_messages=history_for_critique))
+                logging.info("Response refined and approved")
+        else:
+            logging.info("No relevant context found - returning default message")
+
+        # Persist turn after final response is known.
         if session_id:
-            self.add_assistant_message(session_id, initial_response)
+            self.add_user_message(session_id, query)
+            self.add_assistant_message(session_id, final_response)
 
         # Check if conversation was just summarized
         was_summarized = session_id in self.sessions_summarized
         if was_summarized:
             self.sessions_summarized.discard(session_id)
 
-        # Se não encontrou contexto, retorna a mensagem padrão sem refinar
-        if initial_response == PROMPTS["fail_response"]:
-            logging.info("No relevant context found - returning default message")
-            return {
-                "response": initial_response,
-                "sources": sources,
-                "source_count": source_count,
-                "summarized": was_summarized,
-            }
-
-        # Step 2: Critique the response (no RAG, just LLM)
-        logging.info("[Step 2/3] Analyzing response quality...")
-
-        history_for_critique = self.get_conversation(session_id) if session_id else conversation_history
-        critique = asyncio.run(self._critique_response(query, initial_response, history_messages=history_for_critique))
-
-        # Check if refinement is needed
-        if not critique.get("needs_refinement", False):
-            logging.info("Response approved - no refinement needed")
-            return {
-                "response": initial_response,
-                "sources": sources,
-                "source_count": source_count,
-                "summarized": was_summarized,
-            }
-
-        # Log issues found
-        if critique.get("issues"):
-            logging.warning(f"Issues found: {', '.join(critique['issues'])}")
-
-        # Step 3: Refine response using RAG with refinement query
-        logging.info("[Step 3/3] Refining response...")
-        refinement_query = self._build_refinement_query(query, initial_response, critique)
-        refined_response = asyncio.run(self._call_llm(refinement_query, history_messages=history_for_critique))
-
-        # Save refined response into session history
-        if session_id:
-            self.add_assistant_message(session_id, refined_response)
-
-        logging.info("Response refined and approved")
         return {
-            "response": refined_response,
+            "response": final_response,
             "sources": sources,
             "source_count": source_count,
             "summarized": was_summarized,
