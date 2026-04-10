@@ -19,7 +19,10 @@ from backend.src.repositories.users_repository import UsersRepository
 
 
 def _parse_frontend_origins() -> List[str]:
-    raw_origins = os.getenv("FRONTEND_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000")
+    raw_origins = os.getenv(
+        "FRONTEND_ORIGINS",
+        "http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174,http://127.0.0.1:5174",
+    )
     return [origin.strip() for origin in raw_origins.split(",") if origin.strip()]
 
 # Initialize

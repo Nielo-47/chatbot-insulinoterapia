@@ -1,6 +1,7 @@
 import { z } from 'zod'
 
 import { env } from './env'
+import { authStorage } from './auth'
 import type { QueryPayload, QueryResult } from '../types/chat'
 
 const queryResultSchema = z.object({
@@ -16,22 +17,52 @@ const healthResultSchema = z.object({
   message: z.string(),
 })
 
-async function request<T>(path: string, init: RequestInit, schema: z.ZodSchema<T>): Promise<T> {
+const loginResultSchema = z.object({
+  access_token: z.string(),
+  token_type: z.literal('bearer'),
+})
+
+const currentUserSchema = z.object({
+  id: z.number(),
+  username: z.string(),
+})
+
+async function request<T>(
+  path: string,
+  init: RequestInit,
+  schema: z.ZodSchema<T>,
+  options?: { skipAuth?: boolean },
+): Promise<T> {
   const controller = new AbortController()
   const timeout = window.setTimeout(() => controller.abort(), env.requestTimeoutMs)
+  const token = authStorage.getToken()
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...(init.headers || {}),
+  }
+
+  if (!options?.skipAuth && token) {
+    headers.Authorization = `Bearer ${token}`
+  }
 
   try {
     const response = await fetch(`${env.apiBaseUrl}${path}`, {
       ...init,
-      headers: {
-        'Content-Type': 'application/json',
-        ...(init.headers || {}),
-      },
+      headers,
       signal: controller.signal,
     })
 
     if (!response.ok) {
-      throw new Error(`Request failed with status ${response.status}`)
+      let detail = `Request failed with status ${response.status}`
+      try {
+        const errorBody = (await response.json()) as { detail?: string }
+        if (errorBody?.detail) {
+          detail = errorBody.detail
+        }
+      } catch {
+        // Keep the status-only message when the response is not JSON.
+      }
+      throw new Error(detail)
     }
 
     const json = await response.json()
@@ -57,6 +88,32 @@ async function request<T>(path: string, init: RequestInit, schema: z.ZodSchema<T
 
 export async function checkHealth(): Promise<void> {
   await request('/health', { method: 'GET' }, healthResultSchema)
+}
+
+export async function login(username: string, password: string): Promise<{ accessToken: string; tokenType: 'bearer' }> {
+  const result = await request(
+    '/auth/login',
+    {
+      method: 'POST',
+      body: JSON.stringify({ username, password }),
+    },
+    loginResultSchema,
+    { skipAuth: true },
+  )
+
+  authStorage.setToken(result.access_token)
+  return {
+    accessToken: result.access_token,
+    tokenType: result.token_type,
+  }
+}
+
+export async function getCurrentUser(): Promise<{ id: number; username: string }> {
+  return request('/auth/me', { method: 'GET' }, currentUserSchema)
+}
+
+export async function clearAuthSession(): Promise<void> {
+  authStorage.clearToken()
 }
 
 export async function sendQuery(payload: QueryPayload): Promise<QueryResult> {
