@@ -13,6 +13,15 @@ class UsersRepository:
             stmt = select(User.id).where(User.username == username)
             return db.execute(stmt).scalar_one_or_none()
 
+    def get_user_by_id(self, user_id: int) -> Optional[User]:
+        with get_db_session() as db:
+            return db.get(User, user_id)
+
+    def get_user_by_username(self, username: str) -> Optional[User]:
+        with get_db_session() as db:
+            stmt = select(User).where(User.username == username)
+            return db.execute(stmt).scalar_one_or_none()
+
     def get_or_create_user_id(self, username: str, hashed_password: str) -> int:
         with get_db_session() as db:
             existing_stmt = select(User.id).where(User.username == username)

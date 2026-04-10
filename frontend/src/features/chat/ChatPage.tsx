@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
-import { BotMessageSquare, RefreshCcw, ShieldCheck } from 'lucide-react'
+import { BotMessageSquare, LogOut, RefreshCcw, ShieldCheck } from 'lucide-react'
 import { v4 as uuidv4 } from 'uuid'
 
-import { checkHealth, clearSession, sendQuery } from '../../lib/api'
+import { clearSession, getCurrentUser, sendQuery, getConversationHistory } from '../../lib/api'
 import { sessionStorageService } from '../../lib/storage'
 import type { ChatMessage } from '../../types/chat'
 import { Composer } from './components/Composer'
@@ -21,12 +21,18 @@ function normalizeSources(sources: string[]) {
   return sources.map((source, index) => ({ id: `${index}-${source.slice(0, 24)}`, label: source }))
 }
 
-export function ChatPage() {
+interface ChatPageProps {
+  username: string
+  onLogout: () => Promise<void>
+}
+
+export function ChatPage({ username, onLogout }: ChatPageProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([initialMessage])
   const [activeSourcesMessage, setActiveSourcesMessage] = useState<ChatMessage | null>(null)
   const [sessionId, setSessionId] = useState<string>('')
   const [isSending, setIsSending] = useState(false)
   const [backendReady, setBackendReady] = useState<boolean | null>(null)
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
 
   useEffect(() => {
     const storedSessionId = sessionStorageService.getSessionId() || uuidv4()
@@ -37,8 +43,20 @@ export function ChatPage() {
   useEffect(() => {
     void (async () => {
       try {
-        await checkHealth()
+        await getCurrentUser()
         setBackendReady(true)
+        // Load conversation history after confirming user is authenticated
+        const history = await getConversationHistory()
+        if (history.length > 0) {
+          const loadedMessages: ChatMessage[] = history.map((msg, index) => ({
+            id: `history-${index}`,
+            role: msg.role as 'user' | 'assistant',
+            content: msg.content,
+            createdAt: new Date().toISOString(),
+          }))
+          // Load conversation history after the welcome message
+          setMessages([initialMessage, ...loadedMessages])
+        }
       } catch {
         setBackendReady(false)
       }
@@ -113,6 +131,15 @@ export function ChatPage() {
     setMessages([initialMessage])
   }
 
+  const handleLogout = async () => {
+    setIsLoggingOut(true)
+    try {
+      await onLogout()
+    } finally {
+      setIsLoggingOut(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(220,252,231,0.8),_rgba(255,255,255,1)_45%)]">
       <div className="mx-auto grid min-h-screen max-w-7xl grid-cols-1 gap-5 px-4 py-5 lg:grid-cols-[2.2fr_1fr] lg:px-8 lg:py-8">
@@ -126,14 +153,28 @@ export function ChatPage() {
               <h1 className="font-serif text-2xl font-semibold text-slate-900 lg:text-3xl">Chatbot de Insulinoterapia</h1>
               <p className="mt-1 text-sm text-slate-600">Perguntas e respostas com suporte de base de conhecimento e referencias.</p>
             </div>
-            <button
-              type="button"
-              onClick={() => void handleNewSession()}
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
-            >
-              <RefreshCcw className="h-4 w-4" />
-              Nova conversa
-            </button>
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">
+                <span className="font-medium">{username}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => void handleNewSession()}
+                className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+              >
+                <RefreshCcw className="h-4 w-4" />
+                Nova conversa
+              </button>
+              <button
+                type="button"
+                onClick={() => void handleLogout()}
+                disabled={isLoggingOut}
+                className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-70"
+              >
+                <LogOut className="h-4 w-4" />
+                {isLoggingOut ? 'Saindo...' : 'Sair'}
+              </button>
+            </div>
           </header>
 
           {backendReady === false && (

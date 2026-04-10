@@ -29,17 +29,17 @@ class Config:
     DB_POOL_SIZE = int(os.getenv("DB_POOL_SIZE", "10"))
     DB_MAX_OVERFLOW = int(os.getenv("DB_MAX_OVERFLOW", "20"))
 
+    # Authentication settings
+    AUTH_PASSWORD_ITERATIONS = int(os.getenv("AUTH_PASSWORD_ITERATIONS", "390000"))
+    AUTH_PASSWORD_SALT_BYTES = int(os.getenv("AUTH_PASSWORD_SALT_BYTES", "16"))
+
     # Conversation cache (Redis)
     CHAT_CACHE_REDIS_URL = os.getenv("CHAT_CACHE_REDIS_URL", os.getenv("REDIS_URI", "redis://localhost:6379/1"))
     CHAT_CACHE_TTL_SECONDS = int(os.getenv("CHAT_CACHE_TTL_SECONDS", "300"))
     CHAT_CACHE_KEY_PREFIX = os.getenv("CHAT_CACHE_KEY_PREFIX", "chat:conv")
     CONVERSATION_HISTORY_LIMIT = int(os.getenv("CONVERSATION_HISTORY_LIMIT", "50"))
 
-    # Temporary user identity strategy until JWT auth is implemented
-    TEMP_USER_PREFIX = os.getenv("TEMP_USER_PREFIX", "session")
-    AUTH_PLACEHOLDER_PASSWORD_HASH = os.getenv("AUTH_PLACEHOLDER_PASSWORD_HASH", "auth_deferred")
-
-    # JWT placeholders for future auth integration
+    # JWT settings
     JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "change-me")
     JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
     JWT_ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", "60"))

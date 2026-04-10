@@ -1,7 +1,6 @@
 import unittest
 from typing import Dict, List, Optional
 
-from backend.src.config import Config
 from backend.src.db.models import Base
 from backend.src.repositories.conversations_repository import ConversationsRepository
 from backend.src.repositories.messages_repository import MessagesRepository
@@ -58,13 +57,13 @@ class ConversationServiceIntegrationTests(unittest.TestCase):
         cls.engine.dispose()
 
     def test_add_messages_and_cache_warmup(self) -> None:
-        session_id = "alice-session"
+        user_id = self.users.get_or_create_user_id("alice", "hashed-password")
 
-        self.service.add_message(session_id, "user", "oi")
-        self.service.add_message(session_id, "assistant", "olá")
+        self.service.add_message(user_id, "user", "oi")
+        self.service.add_message(user_id, "assistant", "olá")
 
-        first_read = self.service.get_conversation(session_id)
-        second_read = self.service.get_conversation(session_id)
+        first_read = self.service.get_conversation(user_id)
+        second_read = self.service.get_conversation(user_id)
 
         self.assertEqual(first_read, [{"role": "user", "content": "oi"}, {"role": "assistant", "content": "olá"}])
         self.assertEqual(second_read, first_read)
@@ -73,37 +72,33 @@ class ConversationServiceIntegrationTests(unittest.TestCase):
         self.assertEqual(self.cache.invalidate_calls, 2)
 
     def test_reset_conversation_clears_messages_and_invalidates_cache(self) -> None:
-        session_id = "bob-session"
+        user_id = self.users.get_or_create_user_id("bob", "hashed-password")
 
-        self.service.add_message(session_id, "user", "primeira")
-        self.service.add_message(session_id, "assistant", "resposta")
-        self.service.get_conversation(session_id)
+        self.service.add_message(user_id, "user", "primeira")
+        self.service.add_message(user_id, "assistant", "resposta")
+        self.service.get_conversation(user_id)
 
-        was_cleared = self.service.reset_conversation(session_id)
+        was_cleared = self.service.reset_conversation(user_id)
 
         self.assertTrue(was_cleared)
-        self.assertEqual(self.service.count_messages(session_id), 0)
+        self.assertEqual(self.service.count_messages(user_id), 0)
         self.assertEqual(self.cache.invalidate_calls, 3)
-        self.assertEqual(self.service.get_conversation(session_id), [])
+        self.assertEqual(self.service.get_conversation(user_id), [])
 
     def test_delete_user_removes_all_data(self) -> None:
-        session_id = "carol-session"
-        username = f"{Config.TEMP_USER_PREFIX}:{session_id}"
+        user_id = self.users.get_or_create_user_id("carol", "hashed-password")
 
-        self.service.add_message(session_id, "user", "pergunta")
-        self.service.add_message(session_id, "assistant", "resposta")
+        self.service.add_message(user_id, "user", "pergunta")
+        self.service.add_message(user_id, "assistant", "resposta")
 
-        user_id = self.users.get_user_id(username)
-        self.assertIsNotNone(user_id)
-        assert user_id is not None
         conversation_id = self.conversations.get_conversation_id_by_user(user_id)
         self.assertIsNotNone(conversation_id)
         assert conversation_id is not None
 
-        deleted = self.service.delete_user(session_id)
+        deleted = self.service.delete_user(user_id)
 
         self.assertTrue(deleted)
-        self.assertIsNone(self.users.get_user_id(username))
+        self.assertIsNone(self.users.get_user_by_id(user_id))
         self.assertIsNone(self.conversations.get_conversation_id_by_user(user_id))
         self.assertEqual(self.messages.count_messages(conversation_id), 0)
         self.assertGreaterEqual(self.cache.invalidate_calls, 3)

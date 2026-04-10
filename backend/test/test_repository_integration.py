@@ -1,5 +1,6 @@
 import unittest
 
+from backend.src.auth import hash_password, verify_password
 from backend.src.db.models import Base
 from backend.src.repositories.conversations_repository import ConversationsRepository
 from backend.src.repositories.messages_repository import MessagesRepository
@@ -28,13 +29,18 @@ class RepositoryIntegrationTests(unittest.TestCase):
         cls.engine.dispose()
 
     def test_create_user_conversation_and_messages(self) -> None:
-        user_id = self.users.get_or_create_user_id("alice", "hashed-password")
+        password_hash = hash_password("hashed-password")
+        user_id = self.users.get_or_create_user_id("alice", password_hash)
         conversation_id = self.conversations.get_or_create_conversation_id(user_id)
+        user = self.users.get_user_by_username("alice")
 
         self.messages.add_message(conversation_id, "user", "oi")
         self.messages.add_message(conversation_id, "assistant", "olá")
 
         self.assertEqual(self.users.get_user_id("alice"), user_id)
+        self.assertIsNotNone(user)
+        assert user is not None
+        self.assertTrue(verify_password("hashed-password", user.hashed_password))
         self.assertEqual(self.conversations.get_conversation_id_by_user(user_id), conversation_id)
         self.assertEqual(self.messages.count_messages(conversation_id), 2)
         self.assertEqual(
@@ -74,10 +80,20 @@ class RepositoryIntegrationTests(unittest.TestCase):
         self.assertEqual(self.messages.count_messages(conversation_id), 0)
 
     def test_duplicate_username_returns_same_user(self) -> None:
-        first_id = self.users.get_or_create_user_id("dana", "hash-1")
-        second_id = self.users.get_or_create_user_id("dana", "hash-2")
+        first_id = self.users.get_or_create_user_id("dana", hash_password("hash-1"))
+        second_id = self.users.get_or_create_user_id("dana", hash_password("hash-2"))
 
         self.assertEqual(first_id, second_id)
+
+    def test_get_user_by_id_returns_persisted_user(self) -> None:
+        user_id = self.users.get_or_create_user_id("eve", hash_password("secret"))
+
+        user = self.users.get_user_by_id(user_id)
+
+        self.assertIsNotNone(user)
+        assert user is not None
+        self.assertEqual(user.username, "eve")
+        self.assertTrue(verify_password("secret", user.hashed_password))
 
 
 if __name__ == "__main__":
