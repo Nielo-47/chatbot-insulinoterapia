@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { BotMessageSquare, LogOut, RefreshCcw, ShieldCheck } from 'lucide-react'
 import { v4 as uuidv4 } from 'uuid'
 
-import { clearSession, getCurrentUser, sendQuery } from '../../lib/api'
+import { clearSession, getCurrentUser, sendQuery, getConversationHistory } from '../../lib/api'
 import { sessionStorageService } from '../../lib/storage'
 import type { ChatMessage } from '../../types/chat'
 import { Composer } from './components/Composer'
@@ -45,6 +45,18 @@ export function ChatPage({ username, onLogout }: ChatPageProps) {
       try {
         await getCurrentUser()
         setBackendReady(true)
+        // Load conversation history after confirming user is authenticated
+        const history = await getConversationHistory()
+        if (history.length > 0) {
+          const loadedMessages: ChatMessage[] = history.map((msg, index) => ({
+            id: `history-${index}`,
+            role: msg.role as 'user' | 'assistant',
+            content: msg.content,
+            createdAt: new Date().toISOString(),
+          }))
+          // Keep the welcome message but add history before it
+          setMessages([initialMessage, ...loadedMessages])
+        }
       } catch {
         setBackendReady(false)
       }

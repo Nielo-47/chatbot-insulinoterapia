@@ -132,6 +132,15 @@ class QueryResponse(BaseModel):
     session_id: str
 
 
+class ConversationMessage(BaseModel):
+    role: str
+    content: str
+
+
+class ConversationHistoryResponse(BaseModel):
+    messages: List[ConversationMessage]
+
+
 class HealthResponse(BaseModel):
     status: str
     message: str
@@ -150,6 +159,23 @@ def login(request: LoginRequest):
 @app.get("/auth/me", response_model=AuthenticatedUser)
 def read_current_user(current_user: AuthenticatedUser = Depends(get_current_user)):
     return current_user
+
+
+@app.get("/user/conversations", response_model=ConversationHistoryResponse)
+def get_user_conversations(current_user: AuthenticatedUser = Depends(get_current_user)):
+    """Get conversation history for the authenticated user."""
+    if chatbot_instance is None:
+        raise HTTPException(status_code=503, detail="Chatbot not initialized")
+    
+    try:
+        messages = chatbot_instance.get_conversation(current_user.id)
+        logger.info(f"Retrieved {len(messages)} messages for user {current_user.id}")
+        return ConversationHistoryResponse(
+            messages=[ConversationMessage(role=msg["role"], content=msg["content"]) for msg in messages]
+        )
+    except Exception as e:
+        logger.error(f"Error retrieving conversation history: {type(e).__name__}: {e}")
+        raise HTTPException(status_code=500, detail=f"Error retrieving conversation history: {str(e)}")
 
 
 @app.get("/health", response_model=HealthResponse)

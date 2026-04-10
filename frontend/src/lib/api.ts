@@ -27,6 +27,15 @@ const currentUserSchema = z.object({
   username: z.string(),
 })
 
+const conversationHistorySchema = z.object({
+  messages: z.array(
+    z.object({
+      role: z.string(),
+      content: z.string(),
+    }),
+  ),
+})
+
 async function request<T>(
   path: string,
   init: RequestInit,
@@ -114,6 +123,11 @@ export async function getCurrentUser(): Promise<{ id: number; username: string }
 
 export async function clearAuthSession(): Promise<void> {
   authStorage.clearToken()
+}
+
+export async function getConversationHistory(): Promise<{ role: string; content: string }[]> {
+  const result = await request('/user/conversations', { method: 'GET' }, conversationHistorySchema)
+  return result.messages
 }
 
 export async function sendQuery(payload: QueryPayload): Promise<QueryResult> {
