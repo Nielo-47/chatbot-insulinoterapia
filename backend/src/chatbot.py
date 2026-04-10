@@ -1,5 +1,6 @@
 import os
 import logging
+import uuid
 import numpy as np
 from openai import OpenAI
 from lightrag import LightRAG, QueryParam
@@ -31,8 +32,8 @@ class Chatbot:
 
         self.rag: Optional[LightRAG] = None
         self.conversation_service = conversation_service or build_conversation_service()
-        # Track which sessions were just summarized
-        self.sessions_summarized: set = set()
+        # Track which users were just summarized
+        self.sessions_summarized: set[int] = set()
 
         PROMPTS["fail_response"] = (
             "Desculpe, não encontrei informações sobre isso nos meus manuais de diabetes e insulinoterapia. "
@@ -154,54 +155,54 @@ class Chatbot:
         return refinement_query
 
     # --- Conversation/session helpers ---
-    def _init_session_if_missing(self, session_id: str):
-        if not session_id:
+    def _init_session_if_missing(self, user_id: int):
+        if user_id is None:
             return
-        self.conversation_service.ensure_conversation(session_id)
+        self.conversation_service.ensure_conversation(user_id)
 
-    def _add_message_to_session(self, session_id: str, role: str, content: str):
-        """Add a message to session history and trigger auto-summarization if needed."""
-        if not session_id:
+    def _add_message_to_session(self, user_id: int, role: str, content: str):
+        """Add a message to conversation history and trigger auto-summarization if needed."""
+        if user_id is None:
             return
-        self.conversation_service.add_message(session_id=session_id, role=role, content=content)
+        self.conversation_service.add_message(user_id=user_id, role=role, content=content)
 
         # Trigger summarization if too many messages
         try:
             # Trigger summarization after assistant messages to avoid summarizing on partial turns.
-            if role == "assistant" and self.conversation_service.count_messages(session_id) >= Config.SUMMARIZE_MAX_MESSAGES:
-                self.summarize_session(session_id)
-                # Mark that this session was just summarized
-                self.sessions_summarized.add(session_id)
+            if role == "assistant" and self.conversation_service.count_messages(user_id) >= Config.SUMMARIZE_MAX_MESSAGES:
+                self.summarize_session(user_id)
+                # Mark that this user was just summarized
+                self.sessions_summarized.add(user_id)
         except Exception as e:
-            logging.getLogger(__name__).warning("Failed to auto-summarize session %s: %s", session_id, e)
+            logging.getLogger(__name__).warning("Failed to auto-summarize user %s: %s", user_id, e)
 
-    def add_user_message(self, session_id: str, content: str):
-        """Add user message to session."""
-        self._add_message_to_session(session_id, "user", content)
+    def add_user_message(self, user_id: int, content: str):
+        """Add user message to conversation."""
+        self._add_message_to_session(user_id, "user", content)
 
-    def add_assistant_message(self, session_id: str, content: str):
-        """Add assistant message to session."""
-        self._add_message_to_session(session_id, "assistant", content)
+    def add_assistant_message(self, user_id: int, content: str):
+        """Add assistant message to conversation."""
+        self._add_message_to_session(user_id, "assistant", content)
 
-    def get_conversation(self, session_id: str) -> List[Dict]:
-        if not session_id:
+    def get_conversation(self, user_id: int) -> List[Dict]:
+        if user_id is None:
             return []
-        return self.conversation_service.get_conversation(session_id=session_id)
+        return self.conversation_service.get_conversation(user_id=user_id)
 
-    def reset_conversation(self, session_id: str):
-        if not session_id:
+    def reset_conversation(self, user_id: int):
+        if user_id is None:
             return False
-        return self.conversation_service.reset_conversation(session_id=session_id)
+        return self.conversation_service.reset_conversation(user_id=user_id)
 
-    def summarize_session(self, session_id: str, max_messages: Optional[int] = None) -> str:
-        """Summarize the conversation for the given session and replace the history with a single assistant message.
+    def summarize_session(self, user_id: int, max_messages: Optional[int] = None) -> str:
+        """Summarize the conversation for the given user and replace the history with a single assistant message.
 
         Returns the summary text.
         """
-        if not session_id:
+        if user_id is None:
             return ""
-        self._init_session_if_missing(session_id)
-        msgs = self.conversation_service.get_conversation(session_id=session_id)
+        self._init_session_if_missing(user_id)
+        msgs = self.conversation_service.get_conversation(user_id=user_id)
         if not msgs:
             return ""
 
@@ -231,11 +232,11 @@ class Chatbot:
             )
             summary = summary.strip()
             if summary:
-                self.conversation_service.replace_with_summary(session_id=session_id, summary=summary)
-                logging.getLogger(__name__).info("Session %s summarized into one message", session_id)
+                self.conversation_service.replace_with_summary(user_id=user_id, summary=summary)
+                logging.getLogger(__name__).info("User %s summarized into one message", user_id)
                 return summary
         except Exception as e:
-            logging.getLogger(__name__).warning("Error summarizing session %s: %s", session_id, e)
+            logging.getLogger(__name__).warning("Error summarizing user %s: %s", user_id, e)
 
         return ""
 
@@ -409,6 +410,7 @@ class Chatbot:
     def query(
         self,
         query: str,
+        user_id: int,
         mode: QueryMode = "hybrid",
         session_id: Optional[str] = None,
         **query_params,
@@ -429,9 +431,14 @@ class Chatbot:
         logging.info("[DEBUG] query() called with mode=%s", mode)
         logging.info("[DEBUG] Original query: %s...", query[:100])
 
+        if user_id is None:
+            raise ValueError("user_id is required")
+
+        session_label = session_id or str(uuid.uuid4())
+
         # Build conversation_history from session storage or provided params
         conversation_history = (
-            self.get_conversation(session_id) if session_id else query_params.get("conversation_history", [])
+            self.get_conversation(user_id) if user_id is not None else query_params.get("conversation_history", [])
         )
 
         # Initialize sources tracking and summarization flag
@@ -523,18 +530,18 @@ class Chatbot:
             logging.info("No relevant context found - returning default message")
 
         # Persist turn after final response is known.
-        if session_id:
-            self.add_user_message(session_id, query)
-            self.add_assistant_message(session_id, final_response)
+        self.add_user_message(user_id, query)
+        self.add_assistant_message(user_id, final_response)
 
         # Check if conversation was just summarized
-        was_summarized = session_id in self.sessions_summarized
+        was_summarized = user_id in self.sessions_summarized
         if was_summarized:
-            self.sessions_summarized.discard(session_id)
+            self.sessions_summarized.discard(user_id)
 
         return {
             "response": final_response,
             "sources": sources,
             "source_count": source_count,
             "summarized": was_summarized,
+            "session_id": session_label,
         }

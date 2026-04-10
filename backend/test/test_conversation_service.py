@@ -5,18 +5,8 @@ from backend.src.services.conversation_service import ConversationService
 
 
 class InMemoryUsersRepository:
-    def __init__(self) -> None:
-        self._ids: Dict[str, int] = {}
-        self._next = 1
-
-    def get_user_id(self, username: str) -> Optional[int]:
-        return self._ids.get(username)
-
-    def get_or_create_user_id(self, username: str, hashed_password: str) -> int:
-        if username not in self._ids:
-            self._ids[username] = self._next
-            self._next += 1
-        return self._ids[username]
+    def delete_user_by_id(self, user_id: int) -> bool:
+        return False
 
 
 class InMemoryConversationsRepository:
@@ -87,17 +77,17 @@ class ConversationServiceTests(unittest.TestCase):
         )
 
     def test_single_conversation_per_user(self) -> None:
-        session_id = "abc"
-        self.service.add_message(session_id, "user", "oi")
-        self.service.add_message(session_id, "assistant", "ola")
-        self.service.add_message(session_id, "user", "tudo bem?")
+        user_id = 1
+        self.service.add_message(user_id, "user", "oi")
+        self.service.add_message(user_id, "assistant", "ola")
+        self.service.add_message(user_id, "user", "tudo bem?")
 
-        history = self.service.get_conversation(session_id)
+        history = self.service.get_conversation(user_id)
         self.assertEqual(len(history), 3)
 
-        # Re-adding messages to the same session should not create a second conversation.
-        self.service.add_message(session_id, "assistant", "tudo certo")
-        history = self.service.get_conversation(session_id)
+        # Re-adding messages to the same user should not create a second conversation.
+        self.service.add_message(user_id, "assistant", "tudo certo")
+        history = self.service.get_conversation(user_id)
         self.assertEqual(len(history), 4)
 
         # touch_conversation should be called for each write path.
@@ -105,12 +95,12 @@ class ConversationServiceTests(unittest.TestCase):
         self.assertEqual(len(set(self.conversations_repo.touched_ids)), 1)
 
     def test_reset_conversation(self) -> None:
-        session_id = "xyz"
-        self.service.add_message(session_id, "user", "primeira")
-        self.service.add_message(session_id, "assistant", "resposta")
+        user_id = 2
+        self.service.add_message(user_id, "user", "primeira")
+        self.service.add_message(user_id, "assistant", "resposta")
 
-        was_cleared = self.service.reset_conversation(session_id)
-        history = self.service.get_conversation(session_id)
+        was_cleared = self.service.reset_conversation(user_id)
+        history = self.service.get_conversation(user_id)
 
         self.assertTrue(was_cleared)
         self.assertEqual(history, [])
