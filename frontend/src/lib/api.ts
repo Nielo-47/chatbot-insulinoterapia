@@ -134,6 +134,6 @@ export async function sendQuery(payload: QueryPayload): Promise<QueryResult> {
   return request('/query', { method: 'POST', body: JSON.stringify(payload) }, queryResultSchema)
 }
 
-export async function clearSession(sessionId: string): Promise<void> {
-  await request(`/session/${sessionId}`, { method: 'DELETE' }, z.object({ message: z.string() }))
+export async function clearSession(_sessionId?: string): Promise<void> {
+  await request(`/user/conversations`, { method: 'DELETE' }, z.object({ message: z.string() }))
 }

@@ -87,10 +87,38 @@ def get_current_user(credentials: Optional[HTTPAuthorizationCredentials] = Depen
     return AuthenticatedUser(id=user.id, username=user.username)
 
 
+_DEFAULT_JWT_SECRET = "change-me"
+_MIN_JWT_SECRET_LENGTH = 32
+
+
+def _validate_jwt_secret() -> None:
+    """Fail fast if JWT_SECRET_KEY is weak or left as the default value.
+
+    In development (DEV=true) a warning is logged instead of raising, so
+    local environments can start without a production-grade secret.
+    """
+    secret = Config.JWT_SECRET_KEY
+    is_dev = os.getenv("DEV", "false").lower() in ("1", "true", "yes")
+    weak = secret == _DEFAULT_JWT_SECRET or len(secret) < _MIN_JWT_SECRET_LENGTH
+    if weak:
+        if is_dev:
+            logger.warning(
+                "JWT_SECRET_KEY is using a weak/default value. "
+                "Set a strong secret (≥%d chars) before deploying to production.",
+                _MIN_JWT_SECRET_LENGTH,
+            )
+        else:
+            raise RuntimeError(
+                f"JWT_SECRET_KEY must be set to a strong secret (at least {_MIN_JWT_SECRET_LENGTH} characters). "
+                "Set DEV=true to bypass this check in local development."
+            )
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Manage chatbot lifecycle."""
     global chatbot_instance
+    _validate_jwt_secret()
     logger.info("Initializing chatbot...")
     initialize_database()
     logger.info("Database initialized successfully")
@@ -175,7 +203,7 @@ def get_user_conversations(current_user: AuthenticatedUser = Depends(get_current
         )
     except Exception as e:
         logger.error(f"Error retrieving conversation history: {type(e).__name__}: {e}")
-        raise HTTPException(status_code=500, detail=f"Error retrieving conversation history: {str(e)}")
+        raise HTTPException(status_code=500, detail="Error retrieving conversation history")
 
 
 @app.get("/health", response_model=HealthResponse)
@@ -212,24 +240,24 @@ def query_chatbot(request: QueryRequest, current_user: AuthenticatedUser = Depen
     
     except Exception as e:
         logger.error(f"Error processing query: {type(e).__name__}: {e}")
-        raise HTTPException(status_code=500, detail=f"Error processing query: {str(e)}")
+        raise HTTPException(status_code=500, detail="Error processing query")
 
 
-@app.delete("/session/{session_id}")
-async def clear_session(session_id: str, current_user: AuthenticatedUser = Depends(get_current_user)):
-    """Clear conversation history for a specific session."""
+@app.delete("/user/conversations")
+async def clear_user_conversations(current_user: AuthenticatedUser = Depends(get_current_user)):
+    """Clear conversation history for the authenticated user."""
     if chatbot_instance is None:
         raise HTTPException(status_code=503, detail="Chatbot not initialized")
     
     try:
         cleared = chatbot_instance.reset_conversation(current_user.id)
         if cleared:
-            logger.info(f"Cleared user {current_user.id} for session {session_id}")
-            return {"message": f"Session {session_id} cleared successfully"}
-        return {"message": f"Session {session_id} not found"}
+            logger.info(f"Cleared conversation for user {current_user.id}")
+            return {"message": "Conversation cleared successfully"}
+        return {"message": "No conversation found"}
     except Exception as e:
-        logger.error(f"Error clearing session: {type(e).__name__}: {e}")
-        raise HTTPException(status_code=500, detail=f"Error clearing session: {str(e)}")
+        logger.error(f"Error clearing conversation: {type(e).__name__}: {e}")
+        raise HTTPException(status_code=500, detail="Error clearing conversation")
 
 
 @app.get("/")

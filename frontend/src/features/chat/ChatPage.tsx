@@ -54,7 +54,7 @@ export function ChatPage({ username, onLogout }: ChatPageProps) {
             content: msg.content,
             createdAt: new Date().toISOString(),
           }))
-          // Keep the welcome message but add history before it
+          // Load conversation history after the welcome message
           setMessages([initialMessage, ...loadedMessages])
         }
       } catch {

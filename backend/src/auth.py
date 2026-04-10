@@ -54,7 +54,7 @@ def verify_password(password: str, hashed_password: str) -> bool:
 
 def create_access_token(user_id: int, username: str, expires_minutes: Optional[int] = None) -> str:
     now = datetime.now(timezone.utc)
-    expire_delta = timedelta(minutes=expires_minutes or Config.JWT_ACCESS_TOKEN_EXPIRE_MINUTES)
+    expire_delta = timedelta(minutes=expires_minutes if expires_minutes is not None else Config.JWT_ACCESS_TOKEN_EXPIRE_MINUTES)
     payload: dict[str, Any] = {
         "sub": str(user_id),
         "username": username,

@@ -29,6 +29,12 @@ class DummyChatbot:
             "session_id": session_id or "generated-session",
         }
 
+    def get_conversation(self, user_id: int):
+        return [
+            {"role": "user", "content": "Hello"},
+            {"role": "assistant", "content": "Hi there"},
+        ]
+
     def reset_conversation(self, user_id: int):
         self.reset_calls.append(user_id)
         return True
@@ -134,20 +140,40 @@ class ApiEndpointTests(unittest.TestCase):
         self.assertEqual(self.chatbot.queries[-1], ("Olá", self.user_id, "session-123"))
 
     def test_clear_session_endpoint_requires_authentication(self) -> None:
-        response = self.client.delete("/session/known-session")
+        response = self.client.delete("/user/conversations")
 
         self.assertEqual(response.status_code, 401)
 
     def test_clear_session_endpoint_clears_current_user(self) -> None:
         token = self.client.post("/auth/login", json={"username": "alice", "password": "password123"}).json()["access_token"]
         response = self.client.delete(
-            "/session/known-session",
+            "/user/conversations",
             headers={"Authorization": f"Bearer {token}"},
         )
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()["message"], "Session known-session cleared successfully")
+        self.assertEqual(response.json()["message"], "Conversation cleared successfully")
         self.assertEqual(self.chatbot.reset_calls, [self.user_id])
+
+    def test_get_conversations_requires_authentication(self) -> None:
+        response = self.client.get("/user/conversations")
+
+        self.assertEqual(response.status_code, 401)
+
+    def test_get_conversations_returns_message_list(self) -> None:
+        token = self.client.post("/auth/login", json={"username": "alice", "password": "password123"}).json()["access_token"]
+        response = self.client.get("/user/conversations", headers={"Authorization": f"Bearer {token}"})
+
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertIn("messages", payload)
+        messages = payload["messages"]
+        self.assertIsInstance(messages, list)
+        self.assertEqual(len(messages), 2)
+        self.assertEqual(messages[0]["role"], "user")
+        self.assertEqual(messages[0]["content"], "Hello")
+        self.assertEqual(messages[1]["role"], "assistant")
+        self.assertEqual(messages[1]["content"], "Hi there")
 
     def test_me_endpoint_returns_current_user(self) -> None:
         token = self.client.post("/auth/login", json={"username": "alice", "password": "password123"}).json()["access_token"]

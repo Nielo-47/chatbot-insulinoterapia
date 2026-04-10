@@ -8,8 +8,8 @@ interface LoginPageProps {
 }
 
 export function LoginPage({ onLogin, errorMessage, isSubmitting }: LoginPageProps) {
-  const [username, setUsername] = useState('demo')
-  const [password, setPassword] = useState('demo12345')
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
