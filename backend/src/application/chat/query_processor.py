@@ -1,13 +1,13 @@
-import asyncio
+import json
 import logging
 import uuid
-from typing import Any, Callable, Coroutine, Dict, Optional
+from typing import Any, Callable, Coroutine, Dict, List, Optional
 
 from backend.src.application.chat.conversation_service import ConversationService
-from backend.src.application.chat.response_refinement import build_refinement_query, critique_response
 from backend.src.config import Config
-from backend.src.utils.sources_text_cleaner import extract_sources
-from backend.src.infrastructure.rag.rag_client import QueryMode, RAGRuntime
+from backend.src.domain.query import QueryMode
+from backend.src.infrastructure.rag.client import RAGRuntime
+from backend.src.infrastructure.rag.sources_text_cleaner import extract_sources
 from lightrag.prompt import PROMPTS
 
 
@@ -22,7 +22,61 @@ class QueryProcessor:
         self.conversation_service = conversation_service
         self.call_llm = call_llm
 
-    def query(
+    async def _critique_response(
+        self,
+        original_query: str,
+        response: str,
+        history_messages: Optional[List[Dict[str, str]]] = None,
+    ) -> Dict[str, Any]:
+        critique_prompt = Config.CRITIQUE_PROMPT.format(original_query=original_query, response=response)
+
+        critique_system_prompt = (
+            "Você é um revisor médico rigoroso. Responda APENAS com JSON válido, "
+            "sem texto adicional antes ou depois."
+        )
+
+        critique_text = await self.call_llm(
+            prompt=critique_prompt,
+            system_prompt=critique_system_prompt,
+            history_messages=history_messages,
+            temperature=0.0,
+            max_tokens=600,
+        )
+
+        try:
+            critique_text = critique_text.strip()
+            if critique_text.startswith("```"):
+                critique_text = critique_text.split("```")[1]
+                if critique_text.startswith("json"):
+                    critique_text = critique_text[4:]
+
+            return json.loads(critique_text.strip())
+        except json.JSONDecodeError as e:
+            print(f"Erro ao parsear crítica: {e}")
+            return {
+                "is_safe": True,
+                "is_accurate": True,
+                "is_clear": True,
+                "is_complete": True,
+                "is_ethical": True,
+                "issues": [],
+                "suggestions": [],
+                "needs_refinement": False,
+            }
+
+    @staticmethod
+    def _build_refinement_query(original_query: str, previous_response: str, critique: Dict[str, Any]) -> str:
+        issues_text = "\n- ".join(critique.get("issues", ["Nenhum problema identificado"]))
+        suggestions_text = "\n- ".join(critique.get("suggestions", ["Mantenha a qualidade atual"]))
+
+        return Config.REFINEMENT_PROMPT.format(
+            original_query=original_query,
+            previous_response=previous_response,
+            issues_text=issues_text,
+            suggestions_text=suggestions_text,
+        )
+
+    async def query(
         self,
         query: str,
         user_id: int,
@@ -70,12 +124,10 @@ class QueryProcessor:
                 data_preview = str(rag_data)[:500] if rag_data is not None else ""
             print(f"[DEBUG] RAG returned {len(rag_data) if rag_data else 0} data items \n{data_preview}")
 
-            initial_response = asyncio.run(
-                self.call_llm(
-                    prompt=query,
-                    system_prompt=query_params.get("system_prompt", Config.SYSTEM_PROMPT.format(context=rag_data)),
-                    history_messages=conversation_history,
-                )
+            initial_response = await self.call_llm(
+                prompt=query,
+                system_prompt=query_params.get("system_prompt", Config.SYSTEM_PROMPT.format(context=rag_data)),
+                history_messages=conversation_history,
             )
             logging.info("[DEBUG] RAG query completed, response length: %d chars", len(initial_response))
         except Exception as e:
@@ -97,13 +149,10 @@ class QueryProcessor:
                     {"role": "assistant", "content": initial_response},
                 ]
             )
-            critique = asyncio.run(
-                critique_response(
-                    call_llm=self.call_llm,
-                    original_query=query,
-                    response=initial_response,
-                    history_messages=history_for_critique,
-                )
+            critique = await self._critique_response(
+                original_query=query,
+                response=initial_response,
+                history_messages=history_for_critique,
             )
 
             if not critique.get("needs_refinement", False):
@@ -113,8 +162,8 @@ class QueryProcessor:
                     logging.warning("Issues found: %s", ", ".join(critique["issues"]))
 
                 logging.info("[Step 3/3] Refining response...")
-                refinement_query = build_refinement_query(query, initial_response, critique)
-                final_response = asyncio.run(self.call_llm(refinement_query, history_messages=history_for_critique))
+                refinement_query = self._build_refinement_query(query, initial_response, critique)
+                final_response = await self.call_llm(refinement_query, history_messages=history_for_critique)
                 logging.info("Response refined and approved")
         else:
             logging.info("No relevant context found - returning default message")

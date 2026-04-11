@@ -73,3 +73,9 @@ Retorne APENAS o texto do resumo, sem cabeçalhos nem metadados.
 Histórico:
 {history}
 """
+
+RAG_FAILURE_RESPONSE: str = (
+	"Desculpe, não encontrei informações sobre isso nos meus manuais de diabetes e insulinoterapia. "
+	"Essa pergunta não está relacionada aos temas que posso ajudar (diabetes, insulina, glicemia). "
+	"Se você tiver dúvidas sobre esses temas, ficarei feliz em ajudar!"
+)

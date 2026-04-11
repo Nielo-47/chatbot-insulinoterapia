@@ -1,4 +1,4 @@
-from typing import Any, Awaitable, Callable, Dict, List, Literal, Optional
+from typing import Any, Awaitable, Callable, Dict, List, Optional
 
 import numpy as np
 from lightrag import LightRAG, QueryParam
@@ -6,9 +6,7 @@ from lightrag.utils import EmbeddingFunc
 from openai import OpenAI
 
 from backend.src.config import Config
-
-
-QueryMode = Literal["local", "global", "hybrid", "naive", "mix", "bypass"]
+from backend.src.domain.query import QueryMode
 
 
 class RAGRuntime:

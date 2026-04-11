@@ -21,10 +21,12 @@ from backend.src.api.schemas import (
     QueryResponse,
     TokenResponse,
 )
+from backend.src.api.dependencies import build_chatbot_service
 from backend.src.application.auth import build_authentication_service
-from backend.src.application.chat.chatbot import Chatbot
+from backend.src.application.chat.chatbot_service import ChatbotService
 from backend.src.config import Config
 from backend.src.infrastructure.data import initialize_database
+
 
 
 def _parse_frontend_origins() -> List[str]:
@@ -52,7 +54,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Global chatbot instance
-chatbot_instance: Optional[Chatbot] = None
+chatbot_instance: Optional[ChatbotService] = None
 auth_scheme = HTTPBearer(auto_error=False)
 
 
@@ -110,8 +112,7 @@ async def lifespan(app: FastAPI):
     logger.info("Initializing chatbot...")
     initialize_database()
     logger.info("Database initialized successfully")
-    chatbot_instance = Chatbot()
-    await chatbot_instance.initialize_rag()
+    chatbot_instance = await build_chatbot_service()
     logger.info("Chatbot initialized successfully")
     yield
     logger.info("Shutting down chatbot...")
@@ -157,7 +158,7 @@ def get_user_conversations(current_user: AuthenticatedUser = Depends(get_current
         raise HTTPException(status_code=503, detail="Chatbot not initialized")
     
     try:
-        messages = chatbot_instance.get_conversation(current_user.id)
+        messages = chatbot_instance.get_history(current_user.id)
         logger.info(f"Retrieved {len(messages)} messages for user {current_user.id}")
         return ConversationHistoryResponse(
             messages=[ConversationMessage(role=msg["role"], content=msg["content"]) for msg in messages]
@@ -176,7 +177,7 @@ async def health_check():
 
 
 @app.post("/query", response_model=QueryResponse)
-def query_chatbot(request: QueryRequest, current_user: AuthenticatedUser = Depends(get_current_user)):
+async def query_chatbot(request: QueryRequest, current_user: AuthenticatedUser = Depends(get_current_user)):
     """Query the chatbot with a question."""
     if chatbot_instance is None:
         raise HTTPException(status_code=503, detail="Chatbot not initialized")
@@ -187,7 +188,7 @@ def query_chatbot(request: QueryRequest, current_user: AuthenticatedUser = Depen
         logger.info(f"Processing query for user {current_user.id} / session {session_id}: {request.query[:50]}...")
         
         # Query the chatbot
-        result = chatbot_instance.query(request.query, user_id=current_user.id, session_id=session_id)
+        result = await chatbot_instance.chat(request.query, user_id=current_user.id, session_id=session_id)
         result["session_id"] = result.get("session_id", session_id)
         
         logger.info(
@@ -211,7 +212,7 @@ async def clear_user_conversations(current_user: AuthenticatedUser = Depends(get
         raise HTTPException(status_code=503, detail="Chatbot not initialized")
     
     try:
-        cleared = chatbot_instance.reset_conversation(current_user.id)
+        cleared = chatbot_instance.end_session(current_user.id)
         if cleared:
             logger.info(f"Cleared conversation for user {current_user.id}")
             return {"message": "Conversation cleared successfully"}
