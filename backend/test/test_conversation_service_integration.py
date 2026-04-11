@@ -2,10 +2,10 @@ import unittest
 from typing import Dict, List, Optional
 
 from backend.src.infrastructure.data.models import Base
-from backend.src.repositories.conversations_repository import ConversationsRepository
-from backend.src.repositories.messages_repository import MessagesRepository
-from backend.src.repositories.users_repository import UsersRepository
-from backend.src.application.conversation_service import ConversationService
+from backend.src.infrastructure.repositories.conversations_repository import ConversationsRepository
+from backend.src.infrastructure.repositories.messages_repository import MessagesRepository
+from backend.src.infrastructure.repositories.users_repository import UsersRepository
+from backend.src.application.chat.conversation_service import ConversationService
 from backend.test.db_test_utils import bind_session_to_schema, create_isolated_test_engine, drop_isolated_schema
 
 

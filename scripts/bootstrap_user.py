@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 
 from backend.src.auth import hash_password
 from backend.src.infrastructure.data import initialize_database
-from backend.src.repositories.users_repository import UsersRepository
+from backend.src.infrastructure.repositories.users_repository import UsersRepository
 
 
 load_dotenv()

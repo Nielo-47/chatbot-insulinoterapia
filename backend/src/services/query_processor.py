@@ -5,7 +5,7 @@ from typing import Any, Callable, Coroutine, Dict, Optional
 
 from backend.src.config import Config
 from backend.src.utils.llm_utils import build_refinement_query, critique_response
-from backend.src.utils.sources import extract_sources
+from backend.src.utils.sources_text_cleaner import extract_sources
 from backend.src.application import ConversationService
 from backend.src.infrastructure.rag.rag_client import QueryMode, RAGRuntime
 from lightrag.prompt import PROMPTS

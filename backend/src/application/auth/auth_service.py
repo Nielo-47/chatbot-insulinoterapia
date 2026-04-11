@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from backend.src.utils.security import create_access_token, decode_access_token, verify_password
-from backend.src.repositories.users_repository import UsersRepository
+from backend.src.application.auth.auth_primitives import create_access_token, decode_access_token, verify_password
+from backend.src.infrastructure.repositories.users_repository import UsersRepository
 
 
 @dataclass(frozen=True)
