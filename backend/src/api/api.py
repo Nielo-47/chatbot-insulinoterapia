@@ -10,12 +10,21 @@ from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from pydantic import BaseModel
 
+from backend.src.api.schemas import (
+    AuthenticatedUser,
+    ConversationHistoryResponse,
+    ConversationMessage,
+    HealthResponse,
+    LoginRequest,
+    QueryRequest,
+    QueryResponse,
+    TokenResponse,
+)
+from backend.src.application.auth import build_authentication_service
 from backend.src.application.chat.chatbot import Chatbot
 from backend.src.config import Config
 from backend.src.infrastructure.data import initialize_database
-from backend.src.application.auth import build_authentication_service
 
 
 def _parse_frontend_origins() -> List[str]:
@@ -45,21 +54,6 @@ logger = logging.getLogger(__name__)
 # Global chatbot instance
 chatbot_instance: Optional[Chatbot] = None
 auth_scheme = HTTPBearer(auto_error=False)
-
-
-class LoginRequest(BaseModel):
-    username: str
-    password: str
-
-
-class TokenResponse(BaseModel):
-    access_token: str
-    token_type: str = "bearer"
-
-
-class AuthenticatedUser(BaseModel):
-    id: int
-    username: str
 
 
 def _unauthorized(detail: str = "Not authenticated") -> HTTPException:
@@ -138,34 +132,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-# Request/Response models
-class QueryRequest(BaseModel):
-    query: str
-    session_id: Optional[str] = None
-
-
-class QueryResponse(BaseModel):
-    response: str
-    sources: List[str]
-    source_count: int
-    summarized: bool
-    session_id: str
-
-
-class ConversationMessage(BaseModel):
-    role: str
-    content: str
-
-
-class ConversationHistoryResponse(BaseModel):
-    messages: List[ConversationMessage]
-
-
-class HealthResponse(BaseModel):
-    status: str
-    message: str
 
 
 @app.post("/auth/login", response_model=TokenResponse)

@@ -1,14 +1,8 @@
-from dataclasses import dataclass
 from typing import Optional
 
 from backend.src.application.auth.auth_primitives import create_access_token, decode_access_token, verify_password
+from backend.src.domain.models import AuthenticatedPrincipal
 from backend.src.infrastructure.repositories.users_repository import UsersRepository
-
-
-@dataclass(frozen=True)
-class AuthenticatedPrincipal:
-    id: int
-    username: str
 
 
 class AuthenticationService:
