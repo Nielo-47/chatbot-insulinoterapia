@@ -2,7 +2,8 @@ from typing import Dict, List, Optional
 
 from openai import OpenAI
 
-from backend.src.config import Config
+from backend.src.config.infrastructure import OPENROUTER_HTTP_REFERER, OPENROUTER_SITE_TITLE
+from backend.src.config.rag import LLM_MODEL
 
 
 class LLMClient:
@@ -34,14 +35,14 @@ class LLMClient:
         messages.append({"role": "user", "content": user_content})
 
         extra_headers = {}
-        if Config.OPENROUTER_HTTP_REFERER:
-            extra_headers["HTTP-Referer"] = Config.OPENROUTER_HTTP_REFERER
-        if Config.OPENROUTER_SITE_TITLE:
-            extra_headers["X-Title"] = Config.OPENROUTER_SITE_TITLE
+        if OPENROUTER_HTTP_REFERER:
+            extra_headers["HTTP-Referer"] = OPENROUTER_HTTP_REFERER
+        if OPENROUTER_SITE_TITLE:
+            extra_headers["X-Title"] = OPENROUTER_SITE_TITLE
 
         try:
             response = client.chat.completions.create(
-                model=Config.LLM_MODEL,
+                model=LLM_MODEL,
                 messages=messages,
                 temperature=temperature,
                 max_tokens=max_tokens,

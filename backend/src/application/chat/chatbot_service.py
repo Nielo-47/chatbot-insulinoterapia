@@ -1,7 +1,8 @@
 from typing import Any, Dict, List, Optional
 
 from backend.src.application.chat.conversation_service import ConversationService
-from backend.src.application.chat.query_processor import QueryProcessor, QueryMode
+from backend.src.application.chat.query_processor import QueryProcessor
+from backend.src.domain.query import QueryMode
 
 
 class ChatbotService:

@@ -29,7 +29,7 @@ from backend.src.api.dependencies import (
 )
 from backend.src.application.auth import AuthenticationService
 from backend.src.application.chat.chatbot_service import ChatbotService
-from backend.src.config import Config
+from backend.src.config.security import JWT_SECRET_KEY
 from backend.src.infrastructure.data import initialize_database
 
 
@@ -93,7 +93,7 @@ def _validate_jwt_secret() -> None:
     In development (DEV=true) a warning is logged instead of raising, so
     local environments can start without a production-grade secret.
     """
-    secret = Config.JWT_SECRET_KEY
+    secret = JWT_SECRET_KEY
     is_dev = os.getenv("DEV", "false").lower() in ("1", "true", "yes")
     weak = secret == _DEFAULT_JWT_SECRET or len(secret) < _MIN_JWT_SECRET_LENGTH
     if weak:

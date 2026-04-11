@@ -2,7 +2,7 @@ from typing import Dict, List
 
 from sqlalchemy import delete, func, select
 
-from backend.src.config import Config
+from backend.src.config.infrastructure import CHAT_CACHE_KEY_PREFIX, CHAT_CACHE_REDIS_URL, CHAT_CACHE_TTL_SECONDS
 from backend.src.infrastructure.data import ConversationCache
 from backend.src.infrastructure.data.models import Message
 from backend.src.infrastructure.data.db_client import get_db_session
@@ -11,9 +11,9 @@ from backend.src.infrastructure.data.db_client import get_db_session
 class MessagesRepository:
     def __init__(self, cache: ConversationCache | None = None):
         self.cache = cache or ConversationCache(
-            redis_url=Config.CHAT_CACHE_REDIS_URL,
-            ttl_seconds=Config.CHAT_CACHE_TTL_SECONDS,
-            key_prefix=Config.CHAT_CACHE_KEY_PREFIX,
+            redis_url=CHAT_CACHE_REDIS_URL,
+            ttl_seconds=CHAT_CACHE_TTL_SECONDS,
+            key_prefix=CHAT_CACHE_KEY_PREFIX,
         )
 
     def add_message(self, conversation_id: int, role: str, content: str) -> None:

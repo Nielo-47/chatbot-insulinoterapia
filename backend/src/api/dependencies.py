@@ -6,20 +6,21 @@ from backend.src.application.auth import AuthenticationService, build_authentica
 from backend.src.application.chat.chatbot_service import ChatbotService
 from backend.src.application.chat.conversation_service import build_conversation_service
 from backend.src.application.chat.query_processor import QueryProcessor
-from backend.src.config import Config
+from backend.src.config.infrastructure import OPENROUTER_API_KEY, OPENROUTER_BASE_URL, OPENROUTER_SITE_TITLE, OPENROUTER_HTTP_REFERER
+from backend.src.config.rag import EMBED_HOST
 from backend.src.infrastructure.llm.client import LLMClient
 from backend.src.infrastructure.rag.factory import RAGFactory
 
 
 async def build_chatbot_service() -> ChatbotService:
-    if not Config.OPENROUTER_API_KEY:
+    if not OPENROUTER_API_KEY:
         raise RuntimeError("OPENROUTER_API_KEY is required. Set the OPENROUTER_API_KEY environment variable.")
 
-    llm_client = LLMClient(api_key=Config.OPENROUTER_API_KEY, base_url=Config.OPENROUTER_BASE_URL)
+    llm_client = LLMClient(api_key=OPENROUTER_API_KEY, base_url=OPENROUTER_BASE_URL)
 
     rag_runtime = RAGFactory.create(
         llm_client=llm_client,
-        embed_host=Config.EMBED_HOST,
+        embed_host=EMBED_HOST,
         embed_api_key=os.getenv("EMBEDDING_API_KEY", ""),
     )
     await rag_runtime.initialize(llm_client.complete)

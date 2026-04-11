@@ -7,7 +7,13 @@ from typing import Any, Optional
 
 import jwt
 
-from backend.src.config import Config
+from backend.src.config.security import (
+    AUTH_PASSWORD_ITERATIONS,
+    AUTH_PASSWORD_SALT_BYTES,
+    JWT_ACCESS_TOKEN_EXPIRE_MINUTES,
+    JWT_ALGORITHM,
+    JWT_SECRET_KEY,
+)
 
 PASSWORD_HASH_ALGORITHM = "pbkdf2_sha256"
 
@@ -22,14 +28,14 @@ def _decode_base64(encoded: str) -> bytes:
 
 
 def hash_password(password: str) -> str:
-    salt = os.urandom(Config.AUTH_PASSWORD_SALT_BYTES)
+    salt = os.urandom(AUTH_PASSWORD_SALT_BYTES)
     digest = hashlib.pbkdf2_hmac(
         "sha256",
         password.encode("utf-8"),
         salt,
-        Config.AUTH_PASSWORD_ITERATIONS,
+        AUTH_PASSWORD_ITERATIONS,
     )
-    return f"{PASSWORD_HASH_ALGORITHM}${Config.AUTH_PASSWORD_ITERATIONS}${_encode_base64(salt)}${_encode_base64(digest)}"
+    return f"{PASSWORD_HASH_ALGORITHM}${AUTH_PASSWORD_ITERATIONS}${_encode_base64(salt)}${_encode_base64(digest)}"
 
 
 def verify_password(password: str, hashed_password: str) -> bool:
@@ -54,15 +60,15 @@ def verify_password(password: str, hashed_password: str) -> bool:
 
 def create_access_token(user_id: int, username: str, expires_minutes: Optional[int] = None) -> str:
     now = datetime.now(timezone.utc)
-    expire_delta = timedelta(minutes=expires_minutes if expires_minutes is not None else Config.JWT_ACCESS_TOKEN_EXPIRE_MINUTES)
+    expire_delta = timedelta(minutes=expires_minutes if expires_minutes is not None else JWT_ACCESS_TOKEN_EXPIRE_MINUTES)
     payload: dict[str, Any] = {
         "sub": str(user_id),
         "username": username,
         "iat": int(now.timestamp()),
         "exp": int((now + expire_delta).timestamp()),
     }
-    return jwt.encode(payload, Config.JWT_SECRET_KEY, algorithm=Config.JWT_ALGORITHM)
+    return jwt.encode(payload, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM)
 
 
 def decode_access_token(token: str) -> dict[str, Any]:
-    return jwt.decode(token, Config.JWT_SECRET_KEY, algorithms=[Config.JWT_ALGORITHM])
+    return jwt.decode(token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM])

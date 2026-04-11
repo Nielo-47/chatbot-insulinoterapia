@@ -1,16 +1,14 @@
 import json
 import logging
 import uuid
-from typing import Any, Callable, Coroutine, Dict, List, Literal, Optional
+from typing import Any, Callable, Coroutine, Dict, List, Optional
 
 from backend.src.application.chat.conversation_service import ConversationService
-from backend.src.config import Config
+from backend.src.config.prompts import CRITIQUE_PROMPT, REFINEMENT_PROMPT, SYSTEM_PROMPT
+from backend.src.domain.query import QueryMode
 from backend.src.infrastructure.rag.client import RAGRuntime
 from backend.src.infrastructure.rag.sources_text_cleaner import extract_sources
 from lightrag.prompt import PROMPTS
-
-
-QueryMode = Literal["local", "global", "hybrid", "naive", "mix", "bypass"]
 
 
 class QueryProcessor:
@@ -30,7 +28,7 @@ class QueryProcessor:
         response: str,
         history_messages: Optional[List[Dict[str, str]]] = None,
     ) -> Dict[str, Any]:
-        critique_prompt = Config.CRITIQUE_PROMPT.format(original_query=original_query, response=response)
+        critique_prompt = CRITIQUE_PROMPT.format(original_query=original_query, response=response)
 
         critique_system_prompt = (
             "Você é um revisor médico rigoroso. Responda APENAS com JSON válido, "
@@ -71,7 +69,7 @@ class QueryProcessor:
         issues_text = "\n- ".join(critique.get("issues", ["Nenhum problema identificado"]))
         suggestions_text = "\n- ".join(critique.get("suggestions", ["Mantenha a qualidade atual"]))
 
-        return Config.REFINEMENT_PROMPT.format(
+        return REFINEMENT_PROMPT.format(
             original_query=original_query,
             previous_response=previous_response,
             issues_text=issues_text,
@@ -105,7 +103,7 @@ class QueryProcessor:
                 query=query,
                 mode=mode,
                 conversation_history=conversation_history,
-                system_prompt=query_params.get("system_prompt", Config.SYSTEM_PROMPT),
+                system_prompt=query_params.get("system_prompt", SYSTEM_PROMPT),
                 max_total_tokens=query_params.get("max_total_tokens", 12000),
                 top_k=query_params.get("top_k", 10),
             )
@@ -128,7 +126,7 @@ class QueryProcessor:
 
             initial_response = await self.call_llm(
                 prompt=query,
-                system_prompt=query_params.get("system_prompt", Config.SYSTEM_PROMPT.format(context=rag_data)),
+                system_prompt=query_params.get("system_prompt", SYSTEM_PROMPT.format(context=rag_data)),
                 history_messages=conversation_history,
             )
             logging.info("[DEBUG] RAG query completed, response length: %d chars", len(initial_response))

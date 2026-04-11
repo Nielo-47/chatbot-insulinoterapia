@@ -2,7 +2,8 @@ import asyncio
 import logging
 from typing import Any, Callable, Coroutine, Dict, List, Optional
 
-from backend.src.config import Config
+from backend.src.config.conversation import CONVERSATION_HISTORY_LIMIT, SUMMARIZE_MAX_MESSAGES
+from backend.src.config.prompts import SUMMARY_PROMPT, SYSTEM_PROMPT
 from backend.src.infrastructure.repositories.conversations_repository import ConversationsRepository
 from backend.src.infrastructure.repositories.messages_repository import MessagesRepository
 from backend.src.infrastructure.repositories.users_repository import UsersRepository
@@ -42,7 +43,7 @@ class ConversationService:
         if conversation_id is None:
             return []
 
-        history_limit = limit or Config.CONVERSATION_HISTORY_LIMIT
+        history_limit = limit or CONVERSATION_HISTORY_LIMIT
         return self.messages_repository.list_recent_messages(conversation_id=conversation_id, limit=history_limit)
 
     def add_message(self, user_id: int, role: str, content: str) -> None:
@@ -64,7 +65,7 @@ class ConversationService:
             if (
                 role == "assistant"
                 and self.summary_call_llm is not None
-                and self.count_messages(user_id) >= Config.SUMMARIZE_MAX_MESSAGES
+                and self.count_messages(user_id) >= SUMMARIZE_MAX_MESSAGES
             ):
                 self.summarize_session(user_id)
                 self.sessions_summarized.add(user_id)
@@ -130,7 +131,7 @@ class ConversationService:
         if not msgs:
             return ""
 
-        max_messages = max_messages or Config.SUMMARIZE_MAX_MESSAGES
+        max_messages = max_messages or SUMMARIZE_MAX_MESSAGES
         recent = msgs[-max_messages:]
         history_lines = []
         for message in recent:
@@ -139,13 +140,13 @@ class ConversationService:
             if content:
                 history_lines.append(f"{role.upper()}: {content}")
 
-        summary_prompt = Config.SUMMARY_PROMPT.format(history="\n".join(history_lines))
+        summary_prompt = SUMMARY_PROMPT.format(history="\n".join(history_lines))
 
         try:
             summary = asyncio.run(
                 self.summary_call_llm(
                     prompt=summary_prompt,
-                    system_prompt=Config.SYSTEM_PROMPT,
+                    system_prompt=SYSTEM_PROMPT,
                     temperature=0.1,
                     max_tokens=300,
                 )

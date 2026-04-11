@@ -5,7 +5,8 @@ from lightrag import LightRAG, QueryParam
 from lightrag.utils import EmbeddingFunc
 from openai import OpenAI
 
-from backend.src.config import Config
+from backend.src.config.prompts import SYSTEM_PROMPT
+from backend.src.config.rag import EMBED_MODEL, EMBEDDING_DIM, LLM_MODEL, MAX_TOKENS, RAG_WORKING_DIR
 from backend.src.domain.query import QueryMode
 
 
@@ -39,9 +40,9 @@ class RAGRuntime:
                 if isinstance(texts, str):
                     texts = [texts]
 
-                print(f"[DEBUG] Calling embeddings.create with model={Config.EMBED_MODEL}")
+                print(f"[DEBUG] Calling embeddings.create with model={EMBED_MODEL}")
                 response = client.embeddings.create(
-                    model=Config.EMBED_MODEL,
+                    model=EMBED_MODEL,
                     input=texts,
                 )
                 print(f"[DEBUG] Embeddings received: {len(response.data)} embeddings")
@@ -54,13 +55,13 @@ class RAGRuntime:
                 raise
 
         self.rag = LightRAG(
-            working_dir=Config.RAG_WORKING_DIR,
+            working_dir=RAG_WORKING_DIR,
             llm_model_func=openrouter_model_complete,
-            llm_model_name=Config.LLM_MODEL,
+            llm_model_name=LLM_MODEL,
             enable_llm_cache=False,
             embedding_func=EmbeddingFunc(
-                embedding_dim=Config.EMBEDDING_DIM,
-                max_token_size=Config.MAX_TOKENS,
+                embedding_dim=EMBEDDING_DIM,
+                max_token_size=MAX_TOKENS,
                 func=tei_embed_func,
             ),
         )
@@ -85,7 +86,7 @@ class RAGRuntime:
             query,
             param=QueryParam(
                 mode=mode,
-                user_prompt=system_prompt or Config.SYSTEM_PROMPT,
+                user_prompt=system_prompt or SYSTEM_PROMPT,
                 max_total_tokens=max_total_tokens,
                 top_k=top_k,
                 enable_rerank=False,
