@@ -2,19 +2,17 @@ import asyncio
 import logging
 from typing import Any, Callable, Coroutine, Dict, List, Optional
 
+from backend.src.application.contracts.repositories import ConversationRepository, MessageRepository, UserRepository
 from backend.src.config.conversation import CONVERSATION_HISTORY_LIMIT, SUMMARIZE_MAX_MESSAGES
 from backend.src.config.prompts import SUMMARY_PROMPT, SYSTEM_PROMPT
-from backend.src.infrastructure.repositories.conversations_repository import ConversationsRepository
-from backend.src.infrastructure.repositories.messages_repository import MessagesRepository
-from backend.src.infrastructure.repositories.users_repository import UsersRepository
 
 
 class ConversationService:
     def __init__(
         self,
-        users_repository: UsersRepository,
-        conversations_repository: ConversationsRepository,
-        messages_repository: MessagesRepository,
+        users_repository: UserRepository,
+        conversations_repository: ConversationRepository,
+        messages_repository: MessageRepository,
         summary_call_llm: Optional[Callable[..., Coroutine[Any, Any, str]]] = None,
     ):
         self.users_repository = users_repository
@@ -168,12 +166,3 @@ class ConversationService:
         return was_summarized
 
 
-def build_conversation_service(
-    summary_call_llm: Optional[Callable[..., Coroutine[Any, Any, str]]] = None,
-) -> ConversationService:
-    return ConversationService(
-        users_repository=UsersRepository(),
-        conversations_repository=ConversationsRepository(),
-        messages_repository=MessagesRepository(),
-        summary_call_llm=summary_call_llm,
-    )

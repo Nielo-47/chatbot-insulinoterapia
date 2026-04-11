@@ -1,20 +1,22 @@
 import json
 import logging
 import uuid
-from typing import Any, Callable, Coroutine, Dict, List, Optional
+from typing import Any, Callable, Coroutine, Dict, List, Literal, Optional
 
 from backend.src.application.chat.conversation_service import ConversationService
+from backend.src.application.chat.source_extractor import extract_sources
+from backend.src.application.contracts.rag import RAGGateway
 from backend.src.config.prompts import CRITIQUE_PROMPT, REFINEMENT_PROMPT, SYSTEM_PROMPT
-from backend.src.domain.query import QueryMode
-from backend.src.infrastructure.rag.client import RAGRuntime
-from backend.src.infrastructure.rag.sources_text_cleaner import extract_sources
 from lightrag.prompt import PROMPTS
+
+
+QueryMode = Literal["local", "global", "hybrid", "naive", "mix", "bypass"]
 
 
 class QueryProcessor:
     def __init__(
         self,
-        rag_runtime: RAGRuntime,
+        rag_runtime: RAGGateway,
         conversation_service: ConversationService,
         call_llm: Callable[..., Coroutine[Any, Any, str]],
     ):
@@ -30,14 +32,8 @@ class QueryProcessor:
     ) -> Dict[str, Any]:
         critique_prompt = CRITIQUE_PROMPT.format(original_query=original_query, response=response)
 
-        critique_system_prompt = (
-            "Você é um revisor médico rigoroso. Responda APENAS com JSON válido, "
-            "sem texto adicional antes ou depois."
-        )
-
         critique_text = await self.call_llm(
             prompt=critique_prompt,
-            system_prompt=critique_system_prompt,
             history_messages=history_messages,
             temperature=0.0,
             max_tokens=600,

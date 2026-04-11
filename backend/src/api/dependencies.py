@@ -4,12 +4,17 @@ from fastapi import HTTPException, Request, status
 
 from backend.src.application.auth import AuthenticationService, build_authentication_service
 from backend.src.application.chat.chatbot_service import ChatbotService
-from backend.src.application.chat.conversation_service import build_conversation_service
+from backend.src.application.chat.conversation_service import ConversationService
 from backend.src.application.chat.query_processor import QueryProcessor
-from backend.src.config.infrastructure import OPENROUTER_API_KEY, OPENROUTER_BASE_URL, OPENROUTER_SITE_TITLE, OPENROUTER_HTTP_REFERER
+from backend.src.config.infrastructure import OPENROUTER_API_KEY, OPENROUTER_BASE_URL
 from backend.src.config.rag import EMBED_HOST
 from backend.src.infrastructure.llm.client import LLMClient
 from backend.src.infrastructure.rag.factory import RAGFactory
+from backend.src.infrastructure.repositories.conversations_repository import ConversationsRepository
+from backend.src.infrastructure.repositories.messages_repository import MessagesRepository
+from backend.src.infrastructure.repositories.users_repository import UsersRepository
+from backend.src.infrastructure.security.password import verify_password
+from backend.src.infrastructure.security.token import create_access_token, decode_access_token
 
 
 async def build_chatbot_service() -> ChatbotService:
@@ -25,14 +30,24 @@ async def build_chatbot_service() -> ChatbotService:
     )
     await rag_runtime.initialize(llm_client.complete)
 
-    conversation_service = build_conversation_service(summary_call_llm=llm_client.complete)
+    conversation_service = ConversationService(
+        users_repository=UsersRepository(),
+        conversations_repository=ConversationsRepository(),
+        messages_repository=MessagesRepository(),
+        summary_call_llm=llm_client.complete,
+    )
     query_processor = QueryProcessor(rag_runtime, conversation_service, llm_client.complete)
 
     return ChatbotService(conversation_service=conversation_service, query_processor=query_processor)
 
 
 def build_auth_service() -> AuthenticationService:
-    return build_authentication_service()
+    return build_authentication_service(
+        users_repository=UsersRepository(),
+        verify_password=verify_password,
+        create_access_token=create_access_token,
+        decode_access_token=decode_access_token,
+    )
 
 
 def get_chatbot_service(request: Request) -> ChatbotService:
