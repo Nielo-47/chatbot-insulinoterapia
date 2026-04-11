@@ -1,10 +1,10 @@
 import os
 from typing import Any, Dict, List, Literal, Optional
-from backend.src.helpers import call_openrouter
+from backend.src.utils import call_openrouter
 from backend.src.config import Config
-from backend.src.services import ConversationService, build_conversation_service
-from backend.src.services.query_processor import QueryProcessor
-from backend.src.services.rag_runtime import RAGRuntime
+from backend.src.application import ConversationService, build_conversation_service
+from backend.src.application.chat.query_processor import QueryProcessor
+from backend.src.infrastructure.rag.rag_client import RAGRuntime
 from lightrag.prompt import PROMPTS
 
 

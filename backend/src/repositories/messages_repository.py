@@ -3,9 +3,9 @@ from typing import Dict, List
 from sqlalchemy import delete, func, select
 
 from backend.src.config import Config
-from backend.src.db import ConversationCache
-from backend.src.db.models import Message
-from backend.src.db.session import get_db_session
+from backend.src.infrastructure.data import ConversationCache
+from backend.src.infrastructure.data.models import Message
+from backend.src.infrastructure.data.db_client import get_db_session
 
 
 class MessagesRepository:

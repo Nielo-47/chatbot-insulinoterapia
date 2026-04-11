@@ -1,0 +1,11 @@
+import os
+
+
+# Authentication settings
+AUTH_PASSWORD_ITERATIONS = int(os.getenv("AUTH_PASSWORD_ITERATIONS", "390000"))
+AUTH_PASSWORD_SALT_BYTES = int(os.getenv("AUTH_PASSWORD_SALT_BYTES", "16"))
+
+# JWT settings
+JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "change-me")
+JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
+JWT_ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", "60"))

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from backend.src.helpers.security import create_access_token, decode_access_token, verify_password
+from backend.src.utils.security import create_access_token, decode_access_token, verify_password
 from backend.src.repositories.users_repository import UsersRepository
 
 

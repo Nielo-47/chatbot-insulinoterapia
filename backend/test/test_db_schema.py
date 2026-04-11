@@ -5,7 +5,7 @@ import uuid
 from sqlalchemy import create_engine, inspect, text
 from sqlalchemy.engine import make_url
 
-from backend.src.db.models import Base
+from backend.src.infrastructure.data.models import Base
 
 
 class DatabaseSchemaTests(unittest.TestCase):

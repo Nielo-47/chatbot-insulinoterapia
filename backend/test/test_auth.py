@@ -4,7 +4,7 @@ from unittest.mock import patch
 import jwt
 
 from backend.src.config import Config
-from backend.src.helpers.security import create_access_token, decode_access_token, hash_password, verify_password
+from backend.src.utils.security import create_access_token, decode_access_token, hash_password, verify_password
 
 
 class AuthTests(unittest.TestCase):

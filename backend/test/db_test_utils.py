@@ -49,7 +49,7 @@ def create_isolated_test_engine() -> Tuple[Engine, str]:
 def bind_session_to_schema(engine: Engine, schema_name: str) -> Engine:
     schema_engine = engine.execution_options(schema_translate_map={None: schema_name})
 
-    import backend.src.db.session as db_session
+    import backend.src.infrastructure.data.db_client as db_session
 
     db_session.engine = schema_engine
     db_session.SessionLocal = sessionmaker(

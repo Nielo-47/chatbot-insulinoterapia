@@ -3,8 +3,8 @@ from typing import Optional
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 
-from backend.src.db.models import User
-from backend.src.db.session import get_db_session
+from backend.src.infrastructure.data.models import User
+from backend.src.infrastructure.data.db_client import get_db_session
 
 
 class UsersRepository:

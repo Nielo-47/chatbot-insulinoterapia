@@ -1,9 +1,9 @@
-from backend.src.services.authentication_service import (
+from backend.src.application.authentication_service import (
 	AuthenticatedPrincipal,
 	AuthenticationService,
 	build_authentication_service,
 )
-from backend.src.services.conversation_service import ConversationService, build_conversation_service
+from backend.src.application.conversation_service import ConversationService, build_conversation_service
 
 __all__ = [
 	"AuthenticatedPrincipal",

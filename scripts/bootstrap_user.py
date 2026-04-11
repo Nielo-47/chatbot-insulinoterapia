@@ -6,7 +6,7 @@ import getpass
 from dotenv import load_dotenv
 
 from backend.src.auth import hash_password
-from backend.src.db import initialize_database
+from backend.src.infrastructure.data import initialize_database
 from backend.src.repositories.users_repository import UsersRepository
 
 

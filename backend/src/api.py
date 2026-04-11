@@ -12,10 +12,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel
 
-from backend.src.chatbot import Chatbot
+from backend.src.application.chat.chatbot import Chatbot
 from backend.src.config import Config
-from backend.src.db import initialize_database
-from backend.src.services import build_authentication_service
+from backend.src.infrastructure.data import initialize_database
+from backend.src.application import build_authentication_service
 
 
 def _parse_frontend_origins() -> List[str]:

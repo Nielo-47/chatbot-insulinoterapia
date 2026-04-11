@@ -1,7 +1,7 @@
 import unittest
 from typing import Any, Dict, List, Optional, cast
 
-from backend.src.services.conversation_service import ConversationService
+from backend.src.application.conversation_service import ConversationService
 
 
 class InMemoryUsersRepository:
