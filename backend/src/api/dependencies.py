@@ -1,5 +1,8 @@
 import os
 
+from fastapi import HTTPException, Request, status
+
+from backend.src.application.auth import AuthenticationService, build_authentication_service
 from backend.src.application.chat.chatbot_service import ChatbotService
 from backend.src.application.chat.conversation_service import build_conversation_service
 from backend.src.application.chat.query_processor import QueryProcessor
@@ -25,3 +28,21 @@ async def build_chatbot_service() -> ChatbotService:
     query_processor = QueryProcessor(rag_runtime, conversation_service, llm_client.complete)
 
     return ChatbotService(conversation_service=conversation_service, query_processor=query_processor)
+
+
+def build_auth_service() -> AuthenticationService:
+    return build_authentication_service()
+
+
+def get_chatbot_service(request: Request) -> ChatbotService:
+    chatbot = getattr(request.app.state, "chatbot", None)
+    if chatbot is None:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Chatbot not initialized")
+    return chatbot
+
+
+def get_auth_service(request: Request) -> AuthenticationService:
+    auth_service = getattr(request.app.state, "auth_service", None)
+    if auth_service is None:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Authentication not initialized")
+    return auth_service

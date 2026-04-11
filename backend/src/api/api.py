@@ -3,7 +3,7 @@ import logging
 import os
 import uuid
 from contextlib import asynccontextmanager
-from typing import List, Optional
+from typing import List
 
 import nest_asyncio
 from dotenv import load_dotenv
@@ -21,8 +21,13 @@ from backend.src.api.schemas import (
     QueryResponse,
     TokenResponse,
 )
-from backend.src.api.dependencies import build_chatbot_service
-from backend.src.application.auth import build_authentication_service
+from backend.src.api.dependencies import (
+    build_auth_service,
+    build_chatbot_service,
+    get_auth_service,
+    get_chatbot_service,
+)
+from backend.src.application.auth import AuthenticationService
 from backend.src.application.chat.chatbot_service import ChatbotService
 from backend.src.config import Config
 from backend.src.infrastructure.data import initialize_database
@@ -53,8 +58,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Global chatbot instance
-chatbot_instance: Optional[ChatbotService] = None
 auth_scheme = HTTPBearer(auto_error=False)
 
 
@@ -66,11 +69,14 @@ def _unauthorized(detail: str = "Not authenticated") -> HTTPException:
     )
 
 
-def get_current_user(credentials: Optional[HTTPAuthorizationCredentials] = Depends(auth_scheme)) -> AuthenticatedUser:
+def get_current_user(
+    credentials: HTTPAuthorizationCredentials | None = Depends(auth_scheme),
+    auth_service: AuthenticationService = Depends(get_auth_service),
+) -> AuthenticatedUser:
     if credentials is None or credentials.scheme.lower() != "bearer":
         raise _unauthorized()
 
-    principal = build_authentication_service().resolve_principal_from_token(credentials.credentials)
+    principal = auth_service.resolve_principal_from_token(credentials.credentials)
     if principal is None:
         raise _unauthorized("Invalid or expired access token")
 
@@ -107,12 +113,11 @@ def _validate_jwt_secret() -> None:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Manage chatbot lifecycle."""
-    global chatbot_instance
-    _validate_jwt_secret()
     logger.info("Initializing chatbot...")
     initialize_database()
     logger.info("Database initialized successfully")
-    chatbot_instance = await build_chatbot_service()
+    app.state.chatbot = await build_chatbot_service()
+    app.state.auth_service = build_auth_service()
     logger.info("Chatbot initialized successfully")
     yield
     logger.info("Shutting down chatbot...")
@@ -125,6 +130,18 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+_validate_jwt_secret()
+
+
+def _raise_api_error(exc: Exception, user_message: str) -> None:
+    if isinstance(exc, HTTPException):
+        raise exc
+    if isinstance(exc, ValueError):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+    if isinstance(exc, RuntimeError):
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=user_message) from exc
+    raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=user_message) from exc
+
 # Configure CORS for communication with UI container
 app.add_middleware(
     CORSMiddleware,
@@ -136,8 +153,7 @@ app.add_middleware(
 
 
 @app.post("/auth/login", response_model=TokenResponse)
-def login(request: LoginRequest):
-    auth_service = build_authentication_service()
+def login(request: LoginRequest, auth_service: AuthenticationService = Depends(get_auth_service)):
     principal = auth_service.authenticate_credentials(request.username, request.password)
     if principal is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid username or password")
@@ -152,43 +168,43 @@ def read_current_user(current_user: AuthenticatedUser = Depends(get_current_user
 
 
 @app.get("/user/conversations", response_model=ConversationHistoryResponse)
-def get_user_conversations(current_user: AuthenticatedUser = Depends(get_current_user)):
+def get_user_conversations(
+    current_user: AuthenticatedUser = Depends(get_current_user),
+    chatbot: ChatbotService = Depends(get_chatbot_service),
+):
     """Get conversation history for the authenticated user."""
-    if chatbot_instance is None:
-        raise HTTPException(status_code=503, detail="Chatbot not initialized")
-    
     try:
-        messages = chatbot_instance.get_history(current_user.id)
+        messages = chatbot.get_history(current_user.id)
         logger.info(f"Retrieved {len(messages)} messages for user {current_user.id}")
         return ConversationHistoryResponse(
             messages=[ConversationMessage(role=msg["role"], content=msg["content"]) for msg in messages]
         )
     except Exception as e:
         logger.error(f"Error retrieving conversation history: {type(e).__name__}: {e}")
-        raise HTTPException(status_code=500, detail="Error retrieving conversation history")
+        _raise_api_error(e, "Error retrieving conversation history")
 
 
 @app.get("/health", response_model=HealthResponse)
-async def health_check():
+async def health_check(chatbot: ChatbotService = Depends(get_chatbot_service)):
     """Health check endpoint."""
-    if chatbot_instance is None:
-        raise HTTPException(status_code=503, detail="Chatbot not initialized")
+    _ = chatbot
     return HealthResponse(status="healthy", message="Chatbot API is running")
 
 
 @app.post("/query", response_model=QueryResponse)
-async def query_chatbot(request: QueryRequest, current_user: AuthenticatedUser = Depends(get_current_user)):
+async def query_chatbot(
+    request: QueryRequest,
+    current_user: AuthenticatedUser = Depends(get_current_user),
+    chatbot: ChatbotService = Depends(get_chatbot_service),
+):
     """Query the chatbot with a question."""
-    if chatbot_instance is None:
-        raise HTTPException(status_code=503, detail="Chatbot not initialized")
-    
     try:
         session_id = request.session_id or str(uuid.uuid4())
         
         logger.info(f"Processing query for user {current_user.id} / session {session_id}: {request.query[:50]}...")
         
         # Query the chatbot
-        result = await chatbot_instance.chat(request.query, user_id=current_user.id, session_id=session_id)
+        result = await chatbot.chat(request.query, user_id=current_user.id, session_id=session_id)
         result["session_id"] = result.get("session_id", session_id)
         
         logger.info(
@@ -202,24 +218,24 @@ async def query_chatbot(request: QueryRequest, current_user: AuthenticatedUser =
     
     except Exception as e:
         logger.error(f"Error processing query: {type(e).__name__}: {e}")
-        raise HTTPException(status_code=500, detail="Error processing query")
+        _raise_api_error(e, "Error processing query")
 
 
 @app.delete("/user/conversations")
-async def clear_user_conversations(current_user: AuthenticatedUser = Depends(get_current_user)):
+async def clear_user_conversations(
+    current_user: AuthenticatedUser = Depends(get_current_user),
+    chatbot: ChatbotService = Depends(get_chatbot_service),
+):
     """Clear conversation history for the authenticated user."""
-    if chatbot_instance is None:
-        raise HTTPException(status_code=503, detail="Chatbot not initialized")
-    
     try:
-        cleared = chatbot_instance.end_session(current_user.id)
+        cleared = chatbot.end_session(current_user.id)
         if cleared:
             logger.info(f"Cleared conversation for user {current_user.id}")
             return {"message": "Conversation cleared successfully"}
         return {"message": "No conversation found"}
     except Exception as e:
         logger.error(f"Error clearing conversation: {type(e).__name__}: {e}")
-        raise HTTPException(status_code=500, detail="Error clearing conversation")
+        _raise_api_error(e, "Error clearing conversation")
 
 
 @app.get("/")

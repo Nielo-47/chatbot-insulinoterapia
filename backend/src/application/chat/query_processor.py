@@ -1,14 +1,16 @@
 import json
 import logging
 import uuid
-from typing import Any, Callable, Coroutine, Dict, List, Optional
+from typing import Any, Callable, Coroutine, Dict, List, Literal, Optional
 
 from backend.src.application.chat.conversation_service import ConversationService
 from backend.src.config import Config
-from backend.src.domain.query import QueryMode
 from backend.src.infrastructure.rag.client import RAGRuntime
 from backend.src.infrastructure.rag.sources_text_cleaner import extract_sources
 from lightrag.prompt import PROMPTS
+
+
+QueryMode = Literal["local", "global", "hybrid", "naive", "mix", "bypass"]
 
 
 class QueryProcessor:
