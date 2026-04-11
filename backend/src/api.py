@@ -12,11 +12,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel
 
-from backend.src.auth import create_access_token, decode_access_token, verify_password
 from backend.src.chatbot import Chatbot
 from backend.src.config import Config
 from backend.src.db import initialize_database
-from backend.src.repositories.users_repository import UsersRepository
+from backend.src.services import build_authentication_service
 
 
 def _parse_frontend_origins() -> List[str]:
@@ -75,17 +74,11 @@ def get_current_user(credentials: Optional[HTTPAuthorizationCredentials] = Depen
     if credentials is None or credentials.scheme.lower() != "bearer":
         raise _unauthorized()
 
-    try:
-        payload = decode_access_token(credentials.credentials)
-        user_id = int(payload.get("sub", ""))
-    except Exception:
+    principal = build_authentication_service().resolve_principal_from_token(credentials.credentials)
+    if principal is None:
         raise _unauthorized("Invalid or expired access token")
 
-    user = UsersRepository().get_user_by_id(user_id)
-    if user is None:
-        raise _unauthorized("Invalid or expired access token")
-
-    return AuthenticatedUser(id=user.id, username=user.username)
+    return AuthenticatedUser(id=principal.id, username=principal.username)
 
 
 _DEFAULT_JWT_SECRET = "change-me"
@@ -177,11 +170,12 @@ class HealthResponse(BaseModel):
 
 @app.post("/auth/login", response_model=TokenResponse)
 def login(request: LoginRequest):
-    user = UsersRepository().get_user_by_username(request.username)
-    if user is None or not verify_password(request.password, user.hashed_password):
+    auth_service = build_authentication_service()
+    principal = auth_service.authenticate_credentials(request.username, request.password)
+    if principal is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid username or password")
 
-    access_token = create_access_token(user_id=user.id, username=user.username)
+    access_token = auth_service.issue_access_token(principal)
     return TokenResponse(access_token=access_token)
 
 

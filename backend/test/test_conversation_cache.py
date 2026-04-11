@@ -2,7 +2,7 @@ import json
 import unittest
 from unittest.mock import patch
 
-from backend.src.cache.conversation_cache import ConversationCache
+from backend.src.db.conversation_cache import ConversationCache
 
 
 class FakeRedisClient:
