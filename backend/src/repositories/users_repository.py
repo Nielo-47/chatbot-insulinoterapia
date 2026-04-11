@@ -8,11 +8,6 @@ from backend.src.db.session import get_db_session
 
 
 class UsersRepository:
-    def get_user_id(self, username: str) -> Optional[int]:
-        with get_db_session() as db:
-            stmt = select(User.id).where(User.username == username)
-            return db.execute(stmt).scalar_one_or_none()
-
     def get_user_by_id(self, user_id: int) -> Optional[User]:
         with get_db_session() as db:
             return db.get(User, user_id)

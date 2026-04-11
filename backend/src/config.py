@@ -2,8 +2,7 @@ import os
 
 
 class Config:
-    KG_DIR = os.getenv("WORKING_DIR", "data/processed")
-    RAG_TIMEOUT = int(os.getenv("RAG_TIMEOUT", "60"))
+    RAG_WORKING_DIR = os.getenv("WORKING_DIR", "data/processed")
     # Normalize embedding host (TEI) so callers can safely append /v1
     _raw_embed = os.getenv("EMBEDDING_BINDING_HOST", "http://localhost:8000")
     if _raw_embed.endswith("/v1"):
@@ -15,7 +14,6 @@ class Config:
     EMBED_MODEL = os.getenv("EMBEDDING_MODEL", os.getenv("EMBEDDING_MODEL_NAME", "BAAI/bge-m3"))
     EMBEDDING_DIM = int(os.getenv("EMBEDDING_DIM", "1024"))
     MAX_TOKENS = int(os.getenv("MAX_EMBED_TOKENS", "8192"))
-    MAX_CONTEXT_LENGTH = int(os.getenv("MAX_CONTEXT_LENGTH", "8192"))
     OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "")
     OPENROUTER_BASE_URL = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
     OPENROUTER_HTTP_REFERER = os.getenv("OPENROUTER_HTTP_REFERER", "")

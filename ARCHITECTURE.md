@@ -84,11 +84,11 @@ Response:
 }
 ```
 
-### DELETE /session/{session_id}
+### DELETE /user/conversations
 Response:
 ```json
 {
-  "message": "Session {session_id} cleared successfully"
+  "message": "Conversation cleared successfully"
 }
 ```
 
@@ -159,6 +159,6 @@ npm run dev
 ## Security Notes
 
 - CORS uses explicit origins through FRONTEND_ORIGINS.
-- API currently has no authentication layer.
-- User schema is auth-ready (`username`, `hashed_password`, `created_at`), but JWT auth is not enabled yet.
+- API uses JWT Bearer authentication for chat and user conversation endpoints.
+- Authentication endpoints are available at `/auth/login` and `/auth/me`.
 - Conversation history is persisted in PostgreSQL and cached in Redis.

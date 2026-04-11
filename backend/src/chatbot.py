@@ -6,6 +6,7 @@ from openai import OpenAI
 from lightrag import LightRAG, QueryParam
 from lightrag.utils import EmbeddingFunc
 from typing import Any, Dict, List, Literal, Optional
+from backend.src.helpers import build_refinement_query, call_openrouter, critique_response, extract_sources
 from backend.src.config import Config
 from backend.src.services import ConversationService, build_conversation_service
 from lightrag.prompt import PROMPTS
@@ -49,110 +50,32 @@ class Chatbot:
         temperature: float = 0.1,
         max_tokens: int = 800,
     ) -> str:
-        """Internal method to call LLM directly without RAG."""
-        client = OpenAI(api_key=self.llm_api_key, base_url=self.llm_base_url)
-
-        messages = []
-        # Add system prompt if provided
-        if system_prompt:
-            messages.append({"role": "system", "content": system_prompt})
-
-        # Add history messages
-        if history_messages:
-            for msg in history_messages:
-                content = str(msg.get("content", "")).strip()
-                if content:
-                    messages.append({"role": msg["role"], "content": content})
-
-        # Add current prompt
-        user_content = str(prompt).strip() if prompt else "Olá"
-        messages.append({"role": "user", "content": user_content})
-
-        # Build extra_headers for OpenRouter
-        extra_headers = {}
-        if Config.OPENROUTER_HTTP_REFERER:
-            extra_headers["HTTP-Referer"] = Config.OPENROUTER_HTTP_REFERER
-        if Config.OPENROUTER_SITE_TITLE:
-            extra_headers["X-Title"] = Config.OPENROUTER_SITE_TITLE
-
-        try:
-            response = client.chat.completions.create(
-                model=Config.LLM_MODEL,
-                messages=messages,
-                temperature=temperature,
-                max_tokens=max_tokens,
-                extra_headers=extra_headers if extra_headers else None,
-                extra_body={
-                    "repetition_penalty": 1.05,
-                },
-            )
-
-            res_content = response.choices[0].message.content or ""
-            return str(res_content).strip()
-
-        except Exception as e:
-            print(f"Erro na chamada ao OpenRouter: {e}")
-            return "Tive um problema técnico. Por favor, tente perguntar de outra forma."
+        return await call_openrouter(
+            llm_api_key=self.llm_api_key,
+            llm_base_url=self.llm_base_url,
+            prompt=prompt,
+            system_prompt=system_prompt,
+            history_messages=history_messages,
+            temperature=temperature,
+            max_tokens=max_tokens,
+        )
 
     async def _critique_response(
         self, original_query: str, response: str, history_messages: Optional[List[Dict[str, str]]] = None
     ) -> Dict[str, Any]:
-        """Critique a response for safety, accuracy, and quality using direct LLM call."""
-        critique_prompt = Config.CRITIQUE_PROMPT.format(original_query=original_query, response=response)
-
-        critique_system_prompt = (
-            "Você é um revisor médico rigoroso. Responda APENAS com JSON válido, "
-            "sem texto adicional antes ou depois."
-        )
-
-        critique_text = await self._call_llm(
-            prompt=critique_prompt,
-            system_prompt=critique_system_prompt,
+        return await critique_response(
+            call_llm=self._call_llm,
+            original_query=original_query,
+            response=response,
             history_messages=history_messages,
-            temperature=0.0,
-            max_tokens=600,
         )
-
-        # Parse JSON response
-        try:
-            import json
-
-            # Remove markdown code blocks if present
-            critique_text = critique_text.strip()
-            if critique_text.startswith("```"):
-                critique_text = critique_text.split("```")[1]
-                if critique_text.startswith("json"):
-                    critique_text = critique_text[4:]
-
-            critique = json.loads(critique_text.strip())
-            return critique
-        except json.JSONDecodeError as e:
-            print(f"Erro ao parsear crítica: {e}")
-            # Default to safe critique if parsing fails
-            return {
-                "is_safe": True,
-                "is_accurate": True,
-                "is_clear": True,
-                "is_complete": True,
-                "is_ethical": True,
-                "issues": [],
-                "suggestions": [],
-                "needs_refinement": False,
-            }
 
     def _build_refinement_query(self, original_query: str, previous_response: str, critique: Dict[str, Any]) -> str:
-        """Build a refinement query for RAG."""
-        issues_text = "\n- ".join(critique.get("issues", ["Nenhum problema identificado"]))
-        suggestions_text = "\n- ".join(critique.get("suggestions", ["Mantenha a qualidade atual"]))
-
-        refinement_query = Config.REFINEMENT_PROMPT.format(
+        return build_refinement_query(
             original_query=original_query,
             previous_response=previous_response,
-            issues_text=issues_text,
-            suggestions_text=suggestions_text,
+            critique=critique,
         )
-
-        return refinement_query
 
     # --- Conversation/session helpers ---
     def _init_session_if_missing(self, user_id: int):
@@ -240,119 +163,6 @@ class Chatbot:
 
         return ""
 
-    def _clean_source_path(self, file_path: str) -> str:
-        """Clean up source file paths by removing unnecessary prefixes.
-
-        Examples:
-            'data/raw/INSULINOTERAPIA/Tipos de insulinas/file.pdf'
-            -> 'INSULINOTERAPIA/Tipos de insulinas/file.pdf'
-        """
-        if not file_path:
-            return file_path
-
-        # Remove common prefixes
-        prefixes_to_remove = ["data/raw/", "data\\raw\\", "./data/raw/"]
-        for prefix in prefixes_to_remove:
-            if file_path.startswith(prefix):
-                file_path = file_path[len(prefix) :]
-                break
-
-        return file_path
-
-    def _extract_sources(self, rag_data) -> tuple[list[str], int]:
-        """Extract unique source references from RAG data.
-
-        rag_data format (from LightRAG.query_data):
-        {
-            "status": "success" or "failure",
-            "message": str,
-            "data": {
-                "entities": [...],
-                "relationships": [...],
-                "chunks": [{"content": str, "file_path": str, "chunk_id": str}, ...],
-                "references": [{"reference_id": str, "file_path": str}, ...]
-            },
-            "metadata": {...}
-        }
-
-        Returns:
-            tuple: (list of source strings, total count of unique sources)
-        """
-        sources = []
-        seen = set()
-
-        if not rag_data or not isinstance(rag_data, dict):
-            return sources, 0
-
-        try:
-            # Check if this is a success response
-            if rag_data.get("status") != "success":
-                return sources, 0
-
-            # Access the data section
-            data_section = rag_data.get("data", {})
-            if not data_section:
-                return sources, 0
-
-            # Extract file paths from chunks (most direct source)
-            chunks = data_section.get("chunks", [])
-            if isinstance(chunks, list):
-                for chunk in chunks:
-                    if isinstance(chunk, dict):
-                        file_path = chunk.get("file_path")
-                        if file_path:
-                            # Clean the path and deduplicate
-                            clean_path = self._clean_source_path(file_path)
-                            if clean_path and clean_path not in seen:
-                                sources.append(clean_path)
-                                seen.add(clean_path)
-
-            # Also check references for additional mapping
-            # (in case some sources are only in references)
-            references = data_section.get("references", [])
-            if isinstance(references, list):
-                for ref in references:
-                    if isinstance(ref, dict):
-                        file_path = ref.get("file_path")
-                        if file_path:
-                            # Clean the path and deduplicate
-                            clean_path = self._clean_source_path(file_path)
-                            if clean_path and clean_path not in seen:
-                                sources.append(clean_path)
-                                seen.add(clean_path)
-
-            # Extract from entities if they have direct file_path
-            entities = data_section.get("entities", [])
-            if isinstance(entities, list):
-                for entity in entities:
-                    if isinstance(entity, dict):
-                        file_path = entity.get("file_path")
-                        if file_path:
-                            # Clean the path and deduplicate
-                            clean_path = self._clean_source_path(file_path)
-                            if clean_path and clean_path not in seen:
-                                sources.append(clean_path)
-                                seen.add(clean_path)
-
-            # Extract from relationships if they have direct file_path
-            relationships = data_section.get("relationships", [])
-            if isinstance(relationships, list):
-                for rel in relationships:
-                    if isinstance(rel, dict):
-                        file_path = rel.get("file_path")
-                        if file_path:
-                            # Clean the path and deduplicate
-                            clean_path = self._clean_source_path(file_path)
-                            if clean_path and clean_path not in seen:
-                                sources.append(clean_path)
-                                seen.add(clean_path)
-
-            return sources, len(sources)
-
-        except Exception as e:
-            logging.warning(f"Failed to extract sources from RAG data: {e}")
-            return sources, 0
-
     async def initialize_rag(self):
         """Initialize LightRAG with OpenRouter configuration."""
         print("[DEBUG] Initializing RAG...")
@@ -392,7 +202,7 @@ class Chatbot:
                 raise
 
         self.rag = LightRAG(
-            working_dir=Config.KG_DIR,
+            working_dir=Config.RAG_WORKING_DIR,
             llm_model_func=openrouter_model_complete,
             llm_model_name=Config.LLM_MODEL,
             enable_llm_cache=False,
@@ -465,7 +275,7 @@ class Chatbot:
             )
 
             # Extract sources from rag_data
-            sources, source_count = self._extract_sources(rag_data)
+            sources, source_count = extract_sources(rag_data)
             logging.info(f"Extracted {source_count} unique sources")
 
             data_preview = ""

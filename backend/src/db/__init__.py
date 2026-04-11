@@ -1,4 +1,3 @@
-from backend.src.db.init_db import initialize_database
-from backend.src.db.session import engine
+from backend.src.db.session import engine, initialize_database
 
 __all__ = ["initialize_database", "engine"]

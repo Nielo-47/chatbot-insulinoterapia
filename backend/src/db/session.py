@@ -1,3 +1,4 @@
+import logging
 from contextlib import contextmanager
 from typing import Any, Iterator
 
@@ -5,6 +6,9 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.orm import Session, sessionmaker
 
 from backend.src.config import Config
+from backend.src.db.models import Base
+
+logger = logging.getLogger(__name__)
 
 
 def _build_engine():
@@ -41,3 +45,10 @@ def check_database_connection() -> bool:
     with engine.connect() as conn:
         conn.execute(text("SELECT 1"))
     return True
+
+
+def initialize_database() -> None:
+    """Initialize persistent chat tables if they do not exist yet."""
+    check_database_connection()
+    Base.metadata.create_all(bind=engine)
+    logger.info("Database tables initialized")

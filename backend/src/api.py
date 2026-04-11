@@ -14,6 +14,7 @@ from pydantic import BaseModel
 
 from backend.src.auth import create_access_token, decode_access_token, verify_password
 from backend.src.chatbot import Chatbot
+from backend.src.config import Config
 from backend.src.db import initialize_database
 from backend.src.repositories.users_repository import UsersRepository
 

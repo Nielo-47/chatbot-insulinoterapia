@@ -28,6 +28,7 @@ echo "==========================================="
 
 # 1. Check Databases (TCP)
 wait_for_tcp "Redis" "redis" 6379
+wait_for_tcp "PostgreSQL" "postgres" 5432
 wait_for_tcp "Neo4j" "neo4j" 7687
 
 # 2. Check Vector DB (HTTP)
@@ -36,10 +37,8 @@ wait_for_http "Qdrant" "qdrant" 6333
 # 3. Embedding/Languages servers (no local vLLM checks required - embeddings served by TEI)
 # Note: If you run separate local LLM/embed servers, add explicit checks here.
 
-echo "[entrypoint] ✓ All services found. Launching Streamlit..."
-# Always bind to the container internal port 8080; host port is controlled via docker-compose PORT env var
-exec streamlit run src/main.py \
-    --server.port=8080 \
-    --server.address=0.0.0.0 \
-    --server.enableCORS=false \
-    --server.enableXsrfProtection=false
+echo "[entrypoint] ✓ All services found. Launching FastAPI..."
+exec uvicorn backend.src.api:app \
+    --host 0.0.0.0 \
+    --port 8000 \
+    --log-level info
