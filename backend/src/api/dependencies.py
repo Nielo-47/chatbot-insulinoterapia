@@ -24,7 +24,6 @@ async def build_chatbot_service() -> ChatbotService:
     llm_client = LLMClient(api_key=OPENROUTER_API_KEY, base_url=OPENROUTER_BASE_URL)
 
     rag_runtime = RAGFactory.create(
-        llm_client=llm_client,
         embed_host=EMBED_HOST,
         embed_api_key=os.getenv("EMBEDDING_API_KEY", ""),
     )

@@ -38,7 +38,7 @@ wait_for_http "Qdrant" "qdrant" 6333
 # Note: If you run separate local LLM/embed servers, add explicit checks here.
 
 echo "[entrypoint] ✓ All services found. Launching FastAPI..."
-exec uvicorn backend.src.api:app \
+exec uvicorn backend.src.api.api:app \
     --host 0.0.0.0 \
     --port 8000 \
     --log-level info

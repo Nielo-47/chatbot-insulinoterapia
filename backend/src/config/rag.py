@@ -2,9 +2,9 @@ import os
 
 
 def _normalize_embed_host(raw_host: str) -> str:
-	if raw_host.endswith("/v1"):
-		return raw_host[:-3]
-	return raw_host.rstrip("/")
+    if raw_host.endswith("/v1"):
+        return raw_host[:-3]
+    return raw_host.rstrip("/")
 
 
 RAG_WORKING_DIR = os.getenv("WORKING_DIR", "data/processed")

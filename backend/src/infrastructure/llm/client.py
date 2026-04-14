@@ -1,9 +1,12 @@
+import logging
 from typing import Dict, List, Optional
 
-from openai import OpenAI
+from openai import AsyncOpenAI
 
 from backend.src.config.infrastructure import OPENROUTER_HTTP_REFERER, OPENROUTER_SITE_TITLE
 from backend.src.config.rag import LLM_MODEL
+
+logger = logging.getLogger(__name__)
 
 
 class LLMClient:
@@ -19,7 +22,7 @@ class LLMClient:
         temperature: float = 0.1,
         max_tokens: int = 800,
     ) -> str:
-        client = OpenAI(api_key=self._api_key, base_url=self._base_url)
+        client = AsyncOpenAI(api_key=self._api_key, base_url=self._base_url)
 
         messages = []
         if system_prompt:
@@ -41,7 +44,7 @@ class LLMClient:
             extra_headers["X-Title"] = OPENROUTER_SITE_TITLE
 
         try:
-            response = client.chat.completions.create(
+            response = await client.chat.completions.create(
                 model=LLM_MODEL,
                 messages=messages,
                 temperature=temperature,
@@ -56,5 +59,5 @@ class LLMClient:
             return str(res_content).strip()
 
         except Exception as e:
-            print(f"Erro na chamada ao OpenRouter: {e}")
+            logger.exception("Erro na chamada ao OpenRouter: %s", e)
             return "Tive um problema técnico. Por favor, tente perguntar de outra forma."

@@ -11,6 +11,7 @@ from lightrag.prompt import PROMPTS
 if TYPE_CHECKING:
     from backend.src.infrastructure.rag.client import RAGRuntime
 
+logger = logging.getLogger(__name__)
 
 QueryMode = Literal["local", "global", "hybrid", "naive", "mix", "bypass"]
 
@@ -50,7 +51,7 @@ class QueryProcessor:
 
             return json.loads(critique_text.strip())
         except json.JSONDecodeError as e:
-            print(f"Erro ao parsear crítica: {e}")
+            logger.warning("Erro ao parsear crítica: %s", e)
             return {
                 "is_safe": True,
                 "is_accurate": True,
@@ -120,7 +121,11 @@ class QueryProcessor:
                     data_preview = str(data_value)[:500]
             else:
                 data_preview = str(rag_data)[:500] if rag_data is not None else ""
-            print(f"[DEBUG] RAG returned {len(rag_data) if rag_data else 0} data items \n{data_preview}")
+            logger.debug(
+                "RAG returned %d data items \n%s",
+                len(rag_data) if rag_data else 0,
+                data_preview,
+            )
 
             initial_response = await self.call_llm(
                 prompt=query,
@@ -129,10 +134,7 @@ class QueryProcessor:
             )
             logging.info("[DEBUG] RAG query completed, response length: %d chars", len(initial_response))
         except Exception as e:
-            print(f"[ERROR] RAG query failed: {type(e).__name__}: {e}")
-            import traceback
-
-            traceback.print_exc()
+            logger.exception("[ERROR] RAG query failed: %s: %s", type(e).__name__, e)
             raise
 
         final_response = initial_response
