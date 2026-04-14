@@ -7,7 +7,7 @@ from backend.src.api import api
 from backend.src.application.features.auth.auth_primitives import hash_password
 from backend.src.infrastructure.data.models import Base
 from backend.src.infrastructure.repositories.users_repository import UsersRepository
-from backend.test.db_test_utils import bind_session_to_schema, create_isolated_test_engine, drop_isolated_schema
+from backend.test.integration.db_test_utils import bind_session_to_schema, create_isolated_test_engine, drop_isolated_schema
 
 
 class DummyChatbot:

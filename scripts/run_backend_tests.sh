@@ -31,24 +31,26 @@ docker compose exec -T postgres psql -U "$POSTGRES_USER" -d postgres -c "CREATE 
 
 echo "Running schema integration tests (PostgreSQL container)..."
 TEST_DATABASE_URL="$TEST_DATABASE_URL" \
-  "$VENV_PYTHON" -m unittest backend.test.test_db_schema -v
+  "$VENV_PYTHON" -m unittest backend.test.integration.test_db_schema -v
 
 echo "Running cache adapter tests..."
-"$VENV_PYTHON" -m unittest backend.test.test_conversation_cache -v
+"$VENV_PYTHON" -m unittest backend.test.integration.test_conversation_cache -v
 
 echo "Running repository integration tests..."
 TEST_DATABASE_URL="$TEST_DATABASE_URL" \
-  "$VENV_PYTHON" -m unittest backend.test.test_repository_integration -v
+  "$VENV_PYTHON" -m unittest backend.test.integration.test_repository_integration -v
 
 echo "Running service integration tests..."
 TEST_DATABASE_URL="$TEST_DATABASE_URL" \
-  "$VENV_PYTHON" -m unittest backend.test.test_conversation_service_integration -v
+  "$VENV_PYTHON" -m unittest backend.test.integration.test_conversation_service_integration -v
 
 echo "Running API endpoint tests..."
 TEST_DATABASE_URL="$TEST_DATABASE_URL" \
-  "$VENV_PYTHON" -m unittest backend.test.test_api_endpoints -v
+  "$VENV_PYTHON" -m unittest backend.test.integration.test_api_endpoints -v
 
-echo "Running conversation service unit tests..."
-"$VENV_PYTHON" -m unittest backend.test.test_conversation_service -v
+echo "Running unit tests..."
+"$VENV_PYTHON" -m unittest backend.test.unit.test_auth -v
+"$VENV_PYTHON" -m unittest backend.test.unit.test_conversation_service -v
+"$VENV_PYTHON" -m unittest backend.test.unit.test_query_processor -v
 
 echo "All backend tests completed."
