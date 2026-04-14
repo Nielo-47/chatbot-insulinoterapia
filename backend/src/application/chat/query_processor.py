@@ -1,13 +1,15 @@
 import json
 import logging
 import uuid
-from typing import Any, Callable, Coroutine, Dict, List, Literal, Optional
+from typing import TYPE_CHECKING, Any, Callable, Coroutine, Dict, List, Literal, Optional
 
 from backend.src.application.chat.conversation_service import ConversationService
 from backend.src.application.chat.source_extractor import extract_sources
-from backend.src.application.contracts.rag import RAGGateway
 from backend.src.config.prompts import CRITIQUE_PROMPT, REFINEMENT_PROMPT, SYSTEM_PROMPT
 from lightrag.prompt import PROMPTS
+
+if TYPE_CHECKING:
+    from backend.src.infrastructure.rag.client import RAGRuntime
 
 
 QueryMode = Literal["local", "global", "hybrid", "naive", "mix", "bypass"]
@@ -16,7 +18,7 @@ QueryMode = Literal["local", "global", "hybrid", "naive", "mix", "bypass"]
 class QueryProcessor:
     def __init__(
         self,
-        rag_runtime: RAGGateway,
+        rag_runtime: "RAGRuntime",
         conversation_service: ConversationService,
         call_llm: Callable[..., Coroutine[Any, Any, str]],
     ):

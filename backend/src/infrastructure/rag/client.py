@@ -1,4 +1,4 @@
-from typing import Any, Awaitable, Callable, Dict, List, Optional
+from typing import Any, Awaitable, Callable, Dict, List, Literal, Optional
 
 import numpy as np
 from lightrag import LightRAG, QueryParam
@@ -7,7 +7,9 @@ from openai import OpenAI
 
 from backend.src.config.prompts import SYSTEM_PROMPT
 from backend.src.config.rag import EMBED_MODEL, EMBEDDING_DIM, LLM_MODEL, MAX_TOKENS, RAG_WORKING_DIR
-from backend.src.domain.query import QueryMode
+
+
+QueryMode = Literal["local", "global", "hybrid", "naive", "mix", "bypass"]
 
 
 class RAGRuntime:

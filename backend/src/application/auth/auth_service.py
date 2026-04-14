@@ -1,13 +1,13 @@
 from typing import Any, Callable, Optional
 
-from backend.src.application.contracts.repositories import UserRepository
 from backend.src.domain.models import AuthenticatedPrincipal
+from backend.src.infrastructure.repositories.users_repository import UsersRepository
 
 
 class AuthenticationService:
     def __init__(
         self,
-        users_repository: UserRepository,
+        users_repository: UsersRepository,
         verify_password: Callable[[str, str], bool],
         create_access_token: Callable[..., str],
         decode_access_token: Callable[[str], dict[str, Any]],
@@ -42,7 +42,7 @@ class AuthenticationService:
 
 
 def build_authentication_service(
-    users_repository: UserRepository,
+    users_repository: UsersRepository,
     verify_password: Callable[[str, str], bool],
     create_access_token: Callable[..., str],
     decode_access_token: Callable[[str], dict[str, Any]],

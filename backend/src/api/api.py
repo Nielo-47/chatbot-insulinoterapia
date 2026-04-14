@@ -113,6 +113,7 @@ def _validate_jwt_secret() -> None:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Manage chatbot lifecycle."""
+    _validate_jwt_secret()
     logger.info("Initializing chatbot...")
     initialize_database()
     logger.info("Database initialized successfully")
@@ -129,8 +130,6 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan
 )
-
-_validate_jwt_secret()
 
 
 def _raise_api_error(exc: Exception, user_message: str) -> None:
