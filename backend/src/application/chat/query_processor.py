@@ -133,8 +133,8 @@ class QueryProcessor:
                 history_messages=conversation_history,
             )
             logging.info("[DEBUG] RAG query completed, response length: %d chars", len(initial_response))
-        except Exception as e:
-            logger.exception("[ERROR] RAG query failed: %s: %s", type(e).__name__, e)
+        except Exception:
+            logger.exception("RAG query failed")
             raise
 
         final_response = initial_response

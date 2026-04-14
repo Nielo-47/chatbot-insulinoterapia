@@ -39,7 +39,6 @@ class RAGRuntime:
                 texts = [texts]
             logger.debug("tei_embed_func called with %d text(s)", len(texts))
             logger.debug("Using embed base_url: %s", self.embed_base_url)
-
             try:
                 client = AsyncOpenAI(api_key=self.embed_api_key, base_url=self.embed_base_url)
 
