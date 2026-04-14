@@ -2,10 +2,10 @@ import os
 
 from fastapi import HTTPException, Request, status
 
-from backend.src.application.auth import AuthenticationService, build_authentication_service
-from backend.src.application.chat.chatbot_service import ChatbotService
-from backend.src.application.chat.conversation_service import ConversationService
-from backend.src.application.chat.query_processor import QueryProcessor
+from backend.src.application.features.auth import AuthenticationService, build_authentication_service
+from backend.src.application.features.chat.chatbot_service import ChatbotService
+from backend.src.application.features.chat.conversation_service import ConversationService
+from backend.src.application.features.chat.query_processor import QueryProcessor
 from backend.src.config.infrastructure import OPENROUTER_API_KEY, OPENROUTER_BASE_URL
 from backend.src.config.rag import EMBED_HOST
 from backend.src.infrastructure.llm.client import LLMClient

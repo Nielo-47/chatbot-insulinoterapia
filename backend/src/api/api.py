@@ -27,8 +27,8 @@ from backend.src.api.dependencies import (
     get_auth_service,
     get_chatbot_service,
 )
-from backend.src.application.auth import AuthenticationService
-from backend.src.application.chat.chatbot_service import ChatbotService
+from backend.src.application.features.auth import AuthenticationService
+from backend.src.application.features.chat.chatbot_service import ChatbotService
 from backend.src.config.security import JWT_SECRET_KEY
 from backend.src.infrastructure.data import initialize_database
 

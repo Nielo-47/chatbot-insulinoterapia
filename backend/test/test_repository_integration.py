@@ -1,6 +1,6 @@
 import unittest
 
-from backend.src.application.auth.auth_primitives import hash_password, verify_password
+from backend.src.application.features.auth.auth_primitives import hash_password, verify_password
 from backend.src.infrastructure.data.models import Base
 from backend.src.infrastructure.repositories.conversations_repository import ConversationsRepository
 from backend.src.infrastructure.repositories.messages_repository import MessagesRepository
