@@ -8,6 +8,7 @@ from openai import AsyncOpenAI
 
 from backend.src.config.prompts import SYSTEM_PROMPT
 from backend.src.config.rag import EMBED_MODEL, EMBEDDING_DIM, LLM_MODEL, MAX_TOKENS, RAG_WORKING_DIR
+from backend.src.infrastructure.rag.cleaner import extract_sources
 
 logger = logging.getLogger(__name__)
 
@@ -81,7 +82,7 @@ class RAGRuntime:
         if self.rag is None:
             raise RuntimeError("RAG is not initialized")
 
-        return self.rag.query_data(
+        rag_data = self.rag.query_data(
             query,
             param=QueryParam(
                 mode=mode,
@@ -92,3 +93,10 @@ class RAGRuntime:
                 conversation_history=conversation_history,
             ),
         )
+        sources, source_count = extract_sources(rag_data)
+
+        return {
+            "rag_data": rag_data,
+            "sources": sources,
+            "source_count": source_count,
+        }

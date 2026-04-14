@@ -40,6 +40,9 @@ class AuthenticationService:
     def issue_access_token(self, principal: AuthenticatedPrincipal) -> str:
         return self._create_access_token(user_id=principal.id, username=principal.username)
 
+    def delete_user(self, user_id: int) -> bool:
+        return self.users_repository.delete_user_by_id(user_id)
+
 
 def build_authentication_service(
     users_repository: UsersRepository,

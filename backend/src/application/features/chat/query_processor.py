@@ -4,13 +4,13 @@ import uuid
 from typing import Any, Callable, Coroutine, Dict, List, Literal, Optional
 
 from backend.src.application.contracts.chat import ConversationServiceContract, QueryMode, RAGRuntimeContract
-from backend.src.application.features.chat.source_extractor import extract_sources
 from backend.src.config.prompts import CRITIQUE_PROMPT, REFINEMENT_PROMPT, SYSTEM_PROMPT
 from langgraph.graph import END, StateGraph
 from lightrag.prompt import PROMPTS
 from pydantic import BaseModel, Field
 
 logger = logging.getLogger(__name__)
+
 
 class QueryGraphState(BaseModel):
     query: str
@@ -44,7 +44,6 @@ class QueryProcessor:
         graph = StateGraph(QueryGraphState)
         graph.add_node("load_history", self._node_load_history)
         graph.add_node("retrieve_rag", self._node_retrieve_rag)
-        graph.add_node("extract_sources", self._node_extract_sources)
         graph.add_node("generate_initial", self._node_generate_initial)
         graph.add_node("critique_response", self._node_critique_response)
         graph.add_node("refine_response", self._node_refine_response)
@@ -52,8 +51,7 @@ class QueryProcessor:
 
         graph.set_entry_point("load_history")
         graph.add_edge("load_history", "retrieve_rag")
-        graph.add_edge("retrieve_rag", "extract_sources")
-        graph.add_edge("extract_sources", "generate_initial")
+        graph.add_edge("retrieve_rag", "generate_initial")
         graph.add_conditional_edges(
             "generate_initial",
             self._route_after_initial_response,
@@ -91,34 +89,15 @@ class QueryProcessor:
             top_k=query_params.get("top_k", 10),
         )
 
-        data_preview = ""
-        if isinstance(rag_data, dict):
-            data_value = rag_data.get("data")
-            if isinstance(data_value, (list, tuple)):
-                data_preview = str(data_value)[:500]
-            elif isinstance(data_value, str):
-                data_preview = data_value[:500]
-            else:
-                data_preview = str(data_value)[:500]
-        else:
-            data_preview = str(rag_data)[:500] if rag_data is not None else ""
-
-        logger.debug(
-            "RAG returned %d data items \n%s",
-            len(rag_data) if rag_data else 0,
-            data_preview,
-        )
-
+        logger.debug("RAG returned %d data items", len(rag_data) if rag_data else 0)
+        if isinstance(rag_data, dict) and "rag_data" in rag_data:
+            return {
+                "rag_data": rag_data.get("rag_data"),
+                "sources": rag_data.get("sources", []),
+                "source_count": rag_data.get("source_count", 0),
+            }
         return {
             "rag_data": rag_data,
-        }
-
-    def _node_extract_sources(self, state: QueryGraphState) -> Dict[str, Any]:
-        sources, source_count = extract_sources(state.rag_data)
-        logging.info("Extracted %d unique sources", source_count)
-        return {
-            "sources": sources,
-            "source_count": source_count,
         }
 
     async def _node_generate_initial(self, state: QueryGraphState) -> Dict[str, Any]:

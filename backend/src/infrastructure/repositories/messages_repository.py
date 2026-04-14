@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Protocol
 
 from sqlalchemy import delete, func, select
 
@@ -8,8 +8,16 @@ from backend.src.infrastructure.data.models import Message
 from backend.src.infrastructure.data.db_client import get_db_session
 
 
+class ConversationCacheLike(Protocol):
+    def get_messages(self, conversation_id: int) -> List[Dict[str, str]] | None: ...
+
+    def set_messages(self, conversation_id: int, messages: List[Dict[str, str]]) -> None: ...
+
+    def invalidate(self, conversation_id: int) -> None: ...
+
+
 class MessagesRepository:
-    def __init__(self, cache: ConversationCache | None = None):
+    def __init__(self, cache: ConversationCacheLike | None = None):
         self.cache = cache or ConversationCache(
             redis_url=CHAT_CACHE_REDIS_URL,
             ttl_seconds=CHAT_CACHE_TTL_SECONDS,

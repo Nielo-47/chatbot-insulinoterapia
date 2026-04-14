@@ -3,6 +3,7 @@ from typing import Any, Dict, List, Optional
 from unittest.mock import AsyncMock
 
 from backend.src.application.features.chat.query_processor import QueryProcessor
+from backend.src.infrastructure.rag.cleaner import extract_sources
 from lightrag.prompt import PROMPTS
 
 
@@ -23,7 +24,12 @@ class DummyRAGRuntime:
         _ = (query, mode, conversation_history, system_prompt, max_total_tokens, top_k)
         if self._error is not None:
             raise self._error
-        return self._rag_data
+        sources, source_count = extract_sources(self._rag_data)
+        return {
+            "rag_data": self._rag_data,
+            "sources": sources,
+            "source_count": source_count,
+        }
 
 
 class DummyConversationService:
