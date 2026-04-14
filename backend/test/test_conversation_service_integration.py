@@ -1,11 +1,11 @@
 import unittest
 from typing import Dict, List, Optional
 
-from backend.src.db.models import Base
-from backend.src.repositories.conversations_repository import ConversationsRepository
-from backend.src.repositories.messages_repository import MessagesRepository
-from backend.src.repositories.users_repository import UsersRepository
-from backend.src.services.conversation_service import ConversationService
+from backend.src.infrastructure.data.models import Base
+from backend.src.infrastructure.repositories.conversations_repository import ConversationsRepository
+from backend.src.infrastructure.repositories.messages_repository import MessagesRepository
+from backend.src.infrastructure.repositories.users_repository import UsersRepository
+from backend.src.application.chat.conversation_service import ConversationService
 from backend.test.db_test_utils import bind_session_to_schema, create_isolated_test_engine, drop_isolated_schema
 
 
@@ -42,13 +42,12 @@ class ConversationServiceIntegrationTests(unittest.TestCase):
 
         self.users = UsersRepository()
         self.conversations = ConversationsRepository()
-        self.messages = MessagesRepository()
         self.cache = TrackingCache()
+        self.messages = MessagesRepository(cache=self.cache)
         self.service = ConversationService(
             users_repository=self.users,
             conversations_repository=self.conversations,
             messages_repository=self.messages,
-            cache=self.cache,
         )
 
     @classmethod
@@ -101,7 +100,7 @@ class ConversationServiceIntegrationTests(unittest.TestCase):
         self.assertIsNone(self.users.get_user_by_id(user_id))
         self.assertIsNone(self.conversations.get_conversation_id_by_user(user_id))
         self.assertEqual(self.messages.count_messages(conversation_id), 0)
-        self.assertGreaterEqual(self.cache.invalidate_calls, 3)
+        self.assertEqual(self.cache.invalidate_calls, 2)
 
 
 if __name__ == "__main__":

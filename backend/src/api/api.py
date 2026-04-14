@@ -3,19 +3,35 @@ import logging
 import os
 import uuid
 from contextlib import asynccontextmanager
-from typing import List, Optional
+from typing import List
 
 import nest_asyncio
 from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from pydantic import BaseModel
 
-from backend.src.auth import create_access_token, decode_access_token, verify_password
-from backend.src.chatbot import Chatbot
-from backend.src.db import initialize_database
-from backend.src.repositories.users_repository import UsersRepository
+from backend.src.api.schemas import (
+    AuthenticatedUser,
+    ConversationHistoryResponse,
+    ConversationMessage,
+    HealthResponse,
+    LoginRequest,
+    QueryRequest,
+    QueryResponse,
+    TokenResponse,
+)
+from backend.src.api.dependencies import (
+    build_auth_service,
+    build_chatbot_service,
+    get_auth_service,
+    get_chatbot_service,
+)
+from backend.src.application.auth import AuthenticationService
+from backend.src.application.chat.chatbot_service import ChatbotService
+from backend.src.config.security import JWT_SECRET_KEY
+from backend.src.infrastructure.data import initialize_database
+
 
 
 def _parse_frontend_origins() -> List[str]:
@@ -42,24 +58,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Global chatbot instance
-chatbot_instance: Optional[Chatbot] = None
 auth_scheme = HTTPBearer(auto_error=False)
-
-
-class LoginRequest(BaseModel):
-    username: str
-    password: str
-
-
-class TokenResponse(BaseModel):
-    access_token: str
-    token_type: str = "bearer"
-
-
-class AuthenticatedUser(BaseModel):
-    id: int
-    username: str
 
 
 def _unauthorized(detail: str = "Not authenticated") -> HTTPException:
@@ -70,21 +69,18 @@ def _unauthorized(detail: str = "Not authenticated") -> HTTPException:
     )
 
 
-def get_current_user(credentials: Optional[HTTPAuthorizationCredentials] = Depends(auth_scheme)) -> AuthenticatedUser:
+def get_current_user(
+    credentials: HTTPAuthorizationCredentials | None = Depends(auth_scheme),
+    auth_service: AuthenticationService = Depends(get_auth_service),
+) -> AuthenticatedUser:
     if credentials is None or credentials.scheme.lower() != "bearer":
         raise _unauthorized()
 
-    try:
-        payload = decode_access_token(credentials.credentials)
-        user_id = int(payload.get("sub", ""))
-    except Exception:
+    principal = auth_service.resolve_principal_from_token(credentials.credentials)
+    if principal is None:
         raise _unauthorized("Invalid or expired access token")
 
-    user = UsersRepository().get_user_by_id(user_id)
-    if user is None:
-        raise _unauthorized("Invalid or expired access token")
-
-    return AuthenticatedUser(id=user.id, username=user.username)
+    return AuthenticatedUser(id=principal.id, username=principal.username)
 
 
 _DEFAULT_JWT_SECRET = "change-me"
@@ -97,7 +93,7 @@ def _validate_jwt_secret() -> None:
     In development (DEV=true) a warning is logged instead of raising, so
     local environments can start without a production-grade secret.
     """
-    secret = Config.JWT_SECRET_KEY
+    secret = JWT_SECRET_KEY
     is_dev = os.getenv("DEV", "false").lower() in ("1", "true", "yes")
     weak = secret == _DEFAULT_JWT_SECRET or len(secret) < _MIN_JWT_SECRET_LENGTH
     if weak:
@@ -117,13 +113,12 @@ def _validate_jwt_secret() -> None:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Manage chatbot lifecycle."""
-    global chatbot_instance
     _validate_jwt_secret()
     logger.info("Initializing chatbot...")
     initialize_database()
     logger.info("Database initialized successfully")
-    chatbot_instance = Chatbot()
-    await chatbot_instance.initialize_rag()
+    app.state.chatbot = await build_chatbot_service()
+    app.state.auth_service = build_auth_service()
     logger.info("Chatbot initialized successfully")
     yield
     logger.info("Shutting down chatbot...")
@@ -136,6 +131,16 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+
+def _raise_api_error(exc: Exception, user_message: str) -> None:
+    if isinstance(exc, HTTPException):
+        raise exc
+    if isinstance(exc, ValueError):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+    if isinstance(exc, RuntimeError):
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=user_message) from exc
+    raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=user_message) from exc
+
 # Configure CORS for communication with UI container
 app.add_middleware(
     CORSMiddleware,
@@ -146,41 +151,13 @@ app.add_middleware(
 )
 
 
-# Request/Response models
-class QueryRequest(BaseModel):
-    query: str
-    session_id: Optional[str] = None
-
-
-class QueryResponse(BaseModel):
-    response: str
-    sources: List[str]
-    source_count: int
-    summarized: bool
-    session_id: str
-
-
-class ConversationMessage(BaseModel):
-    role: str
-    content: str
-
-
-class ConversationHistoryResponse(BaseModel):
-    messages: List[ConversationMessage]
-
-
-class HealthResponse(BaseModel):
-    status: str
-    message: str
-
-
 @app.post("/auth/login", response_model=TokenResponse)
-def login(request: LoginRequest):
-    user = UsersRepository().get_user_by_username(request.username)
-    if user is None or not verify_password(request.password, user.hashed_password):
+def login(request: LoginRequest, auth_service: AuthenticationService = Depends(get_auth_service)):
+    principal = auth_service.authenticate_credentials(request.username, request.password)
+    if principal is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid username or password")
 
-    access_token = create_access_token(user_id=user.id, username=user.username)
+    access_token = auth_service.issue_access_token(principal)
     return TokenResponse(access_token=access_token)
 
 
@@ -190,43 +167,43 @@ def read_current_user(current_user: AuthenticatedUser = Depends(get_current_user
 
 
 @app.get("/user/conversations", response_model=ConversationHistoryResponse)
-def get_user_conversations(current_user: AuthenticatedUser = Depends(get_current_user)):
+def get_user_conversations(
+    current_user: AuthenticatedUser = Depends(get_current_user),
+    chatbot: ChatbotService = Depends(get_chatbot_service),
+):
     """Get conversation history for the authenticated user."""
-    if chatbot_instance is None:
-        raise HTTPException(status_code=503, detail="Chatbot not initialized")
-    
     try:
-        messages = chatbot_instance.get_conversation(current_user.id)
+        messages = chatbot.get_history(current_user.id)
         logger.info(f"Retrieved {len(messages)} messages for user {current_user.id}")
         return ConversationHistoryResponse(
             messages=[ConversationMessage(role=msg["role"], content=msg["content"]) for msg in messages]
         )
     except Exception as e:
         logger.error(f"Error retrieving conversation history: {type(e).__name__}: {e}")
-        raise HTTPException(status_code=500, detail="Error retrieving conversation history")
+        _raise_api_error(e, "Error retrieving conversation history")
 
 
 @app.get("/health", response_model=HealthResponse)
-async def health_check():
+async def health_check(chatbot: ChatbotService = Depends(get_chatbot_service)):
     """Health check endpoint."""
-    if chatbot_instance is None:
-        raise HTTPException(status_code=503, detail="Chatbot not initialized")
+    _ = chatbot
     return HealthResponse(status="healthy", message="Chatbot API is running")
 
 
 @app.post("/query", response_model=QueryResponse)
-def query_chatbot(request: QueryRequest, current_user: AuthenticatedUser = Depends(get_current_user)):
+async def query_chatbot(
+    request: QueryRequest,
+    current_user: AuthenticatedUser = Depends(get_current_user),
+    chatbot: ChatbotService = Depends(get_chatbot_service),
+):
     """Query the chatbot with a question."""
-    if chatbot_instance is None:
-        raise HTTPException(status_code=503, detail="Chatbot not initialized")
-    
     try:
         session_id = request.session_id or str(uuid.uuid4())
         
         logger.info(f"Processing query for user {current_user.id} / session {session_id}: {request.query[:50]}...")
         
         # Query the chatbot
-        result = chatbot_instance.query(request.query, user_id=current_user.id, session_id=session_id)
+        result = await chatbot.chat(request.query, user_id=current_user.id, session_id=session_id)
         result["session_id"] = result.get("session_id", session_id)
         
         logger.info(
@@ -240,24 +217,24 @@ def query_chatbot(request: QueryRequest, current_user: AuthenticatedUser = Depen
     
     except Exception as e:
         logger.error(f"Error processing query: {type(e).__name__}: {e}")
-        raise HTTPException(status_code=500, detail="Error processing query")
+        _raise_api_error(e, "Error processing query")
 
 
 @app.delete("/user/conversations")
-async def clear_user_conversations(current_user: AuthenticatedUser = Depends(get_current_user)):
+async def clear_user_conversations(
+    current_user: AuthenticatedUser = Depends(get_current_user),
+    chatbot: ChatbotService = Depends(get_chatbot_service),
+):
     """Clear conversation history for the authenticated user."""
-    if chatbot_instance is None:
-        raise HTTPException(status_code=503, detail="Chatbot not initialized")
-    
     try:
-        cleared = chatbot_instance.reset_conversation(current_user.id)
+        cleared = chatbot.end_session(current_user.id)
         if cleared:
             logger.info(f"Cleared conversation for user {current_user.id}")
             return {"message": "Conversation cleared successfully"}
         return {"message": "No conversation found"}
     except Exception as e:
         logger.error(f"Error clearing conversation: {type(e).__name__}: {e}")
-        raise HTTPException(status_code=500, detail="Error clearing conversation")
+        _raise_api_error(e, "Error clearing conversation")
 
 
 @app.get("/")

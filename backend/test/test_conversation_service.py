@@ -1,7 +1,7 @@
 import unittest
 from typing import Any, Dict, List, Optional, cast
 
-from backend.src.services.conversation_service import ConversationService
+from backend.src.application.chat.conversation_service import ConversationService
 
 
 class InMemoryUsersRepository:
@@ -67,13 +67,11 @@ class ConversationServiceTests(unittest.TestCase):
         self.users_repo = InMemoryUsersRepository()
         self.conversations_repo = InMemoryConversationsRepository()
         self.messages_repo = InMemoryMessagesRepository()
-        self.cache_repo = InMemoryConversationCache()
 
         self.service = ConversationService(
             users_repository=cast(Any, self.users_repo),
             conversations_repository=cast(Any, self.conversations_repo),
             messages_repository=cast(Any, self.messages_repo),
-            cache=cast(Any, self.cache_repo),
         )
 
     def test_single_conversation_per_user(self) -> None:

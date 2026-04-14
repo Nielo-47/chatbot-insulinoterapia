@@ -1,10 +1,10 @@
 import unittest
 
-from backend.src.auth import hash_password, verify_password
-from backend.src.db.models import Base
-from backend.src.repositories.conversations_repository import ConversationsRepository
-from backend.src.repositories.messages_repository import MessagesRepository
-from backend.src.repositories.users_repository import UsersRepository
+from backend.src.application.auth.auth_primitives import hash_password, verify_password
+from backend.src.infrastructure.data.models import Base
+from backend.src.infrastructure.repositories.conversations_repository import ConversationsRepository
+from backend.src.infrastructure.repositories.messages_repository import MessagesRepository
+from backend.src.infrastructure.repositories.users_repository import UsersRepository
 from backend.test.db_test_utils import bind_session_to_schema, create_isolated_test_engine, drop_isolated_schema
 
 
@@ -37,7 +37,7 @@ class RepositoryIntegrationTests(unittest.TestCase):
         self.messages.add_message(conversation_id, "user", "oi")
         self.messages.add_message(conversation_id, "assistant", "olá")
 
-        self.assertEqual(self.users.get_user_id("alice"), user_id)
+        self.assertEqual(user.id, user_id)
         self.assertIsNotNone(user)
         assert user is not None
         self.assertTrue(verify_password("hashed-password", user.hashed_password))
@@ -63,7 +63,10 @@ class RepositoryIntegrationTests(unittest.TestCase):
         self.assertEqual(cleared, 2)
         self.assertEqual(self.messages.count_messages(conversation_id), 0)
         self.assertEqual(self.conversations.get_conversation_id_by_user(user_id), conversation_id)
-        self.assertEqual(self.users.get_user_id("bob"), user_id)
+        user = self.users.get_user_by_username("bob")
+        self.assertIsNotNone(user)
+        assert user is not None
+        self.assertEqual(user.id, user_id)
 
     def test_delete_user_cascades_conversation_and_messages(self) -> None:
         user_id = self.users.get_or_create_user_id("carol", "hashed-password")
@@ -75,7 +78,7 @@ class RepositoryIntegrationTests(unittest.TestCase):
         deleted = self.users.delete_user_by_id(user_id)
 
         self.assertTrue(deleted)
-        self.assertIsNone(self.users.get_user_id("carol"))
+        self.assertIsNone(self.users.get_user_by_username("carol"))
         self.assertIsNone(self.conversations.get_conversation_id_by_user(user_id))
         self.assertEqual(self.messages.count_messages(conversation_id), 0)
 

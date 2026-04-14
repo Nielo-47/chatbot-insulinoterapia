@@ -3,11 +3,10 @@ from unittest.mock import patch
 
 from fastapi.testclient import TestClient
 
-from backend.src import api
-from backend.src.auth import hash_password
-from backend.src.config import Config
-from backend.src.db.models import Base
-from backend.src.repositories.users_repository import UsersRepository
+from backend.src.api import api
+from backend.src.application.auth.auth_primitives import hash_password
+from backend.src.infrastructure.data.models import Base
+from backend.src.infrastructure.repositories.users_repository import UsersRepository
 from backend.test.db_test_utils import bind_session_to_schema, create_isolated_test_engine, drop_isolated_schema
 
 
@@ -16,10 +15,7 @@ class DummyChatbot:
         self.queries = []
         self.reset_calls = []
 
-    async def initialize_rag(self) -> None:
-        return None
-
-    def query(self, query: str, user_id: int, session_id: str | None = None):
+    async def chat(self, query: str, user_id: int, session_id: str | None = None):
         self.queries.append((query, user_id, session_id))
         return {
             "response": f"echo:{query}",
@@ -29,13 +25,13 @@ class DummyChatbot:
             "session_id": session_id or "generated-session",
         }
 
-    def get_conversation(self, user_id: int):
+    def get_history(self, user_id: int):
         return [
             {"role": "user", "content": "Hello"},
             {"role": "assistant", "content": "Hi there"},
         ]
 
-    def reset_conversation(self, user_id: int):
+    def end_session(self, user_id: int):
         self.reset_calls.append(user_id)
         return True
 
@@ -51,19 +47,18 @@ class ApiEndpointTests(unittest.TestCase):
         Base.metadata.drop_all(bind=self.schema_engine)
         Base.metadata.create_all(bind=self.schema_engine)
 
-        self.init_patch = patch("backend.src.api.initialize_database", autospec=True)
-        self.chatbot_patch = patch("backend.src.api.Chatbot", return_value=DummyChatbot())
-        self.secret_patch = patch.object(Config, "JWT_SECRET_KEY", "test-secret-key-value-long-enough-32-bytes")
+        self.init_patch = patch("backend.src.api.api.initialize_database", autospec=True)
+        self.chatbot_patch = patch("backend.src.api.api.build_chatbot_service", autospec=True)
+        self.secret_patch = patch.object(api, "JWT_SECRET_KEY", "test-secret-key-value-long-enough-32-bytes")
         self.init_patch.start()
-        self.chatbot_patch.start()
+        self.chatbot = DummyChatbot()
+        self.chatbot_patch.start().return_value = self.chatbot
         self.secret_patch.start()
 
         self.client = TestClient(api.app)
         with self.client:
             pass
 
-        self.chatbot = api.chatbot_instance
-        assert self.chatbot is not None
         self.users = UsersRepository()
         self.user_id = self.users.get_or_create_user_id("alice", hash_password("password123"))
 
@@ -71,7 +66,6 @@ class ApiEndpointTests(unittest.TestCase):
         self.chatbot_patch.stop()
         self.init_patch.stop()
         self.secret_patch.stop()
-        api.chatbot_instance = None
 
     @classmethod
     def tearDownClass(cls) -> None:
@@ -184,7 +178,7 @@ class ApiEndpointTests(unittest.TestCase):
         self.assertEqual(response.json()["id"], self.user_id)
 
     def test_health_returns_503_when_chatbot_missing(self) -> None:
-        api.chatbot_instance = None
+        api.app.state.chatbot = None
 
         response = self.client.get("/health")
 
