@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { LockKeyhole, LogIn, Shield } from 'lucide-react'
+import { LogIn } from 'lucide-react'
 
 import type { AuthStatus, BackendStatus } from '../../types/app'
 
@@ -26,24 +26,12 @@ export function LoginPage({ onLogin, errorMessage, isSubmitting, backendStatus, 
         <div className="grid w-full overflow-hidden rounded-[2rem] border border-slate-200 bg-white/90 shadow-2xl shadow-slate-200/50 lg:grid-cols-[1.1fr_0.9fr]">
           <section className="flex flex-col justify-between gap-8 bg-slate-950 px-8 py-10 text-white sm:px-10 sm:py-12">
             <div>
-              <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.08em] text-emerald-200">
-                <Shield className="h-3.5 w-3.5" />
-                Login protegido
-              </p>
               <h1 className="font-serif text-4xl font-semibold leading-tight text-white sm:text-5xl">
                 Assistente de insulinoterapia
               </h1>
               <p className="mt-4 max-w-xl text-sm leading-6 text-slate-300 sm:text-base">
                 Entre com sua conta para acessar o chat e manter o historico da conversa vinculado ao seu usuario.
               </p>
-              <div className="mt-5 flex flex-wrap gap-2 text-xs font-semibold uppercase tracking-[0.08em]">
-                <span className={`rounded-full border px-3 py-1 ${backendStatus === 'online' ? 'border-emerald-400/30 bg-emerald-400/10 text-emerald-200' : backendStatus === 'offline' ? 'border-rose-400/30 bg-rose-400/10 text-rose-200' : 'border-slate-400/30 bg-slate-400/10 text-slate-200'}`}>
-                  Backend: {backendStatus === 'online' ? 'online' : backendStatus === 'offline' ? 'indisponivel' : 'verificando'}
-                </span>
-                <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-slate-200">
-                  Auth: {authStatus === 'invalid' ? 'sessao invalida' : authStatus === 'unknown' ? 'indefinido' : authStatus === 'signed_out' ? 'deslogado' : authStatus === 'authenticated' ? 'autenticado' : 'verificando'}
-                </span>
-              </div>
             </div>
 
             <div className="rounded-3xl border border-white/10 bg-white/5 p-5 text-sm text-slate-200 backdrop-blur">
@@ -55,10 +43,6 @@ export function LoginPage({ onLogin, errorMessage, isSubmitting, backendStatus, 
           <section className="flex items-center justify-center px-6 py-10 sm:px-10 sm:py-12">
             <form onSubmit={handleSubmit} className="w-full max-w-md space-y-5">
               <div>
-                <p className="mb-2 inline-flex items-center gap-2 rounded-full border border-cyan-200 bg-cyan-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.08em] text-cyan-700">
-                  <LockKeyhole className="h-3.5 w-3.5" />
-                  Acesso
-                </p>
                 <h2 className="font-serif text-3xl font-semibold text-slate-900">Entrar</h2>
                 <p className="mt-2 text-sm text-slate-600">Entre com o usuario seedado para abrir o chat.</p>
               </div>
