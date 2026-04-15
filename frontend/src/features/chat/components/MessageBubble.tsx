@@ -19,6 +19,12 @@ export function MessageBubble({ message, onShowSources }: MessageBubbleProps) {
 
       <p className={clsx('whitespace-pre-wrap text-sm leading-6', message.isError ? 'text-rose-700' : 'text-slate-800')}>{message.content}</p>
 
+      {!isUser && message.summarized && (
+        <div className="mt-3 inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+          Historico comprimido automaticamente
+        </div>
+      )}
+
       {!isUser && message.sources && message.sources.length > 0 && (
         <button
           type="button"

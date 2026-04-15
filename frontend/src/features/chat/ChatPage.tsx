@@ -1,9 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { BotMessageSquare, LogOut, RefreshCcw, ShieldCheck } from 'lucide-react'
-import { v4 as uuidv4 } from 'uuid'
 
-import { clearSession, getCurrentUser, sendQuery, getConversationHistory } from '../../lib/api'
-import { sessionStorageService } from '../../lib/storage'
+import { ApiError, clearConversation, getConversationHistory, sendQuery } from '../../lib/api'
+import type { AuthStatus, BackendStatus } from '../../types/app'
 import type { ChatMessage } from '../../types/chat'
 import { Composer } from './components/Composer'
 import { MessageBubble } from './components/MessageBubble'
@@ -23,29 +22,24 @@ function normalizeSources(sources: string[]) {
 
 interface ChatPageProps {
   username: string
-  onLogout: () => Promise<void>
+  backendStatus: BackendStatus
+  authStatus: AuthStatus
+  onLogout: (reason?: 'manual' | 'expired' | 'deleted') => Promise<void>
+  onDeleteAccount: () => Promise<void>
 }
 
-export function ChatPage({ username, onLogout }: ChatPageProps) {
+export function ChatPage({ username, backendStatus, authStatus, onLogout, onDeleteAccount }: ChatPageProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([initialMessage])
   const [activeSourcesMessage, setActiveSourcesMessage] = useState<ChatMessage | null>(null)
-  const [sessionId, setSessionId] = useState<string>('')
   const [isSending, setIsSending] = useState(false)
-  const [backendReady, setBackendReady] = useState<boolean | null>(null)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
-
-  useEffect(() => {
-    const storedSessionId = sessionStorageService.getSessionId() || uuidv4()
-    sessionStorageService.setSessionId(storedSessionId)
-    setSessionId(storedSessionId)
-  }, [])
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false)
+  const [compressionNotice, setCompressionNotice] = useState<string | null>(null)
+  const [localError, setLocalError] = useState<string | null>(null)
 
   useEffect(() => {
     void (async () => {
       try {
-        await getCurrentUser()
-        setBackendReady(true)
-        // Load conversation history after confirming user is authenticated
         const history = await getConversationHistory()
         if (history.length > 0) {
           const loadedMessages: ChatMessage[] = history.map((msg, index) => ({
@@ -57,11 +51,16 @@ export function ChatPage({ username, onLogout }: ChatPageProps) {
           // Load conversation history after the welcome message
           setMessages([initialMessage, ...loadedMessages])
         }
-      } catch {
-        setBackendReady(false)
+      } catch (error) {
+        if (error instanceof ApiError && error.status === 401) {
+          await onLogout('expired')
+          return
+        }
+
+        setLocalError(error instanceof Error ? error.message : 'Nao foi possivel carregar o historico.')
       }
     })()
-  }, [])
+  }, [onLogout])
 
   const sortedMessages = useMemo(
     () => [...messages].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()),
@@ -69,12 +68,12 @@ export function ChatPage({ username, onLogout }: ChatPageProps) {
   )
 
   const handleSend = async (value: string) => {
-    if (!sessionId) {
+    if (backendStatus === 'offline') {
       return
     }
 
     const userMessage: ChatMessage = {
-      id: uuidv4(),
+      id: crypto.randomUUID(),
       role: 'user',
       content: value,
       createdAt: new Date().toISOString(),
@@ -82,11 +81,13 @@ export function ChatPage({ username, onLogout }: ChatPageProps) {
 
     setMessages((current) => [...current, userMessage])
     setIsSending(true)
+    setLocalError(null)
+    setCompressionNotice(null)
 
     try {
-      const result = await sendQuery({ query: value, session_id: sessionId })
+      const result = await sendQuery({ query: value })
       const assistantMessage: ChatMessage = {
-        id: uuidv4(),
+        id: crypto.randomUUID(),
         role: 'assistant',
         content: result.response,
         createdAt: new Date().toISOString(),
@@ -96,14 +97,17 @@ export function ChatPage({ username, onLogout }: ChatPageProps) {
       }
 
       setMessages((current) => [...current, assistantMessage])
-
-      if (result.session_id !== sessionId) {
-        setSessionId(result.session_id)
-        sessionStorageService.setSessionId(result.session_id)
+      if (result.summarized) {
+        setCompressionNotice('Historico comprimido automaticamente pelo backend.')
       }
     } catch (error) {
+      if (error instanceof ApiError && error.status === 401) {
+        await onLogout('expired')
+        return
+      }
+
       const errorMessage: ChatMessage = {
-        id: uuidv4(),
+        id: crypto.randomUUID(),
         role: 'assistant',
         content: error instanceof Error ? error.message : 'Erro inesperado na consulta.',
         createdAt: new Date().toISOString(),
@@ -115,28 +119,51 @@ export function ChatPage({ username, onLogout }: ChatPageProps) {
     }
   }
 
-  const handleNewSession = async () => {
-    if (sessionId) {
-      try {
-        await clearSession(sessionId)
-      } catch {
-        // Keep UI responsive even if session cleanup fails.
+  const handleClearConversation = async () => {
+    try {
+      await clearConversation()
+      setCompressionNotice(null)
+      setLocalError(null)
+      setActiveSourcesMessage(null)
+      setMessages([initialMessage])
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 401) {
+        await onLogout('expired')
+        return
       }
-    }
 
-    const nextSessionId = uuidv4()
-    setSessionId(nextSessionId)
-    sessionStorageService.setSessionId(nextSessionId)
-    setActiveSourcesMessage(null)
-    setMessages([initialMessage])
+      setLocalError(error instanceof Error ? error.message : 'Nao foi possivel limpar a conversa.')
+    }
   }
 
   const handleLogout = async () => {
     setIsLoggingOut(true)
     try {
-      await onLogout()
+      await onLogout('manual')
     } finally {
       setIsLoggingOut(false)
+    }
+  }
+
+  const handleDeleteAccount = async () => {
+    const shouldDelete = window.confirm('Tem certeza que deseja excluir sua conta? Esta acao nao pode ser desfeita.')
+
+    if (!shouldDelete) {
+      return
+    }
+
+    setIsDeletingAccount(true)
+    try {
+      await onDeleteAccount()
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 401) {
+        await onLogout('expired')
+        return
+      }
+
+      setLocalError(error instanceof Error ? error.message : 'Nao foi possivel excluir a conta.')
+    } finally {
+      setIsDeletingAccount(false)
     }
   }
 
@@ -154,16 +181,23 @@ export function ChatPage({ username, onLogout }: ChatPageProps) {
               <p className="mt-1 text-sm text-slate-600">Perguntas e respostas com suporte de base de conhecimento e referencias.</p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
+              <div className={`rounded-xl border px-3 py-2 text-sm ${backendStatus === 'online' ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-rose-200 bg-rose-50 text-rose-700'}`}>
+                Backend: {backendStatus === 'online' ? 'online' : 'indisponivel'}
+              </div>
+              <div className="rounded-xl border border-cyan-200 bg-cyan-50 px-3 py-2 text-sm text-cyan-800">
+                Auth: {authStatus === 'authenticated' ? 'autenticado' : authStatus === 'invalid' ? 'invalido' : authStatus === 'unknown' ? 'indefinido' : 'deslogado'}
+              </div>
               <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">
                 <span className="font-medium">{username}</span>
               </div>
               <button
                 type="button"
-                onClick={() => void handleNewSession()}
+                onClick={() => void handleClearConversation()}
+                disabled={backendStatus === 'offline'}
                 className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
               >
                 <RefreshCcw className="h-4 w-4" />
-                Nova conversa
+                Limpar conversa
               </button>
               <button
                 type="button"
@@ -174,12 +208,32 @@ export function ChatPage({ username, onLogout }: ChatPageProps) {
                 <LogOut className="h-4 w-4" />
                 {isLoggingOut ? 'Saindo...' : 'Sair'}
               </button>
+              <button
+                type="button"
+                onClick={() => void handleDeleteAccount()}
+                disabled={isDeletingAccount}
+                className="inline-flex items-center gap-2 rounded-xl border border-rose-300 bg-white px-3 py-2 text-sm font-medium text-rose-700 transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-70"
+              >
+                {isDeletingAccount ? 'Excluindo...' : 'Excluir conta'}
+              </button>
             </div>
           </header>
 
-          {backendReady === false && (
+          {backendStatus === 'offline' && (
             <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
               Nao foi possivel validar o backend. Verifique se a API esta ativa e tente novamente.
+            </div>
+          )}
+
+          {compressionNotice && (
+            <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">
+              {compressionNotice}
+            </div>
+          )}
+
+          {localError && (
+            <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+              {localError}
             </div>
           )}
 
@@ -196,7 +250,7 @@ export function ChatPage({ username, onLogout }: ChatPageProps) {
           </section>
 
           <div className="mt-4">
-            <Composer disabled={isSending || backendReady === false} onSubmit={handleSend} />
+            <Composer disabled={isSending || backendStatus === 'offline'} onSubmit={handleSend} />
           </div>
         </main>
 
@@ -204,10 +258,13 @@ export function ChatPage({ username, onLogout }: ChatPageProps) {
           <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
             <h2 className="mb-2 inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.06em] text-slate-700">
               <BotMessageSquare className="h-4 w-4" />
-              Sessao
+              Conta e status
             </h2>
-            <p className="break-all text-xs text-slate-500">ID: {sessionId || 'carregando...'}</p>
+            <p className="text-xs text-slate-500">Usuario autenticado: {username}</p>
             <p className="mt-2 text-xs text-slate-500">As respostas nao substituem avaliacao medica presencial.</p>
+            <p className="mt-2 text-xs text-slate-500">
+              Compressao de historico ocorre automaticamente quando necessario e nao pode ser acionada manualmente.
+            </p>
           </div>
 
           <SourceDrawer message={activeSourcesMessage} onClose={() => setActiveSourcesMessage(null)} />

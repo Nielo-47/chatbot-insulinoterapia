@@ -18,7 +18,6 @@ export interface ChatMessage {
 
 export interface QueryPayload {
   query: string
-  session_id?: string
 }
 
 export interface QueryResult {
@@ -26,5 +25,4 @@ export interface QueryResult {
   sources: string[]
   source_count: number
   summarized: boolean
-  session_id: string
 }
