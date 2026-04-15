@@ -1,7 +1,7 @@
 import json
 import logging
 import uuid
-from typing import Any, Callable, Coroutine, Dict, List, Literal, Optional
+from typing import Any, Callable, Coroutine, Dict, List, Optional
 
 from backend.src.application.contracts.chat import ConversationServiceContract, QueryMode, RAGRuntimeContract
 from backend.src.config.prompts import CRITIQUE_PROMPT, REFINEMENT_PROMPT, SYSTEM_PROMPT
