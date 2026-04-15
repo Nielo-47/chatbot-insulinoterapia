@@ -1,11 +1,15 @@
 import unittest
 
-from backend.src.application.auth.auth_primitives import hash_password, verify_password
+from backend.src.application.features.auth.auth_primitives import hash_password, verify_password
 from backend.src.infrastructure.data.models import Base
 from backend.src.infrastructure.repositories.conversations_repository import ConversationsRepository
 from backend.src.infrastructure.repositories.messages_repository import MessagesRepository
 from backend.src.infrastructure.repositories.users_repository import UsersRepository
-from backend.test.db_test_utils import bind_session_to_schema, create_isolated_test_engine, drop_isolated_schema
+from backend.test.integration.db_test_utils import (
+    bind_session_to_schema,
+    create_isolated_test_engine,
+    drop_isolated_schema,
+)
 
 
 class RepositoryIntegrationTests(unittest.TestCase):
@@ -37,9 +41,9 @@ class RepositoryIntegrationTests(unittest.TestCase):
         self.messages.add_message(conversation_id, "user", "oi")
         self.messages.add_message(conversation_id, "assistant", "olá")
 
-        self.assertEqual(user.id, user_id)
         self.assertIsNotNone(user)
         assert user is not None
+        self.assertEqual(user.id, user_id)
         self.assertTrue(verify_password("hashed-password", user.hashed_password))
         self.assertEqual(self.conversations.get_conversation_id_by_user(user_id), conversation_id)
         self.assertEqual(self.messages.count_messages(conversation_id), 2)

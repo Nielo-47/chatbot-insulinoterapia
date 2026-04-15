@@ -4,10 +4,14 @@ from unittest.mock import patch
 from fastapi.testclient import TestClient
 
 from backend.src.api import api
-from backend.src.application.auth.auth_primitives import hash_password
+from backend.src.application.features.auth.auth_primitives import hash_password
 from backend.src.infrastructure.data.models import Base
 from backend.src.infrastructure.repositories.users_repository import UsersRepository
-from backend.test.db_test_utils import bind_session_to_schema, create_isolated_test_engine, drop_isolated_schema
+from backend.test.integration.db_test_utils import (
+    bind_session_to_schema,
+    create_isolated_test_engine,
+    drop_isolated_schema,
+)
 
 
 class DummyChatbot:
@@ -103,7 +107,9 @@ class ApiEndpointTests(unittest.TestCase):
         self.assertEqual(response.status_code, 401)
 
     def test_authenticated_query_endpoint_returns_payload(self) -> None:
-        token = self.client.post("/auth/login", json={"username": "alice", "password": "password123"}).json()["access_token"]
+        token = self.client.post("/auth/login", json={"username": "alice", "password": "password123"}).json()[
+            "access_token"
+        ]
         response = self.client.post(
             "/query",
             json={"query": "Como aplicar insulina?"},
@@ -122,7 +128,9 @@ class ApiEndpointTests(unittest.TestCase):
         self.assertEqual(self.chatbot.queries[0][2], payload["session_id"])
 
     def test_query_endpoint_uses_provided_session_id(self) -> None:
-        token = self.client.post("/auth/login", json={"username": "alice", "password": "password123"}).json()["access_token"]
+        token = self.client.post("/auth/login", json={"username": "alice", "password": "password123"}).json()[
+            "access_token"
+        ]
         response = self.client.post(
             "/query",
             json={"query": "Olá", "session_id": "session-123"},
@@ -139,7 +147,9 @@ class ApiEndpointTests(unittest.TestCase):
         self.assertEqual(response.status_code, 401)
 
     def test_clear_session_endpoint_clears_current_user(self) -> None:
-        token = self.client.post("/auth/login", json={"username": "alice", "password": "password123"}).json()["access_token"]
+        token = self.client.post("/auth/login", json={"username": "alice", "password": "password123"}).json()[
+            "access_token"
+        ]
         response = self.client.delete(
             "/user/conversations",
             headers={"Authorization": f"Bearer {token}"},
@@ -155,7 +165,9 @@ class ApiEndpointTests(unittest.TestCase):
         self.assertEqual(response.status_code, 401)
 
     def test_get_conversations_returns_message_list(self) -> None:
-        token = self.client.post("/auth/login", json={"username": "alice", "password": "password123"}).json()["access_token"]
+        token = self.client.post("/auth/login", json={"username": "alice", "password": "password123"}).json()[
+            "access_token"
+        ]
         response = self.client.get("/user/conversations", headers={"Authorization": f"Bearer {token}"})
 
         self.assertEqual(response.status_code, 200)
@@ -170,12 +182,24 @@ class ApiEndpointTests(unittest.TestCase):
         self.assertEqual(messages[1]["content"], "Hi there")
 
     def test_me_endpoint_returns_current_user(self) -> None:
-        token = self.client.post("/auth/login", json={"username": "alice", "password": "password123"}).json()["access_token"]
+        token = self.client.post("/auth/login", json={"username": "alice", "password": "password123"}).json()[
+            "access_token"
+        ]
         response = self.client.get("/auth/me", headers={"Authorization": f"Bearer {token}"})
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["username"], "alice")
         self.assertEqual(response.json()["id"], self.user_id)
+
+    def test_delete_me_endpoint_deletes_current_user(self) -> None:
+        token = self.client.post("/auth/login", json={"username": "alice", "password": "password123"}).json()[
+            "access_token"
+        ]
+        response = self.client.delete("/auth/me", headers={"Authorization": f"Bearer {token}"})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["message"], "User deleted successfully")
+        self.assertIsNone(self.users.get_user_by_id(self.user_id))
 
     def test_health_returns_503_when_chatbot_missing(self) -> None:
         api.app.state.chatbot = None

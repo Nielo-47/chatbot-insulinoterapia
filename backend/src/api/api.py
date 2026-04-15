@@ -1,4 +1,5 @@
 """FastAPI Backend for Diabetes Chatbot - Exposes RAG functionality via REST API."""
+
 import logging
 import os
 import uuid
@@ -27,11 +28,10 @@ from backend.src.api.dependencies import (
     get_auth_service,
     get_chatbot_service,
 )
-from backend.src.application.auth import AuthenticationService
-from backend.src.application.chat.chatbot_service import ChatbotService
+from backend.src.application.features.auth import AuthenticationService
+from backend.src.application.features.chat.chatbot_service import ChatbotService
 from backend.src.config.security import JWT_SECRET_KEY
 from backend.src.infrastructure.data import initialize_database
-
 
 
 def _parse_frontend_origins() -> List[str]:
@@ -40,6 +40,7 @@ def _parse_frontend_origins() -> List[str]:
         "http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174,http://127.0.0.1:5174",
     )
     return [origin.strip() for origin in raw_origins.split(",") if origin.strip()]
+
 
 # Initialize
 try:
@@ -52,10 +53,7 @@ except ValueError as e:
 load_dotenv()
 
 # Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 auth_scheme = HTTPBearer(auto_error=False)
@@ -128,7 +126,7 @@ app = FastAPI(
     title="Diabetes Chatbot API",
     description="Backend API for diabetes chatbot with RAG functionality",
     version="1.0.0",
-    lifespan=lifespan
+    lifespan=lifespan,
 )
 
 
@@ -140,6 +138,7 @@ def _raise_api_error(exc: Exception, user_message: str) -> None:
     if isinstance(exc, RuntimeError):
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=user_message) from exc
     raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=user_message) from exc
+
 
 # Configure CORS for communication with UI container
 app.add_middleware(
@@ -164,6 +163,17 @@ def login(request: LoginRequest, auth_service: AuthenticationService = Depends(g
 @app.get("/auth/me", response_model=AuthenticatedUser)
 def read_current_user(current_user: AuthenticatedUser = Depends(get_current_user)):
     return current_user
+
+
+@app.delete("/auth/me")
+def delete_current_user(
+    current_user: AuthenticatedUser = Depends(get_current_user),
+    auth_service: AuthenticationService = Depends(get_auth_service),
+):
+    deleted = auth_service.delete_user(current_user.id)
+    if not deleted:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    return {"message": "User deleted successfully"}
 
 
 @app.get("/user/conversations", response_model=ConversationHistoryResponse)
@@ -199,22 +209,22 @@ async def query_chatbot(
     """Query the chatbot with a question."""
     try:
         session_id = request.session_id or str(uuid.uuid4())
-        
+
         logger.info(f"Processing query for user {current_user.id} / session {session_id}: {request.query[:50]}...")
-        
+
         # Query the chatbot
         result = await chatbot.chat(request.query, user_id=current_user.id, session_id=session_id)
         result["session_id"] = result.get("session_id", session_id)
-        
+
         logger.info(
             f"Query completed for user {current_user.id} / session {session_id}: "
             f"response={len(result.get('response', ''))} chars, "
             f"sources={result.get('source_count', 0)}, "
             f"summarized={result.get('summarized', False)}"
         )
-        
+
         return QueryResponse(**result)
-    
+
     except Exception as e:
         logger.error(f"Error processing query: {type(e).__name__}: {e}")
         _raise_api_error(e, "Error processing query")
@@ -240,18 +250,10 @@ async def clear_user_conversations(
 @app.get("/")
 async def root():
     """Root endpoint."""
-    return {
-        "message": "Diabetes Chatbot API",
-        "version": "1.0.0",
-        "docs": "/docs"
-    }
+    return {"message": "Diabetes Chatbot API", "version": "1.0.0", "docs": "/docs"}
 
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(
-        app,
-        host="0.0.0.0",
-        port=8000,
-        log_level="info"
-    )
+
+    uvicorn.run(app, host="0.0.0.0", port=8000, log_level="info")
