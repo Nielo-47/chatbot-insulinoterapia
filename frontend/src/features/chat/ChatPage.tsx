@@ -74,6 +74,15 @@ export function ChatPage({ username, backendStatus, authStatus, onLogout, onDele
 
   const handleSend = async (value: string) => {
     if (backendStatus === 'offline') {
+      const offlineMessage: ChatMessage = {
+        id: crypto.randomUUID(),
+        role: 'assistant',
+        content: 'Nao foi possivel enviar sua mensagem porque o backend esta indisponivel no momento.',
+        createdAt: new Date().toISOString(),
+        isError: true,
+      }
+      setLocalError('Backend indisponivel. Verifique se a API esta ativa e tente novamente.')
+      setMessages((current) => [...current, offlineMessage])
       return
     }
 
@@ -215,7 +224,7 @@ export function ChatPage({ username, backendStatus, authStatus, onLogout, onDele
           </section>
 
           <div className="mt-4">
-            <Composer disabled={isSending || backendStatus === 'offline'} onSubmit={handleSend} />
+            <Composer disabled={isSending} onSubmit={handleSend} />
           </div>
         </main>
 

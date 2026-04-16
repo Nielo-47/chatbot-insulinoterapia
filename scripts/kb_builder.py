@@ -4,13 +4,31 @@ import asyncio
 import nest_asyncio
 import requests
 import time
-from functools import partial
+import sys
 from pathlib import Path
 from datetime import datetime
 from lightrag import LightRAG, QueryParam
-from lightrag.llm.openai import openai_complete_if_cache, openai_embed
+from lightrag.llm.openai import openai_complete_if_cache
 from lightrag.utils import EmbeddingFunc, setup_logger
 from langchain_unstructured import UnstructuredLoader
+
+ROOT_DIR = Path(__file__).resolve().parents[1]
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
+
+from backend.src.config.infrastructure import OPENROUTER_API_KEY, OPENROUTER_BASE_URL
+from backend.src.config.rag import (
+    EMBED_MODEL,
+    EMBEDDING_DIM,
+    EMBEDDING_FALLBACK_MODEL,
+    EMBEDDING_FALLBACK_RETRIES,
+    EMBEDDING_PRIMARY_RETRIES,
+    EMBEDDING_TIMEOUT_SECONDS,
+)
+from backend.src.infrastructure.rag.resilient_embeddings import (
+    EmbeddingProviderConfig,
+    build_embedding_callable,
+)
 
 nest_asyncio.apply()
 
@@ -21,9 +39,7 @@ if not os.path.exists(WORKING_DIR):
     os.makedirs(WORKING_DIR, exist_ok=True)
 
 
-async def llm_model_func(
-    prompt, system_prompt=None, history_messages=[], keyword_extraction=False, **kwargs
-) -> str:
+async def llm_model_func(prompt, system_prompt=None, history_messages=[], keyword_extraction=False, **kwargs) -> str:
     # Use OpenRouter (OpenAI-compatible) for LLM completions
     model = os.getenv("LLM_MODEL", os.getenv("OPENROUTER_MODEL"))
     api_key = os.getenv("OPENROUTER_API_KEY") or os.getenv("OPENAI_API_KEY")
@@ -73,8 +89,7 @@ async def llm_model_func(
                     getattr(
                         _openai,
                         "RateLimitError",
-                        getattr(_openai, "error", None)
-                        and _openai.error.RateLimitError,
+                        getattr(_openai, "error", None) and _openai.error.RateLimitError,
                     ),
                 )
                 is_server = isinstance(
@@ -82,8 +97,7 @@ async def llm_model_func(
                     getattr(
                         _openai,
                         "InternalServerError",
-                        getattr(_openai, "error", None)
-                        and _openai.error.InternalServerError,
+                        getattr(_openai, "error", None) and _openai.error.InternalServerError,
                     ),
                 ) or isinstance(
                     e,
@@ -96,24 +110,15 @@ async def llm_model_func(
             except Exception:
                 # Fallback to string matching if class check fails
                 low = msg.lower()
-                is_rate = (
-                    "rate limit" in low
-                    or "rate_limit" in low
-                    or "rate limit exceeded" in low
-                )
+                is_rate = "rate limit" in low or "rate_limit" in low or "rate limit exceeded" in low
                 is_server = (
-                    "internal server error" in low
-                    or "500" in low
-                    or "cloudflare" in low
-                    or "<!doctype html>" in low
+                    "internal server error" in low or "500" in low or "cloudflare" in low or "<!doctype html>" in low
                 )
 
             if is_rate:
                 attempt_rate += 1
                 if attempt_rate > max_rate_retries:
-                    print(
-                        f"OpenAI rate limit hit and retries exhausted (attempts={attempt_rate}). Raising error."
-                    )
+                    print(f"OpenAI rate limit hit and retries exhausted (attempts={attempt_rate}). Raising error.")
                     raise
 
                 print(
@@ -156,14 +161,25 @@ async def initialize_rag():
         graph_storage=graph_storage,
         llm_model_func=llm_model_func,
         embedding_func=EmbeddingFunc(
-            embedding_dim=int(os.getenv("EMBEDDING_DIM", "1024")),
+            embedding_dim=EMBEDDING_DIM,
             max_token_size=int(os.getenv("MAX_EMBED_TOKENS", "8192")),
-            func=partial(
-                openai_embed.func,
-                model=os.getenv("EMBEDDING_MODEL", "BAAI/bge-m3"),
-                base_url=os.getenv("EMBEDDING_BINDING_HOST", "http://localhost:8000")
-                + "/v1",
-                api_key=os.getenv("EMBEDDING_API_KEY", ""),
+            func=build_embedding_callable(
+                primary=EmbeddingProviderConfig(
+                    name="tei",
+                    base_url=os.getenv("EMBEDDING_BINDING_HOST", "http://localhost:8000") + "/v1",
+                    api_key=os.getenv("EMBEDDING_API_KEY", ""),
+                    model=EMBED_MODEL,
+                ),
+                fallback=EmbeddingProviderConfig(
+                    name="openrouter",
+                    base_url=OPENROUTER_BASE_URL,
+                    api_key=OPENROUTER_API_KEY,
+                    model=EMBEDDING_FALLBACK_MODEL,
+                ),
+                embedding_dim=EMBEDDING_DIM,
+                timeout_seconds=EMBEDDING_TIMEOUT_SECONDS,
+                primary_retries=EMBEDDING_PRIMARY_RETRIES,
+                fallback_retries=EMBEDDING_FALLBACK_RETRIES,
             ),
         ),
     )
@@ -172,9 +188,7 @@ async def initialize_rag():
     await rag.initialize_storages()
 
     # Helpful logs about where data will be stored
-    print(
-        f"RAG Storage configuration: KV={kv_storage}, VECTOR={vector_storage}, GRAPH={graph_storage}"
-    )
+    print(f"RAG Storage configuration: KV={kv_storage}, VECTOR={vector_storage}, GRAPH={graph_storage}")
 
     return rag
 
@@ -269,9 +283,7 @@ async def main():
         try:
             processed_index = json.loads(processed_index_file.read_text())
         except Exception:
-            print(
-                "Warning: Unable to read processed index; will treat all files as new."
-            )
+            print("Warning: Unable to read processed index; will treat all files as new.")
             processed_index = {}
 
     # Gather documents and compute which need processing
@@ -303,9 +315,7 @@ async def main():
             else:
                 to_process.append(doc)
 
-    print(
-        f"\nFound {len(documents)} documents ({len(to_process)} to process, {skipped} skipped)"
-    )
+    print(f"\nFound {len(documents)} documents ({len(to_process)} to process, {skipped} skipped)")
     print(f"{'='*80}\n")
 
     # Nothing to do -> exit early to avoid reprocessing or LLM calls
@@ -325,9 +335,7 @@ async def main():
         if not url:
             continue
         print(f"Checking availability of {name} at {url}...")
-        ok = await asyncio.get_event_loop().run_in_executor(
-            None, wait_for_service, url, service_wait_timeout, 1
-        )
+        ok = await asyncio.get_event_loop().run_in_executor(None, wait_for_service, url, service_wait_timeout, 1)
         if not ok:
             print(
                 f"Warning: Service '{name}' at {url} not reachable after {service_wait_timeout}s; continuing anyway."
