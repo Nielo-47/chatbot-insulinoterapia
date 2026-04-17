@@ -62,13 +62,17 @@ def make_processor(
 
 class QueryProcessorTests(unittest.IsolatedAsyncioTestCase):
     async def test_query_without_refinement(self) -> None:
+        # Test with correct LightRAG format: references have file_path, chunks have reference_id
         rag_data = {
             "status": "success",
             "data": {
                 "chunks": [
-                    {"file_path": "data/raw/doc1.md"},
-                    {"file_path": "data/raw/doc1.md"},
-                ]
+                    {"chunk_id": "chunk-1", "reference_id": "1"},
+                    {"chunk_id": "chunk-2", "reference_id": "1"},
+                ],
+                "references": [
+                    {"reference_id": "1", "file_path": "data/raw/doc1.md"},
+                ],
             },
         }
         conversation_service = DummyConversationService(history=[{"role": "user", "content": "Oi"}], summarized=True)

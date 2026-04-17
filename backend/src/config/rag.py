@@ -9,6 +9,11 @@ def _normalize_embed_host(raw_host: str) -> str:
 
 RAG_WORKING_DIR = os.getenv("WORKING_DIR", "data/processed")
 
+# Storage configuration - LightRAG reads these from environment at init time
+KV_STORAGE = os.getenv("KV_STORAGE", "JsonKVStorage")
+VECTOR_STORAGE = os.getenv("VECTOR_STORAGE", "NanoVectorDBStorage")
+GRAPH_STORAGE = os.getenv("GRAPH_STORAGE", "NetworkXStorage")
+
 _raw_embed = os.getenv("EMBEDDING_BINDING_HOST", "http://localhost:8000")
 EMBED_HOST = _normalize_embed_host(_raw_embed)
 
