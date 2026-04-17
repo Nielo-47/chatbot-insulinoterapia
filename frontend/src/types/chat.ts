@@ -6,7 +6,7 @@ export interface ChatSource {
 }
 
 export interface ChatMessage {
-  id: string
+  id?: string  // Backend-generated, not needed from frontend
   role: MessageRole
   content: string
   createdAt: string

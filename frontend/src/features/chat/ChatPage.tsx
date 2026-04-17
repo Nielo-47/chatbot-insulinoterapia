@@ -20,20 +20,6 @@ function normalizeSources(sources: string[]) {
   return sources.map((source, index) => ({ id: `${index}-${source.slice(0, 24)}`, label: source }))
 }
 
-// Browser-compatible UUID generator (fallback for crypto.randomUUID)
-function generateId(): string {
-  if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
-    const bytes = new Uint8Array(16)
-    crypto.getRandomValues(bytes)
-    bytes[6] = (bytes[6] & 0x0f) | 0x40
-    bytes[8] = (bytes[8] & 0x3f) | 0x80
-    const hex = Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('')
-    return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`
-  }
-  // Fallback for very old browsers
-  return `${Date.now()}-${Math.random().toString(36).slice(2, 11)}`
-}
-
 interface ChatPageProps {
   username: string
   backendStatus: BackendStatus
@@ -91,7 +77,6 @@ export function ChatPage({ username, backendStatus, authStatus, onLogout, onDele
   const handleSend = async (value: string) => {
     if (backendStatus === 'offline') {
       const offlineMessage: ChatMessage = {
-        id: generateId(),
         role: 'assistant',
         content: 'Nao foi possivel enviar sua mensagem porque o backend esta indisponivel no momento.',
         createdAt: new Date().toISOString(),
@@ -103,7 +88,6 @@ export function ChatPage({ username, backendStatus, authStatus, onLogout, onDele
     }
 
     const userMessage: ChatMessage = {
-      id: generateId(),
       role: 'user',
       content: value,
       createdAt: new Date().toISOString(),
@@ -117,7 +101,6 @@ export function ChatPage({ username, backendStatus, authStatus, onLogout, onDele
     try {
       const result = await sendQuery({ query: value })
       const assistantMessage: ChatMessage = {
-        id: generateId(),
         role: 'assistant',
         content: result.response,
         createdAt: new Date().toISOString(),
@@ -137,7 +120,6 @@ export function ChatPage({ username, backendStatus, authStatus, onLogout, onDele
       }
 
       const errorMessage: ChatMessage = {
-        id: generateId(),
         role: 'assistant',
         content: error instanceof Error ? error.message : 'Erro inesperado na consulta.',
         createdAt: new Date().toISOString(),
