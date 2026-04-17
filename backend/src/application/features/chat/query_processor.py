@@ -94,9 +94,9 @@ class QueryProcessor:
                 cleaned.append({"role": role, "content": content})
         return cleaned
 
-    def _node_retrieve_rag(self, state: QueryGraphState) -> Dict[str, Any]:
+    async def _node_retrieve_rag(self, state: QueryGraphState) -> Dict[str, Any]:
         query_params = state.query_params
-        rag_data = self.rag_runtime.query_data(
+        rag_data = await self.rag_runtime.query_data(
             query=state.query,
             mode=state.mode,
             conversation_history=state.conversation_history,

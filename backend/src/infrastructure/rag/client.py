@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from typing import Any, Awaitable, Callable, Dict, List, Literal, Optional
 
@@ -16,6 +17,9 @@ from backend.src.config.rag import (
     LLM_MODEL,
     MAX_TOKENS,
     RAG_WORKING_DIR,
+    KV_STORAGE,
+    VECTOR_STORAGE,
+    GRAPH_STORAGE,
 )
 from backend.src.infrastructure.rag.cleaner import extract_sources
 from backend.src.infrastructure.rag.resilient_embeddings import EmbeddingProviderConfig, build_embedding_callable
@@ -66,6 +70,9 @@ class RAGRuntime:
 
         self.rag = LightRAG(
             working_dir=RAG_WORKING_DIR,
+            kv_storage=KV_STORAGE,
+            vector_storage=VECTOR_STORAGE,
+            graph_storage=GRAPH_STORAGE,
             llm_model_func=openrouter_model_complete,
             llm_model_name=LLM_MODEL,
             enable_llm_cache=False,
@@ -80,7 +87,7 @@ class RAGRuntime:
         await self.rag.initialize_storages()
         logger.debug("RAG initialization complete")
 
-    def query_data(
+    async def query_data(
         self,
         query: str,
         mode: QueryMode,
@@ -93,7 +100,7 @@ class RAGRuntime:
             raise RuntimeError("RAG is not initialized")
 
         try:
-            rag_data = self.rag.query_data(
+            rag_data = await self.rag.aquery_data(
                 query,
                 param=QueryParam(
                     mode=mode,
