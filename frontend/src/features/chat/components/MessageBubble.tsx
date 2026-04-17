@@ -69,24 +69,10 @@ export function MessageBubble({ message, onShowSources }: MessageBubbleProps) {
               event.stopPropagation()
               onShowSources(message)
             }}
-            className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-100 md:opacity-0 md:group-hover:opacity-100 md:focus-visible:opacity-100"
+            className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-100"
           >
             Ver referencias ({message.sourceCount ?? previewSources.length + remainingSources})
           </button>
-
-          <div className="pointer-events-none absolute left-0 top-full z-20 mt-2 hidden w-80 max-w-[min(22rem,calc(100vw-2rem))] rounded-2xl border border-emerald-200 bg-white p-3 text-xs text-slate-700 shadow-lg shadow-slate-200/60 group-hover/references:block group-focus-within/references:block">
-            <p className="mb-2 font-semibold uppercase tracking-[0.08em] text-emerald-700">Fontes consultadas</p>
-            <ul className="space-y-2">
-              {previewSources.map((source) => (
-                <li key={source.id} className="break-words rounded-lg bg-emerald-50 px-2 py-1">
-                  {source.label}
-                </li>
-              ))}
-              {remainingSources > 0 && (
-                <li className="text-slate-500">+ {remainingSources} outras referencias</li>
-              )}
-            </ul>
-          </div>
         </div>
       )}
     </article>
