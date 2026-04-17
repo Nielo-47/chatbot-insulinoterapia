@@ -1,6 +1,6 @@
 import json
 import logging
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 import redis
 from redis import Redis
@@ -25,7 +25,7 @@ class ConversationCache:
     def _messages_key(self, conversation_id: int) -> str:
         return f"{self._key_prefix}:{conversation_id}:messages"
 
-    def get_messages(self, conversation_id: int) -> Optional[List[Dict[str, str]]]:
+    def get_messages(self, conversation_id: int) -> Optional[List[Dict[str, Any]]]:
         if not self._enabled or self._client is None:
             return None
 
@@ -36,20 +36,35 @@ class ConversationCache:
             data = json.loads(str(raw))
             if not isinstance(data, list):
                 return None
-            cleaned = []
+            cleaned: List[Dict[str, Any]] = []
             for item in data:
                 if not isinstance(item, dict):
                     continue
                 role = str(item.get("role", "")).strip()
                 content = str(item.get("content", "")).strip()
                 if role and content:
-                    cleaned.append({"role": role, "content": content})
+                    sources = item.get("sources", [])
+                    if not isinstance(sources, list):
+                        sources = []
+                    source_count = item.get("source_count", len(sources))
+                    try:
+                        source_count = int(source_count)
+                    except (TypeError, ValueError):
+                        source_count = len(sources)
+                    cleaned.append(
+                        {
+                            "role": role,
+                            "content": content,
+                            "sources": [str(source).strip() for source in sources if str(source).strip()],
+                            "source_count": source_count,
+                        }
+                    )
             return cleaned
         except Exception as e:
             logger.warning("Failed to read conversation cache: %s", e)
             return None
 
-    def set_messages(self, conversation_id: int, messages: List[Dict[str, str]]) -> None:
+    def set_messages(self, conversation_id: int, messages: List[Dict[str, Any]]) -> None:
         if not self._enabled or self._client is None:
             return
 

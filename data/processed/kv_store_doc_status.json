@@ -1,0 +1,982 @@
+{
+  "doc-8899fd1c2e0ba3c7068151c8b7afd597": {
+    "status": "processed",
+    "chunks_count": 14,
+    "chunks_list": [
+      "chunk-39d6a3c2463013fd9e732773c88b8db5",
+      "chunk-583c4afe8f20e09ec0157315dbab4992",
+      "chunk-cc0de9ad82a2e98af005736e04ca654d",
+      "chunk-14a20edff579b0a517854d16cd546924",
+      "chunk-30e579d5ccfc0135f92c7582f294d15f",
+      "chunk-03b2434384e8d28afce996ceb9caa794",
+      "chunk-a5d17abc283530e55aa7e8b0279ab5a9",
+      "chunk-5b718276408c07c4ce95283bdfdf03de",
+      "chunk-dd5ca4e6c5954b6bdeb9142a5ade4a3b",
+      "chunk-84cbfc1493e013840892a69f8694a3ea",
+      "chunk-0998f8f3509f44ef35f1921ffc635f42",
+      "chunk-cb55aa00a7f60f489e74950ed04d190b",
+      "chunk-e0414c15947d64d29feb75d664ad8688",
+      "chunk-e6f6de4abe268656fba04970b00cea11"
+    ],
+    "content_summary": "INSULINOTERAPIA\n\n💉 Tratamento com Insulina – Entenda Passo a Passo\n\nSe você tem diabetes tipo 1 ou tipo 2, pode ser que precise usar insulina para controlar o açúcar no sangue. A insulina ajuda a manter a glicemia (nível de açúcar) nos valores certos...",
+    "content_length": 57187,
+    "created_at": "2026-04-17T01:03:40.459092+00:00",
+    "updated_at": "2026-04-17T01:16:29.240145+00:00",
+    "file_path": "data/raw/DOC Completo.docx",
+    "track_id": "insert_20260417_010340_45ad8070",
+    "metadata": {
+      "processing_start_time": 1776387820,
+      "processing_end_time": 1776388589
+    }
+  },
+  "doc-510e689802f09fd97f66b0ca20083119": {
+    "status": "processed",
+    "chunks_count": 3,
+    "chunks_list": [
+      "chunk-d1b04afbfb2b5c1c361d26eec774bdc8",
+      "chunk-838483417ba16f1437e67a20ce4313ad",
+      "chunk-2dd98022e9c78a797a73b2458f8ff61a"
+    ],
+    "content_summary": "FLUXO 1 – Terapia com insulina\n\nSubtema: Aplicação da insulina\n\nPaciente: Chat, eu nunca usei insulina. Como é que eu vou começar? Eu aplico sozinho?\n Chat: No começo pode parecer um pouco assustador, mas você vai ver que é mais simples do que parece...",
+    "content_length": 12732,
+    "created_at": "2026-04-17T01:16:30.270944+00:00",
+    "updated_at": "2026-04-17T01:19:33.597391+00:00",
+    "file_path": "data/raw/Documento sem título.docx",
+    "track_id": "insert_20260417_011630_9c4d52fc",
+    "metadata": {
+      "processing_start_time": 1776388590,
+      "processing_end_time": 1776388773
+    }
+  },
+  "doc-20539fb8f990fb5268820d6c24541777": {
+    "status": "processed",
+    "chunks_count": 7,
+    "chunks_list": [
+      "chunk-e75c6b5fce085794b04d7b3bd5795167",
+      "chunk-d5eccc71d60b32b8d37011779bf9a472",
+      "chunk-cb7fab23566a74a63a82ef95e4120b3a",
+      "chunk-c49473c6ac5a732afb9337ebc8314973",
+      "chunk-9fc2cbcbcb54593e012ac8f9956e3516",
+      "chunk-bfb4d775f90c22a4d44d4cbd139c40bb",
+      "chunk-9be70536cff1a20c4ba8cdbfaa6bfccd"
+    ],
+    "content_summary": "Técnicas de aplicação de insulina\n\nResumo das recomendações\n\nAutores: Rebecca Ortiz La Banca, Marjori Da Silva Marroni, Marcia Camargo de Oliveira, Valéria de Cássia Sparapani, Paula Maria Pascali, Sherida Karanini Paz de Oliveira, Maria Gabriela Sec...",
+    "content_length": 27237,
+    "created_at": "2026-04-17T01:19:41.215238+00:00",
+    "updated_at": "2026-04-17T01:29:32.804085+00:00",
+    "file_path": "data/raw/INSULINOTERAPIA/Aplicação de insulina/Cópia de Técnicas de aplicação de insulina.pdf",
+    "track_id": "insert_20260417_011941_1bf893cc",
+    "metadata": {
+      "processing_start_time": 1776388781,
+      "processing_end_time": 1776389372
+    }
+  },
+  "doc-dab8ecd0b3691f29229bd5087e0c3219": {
+    "status": "processed",
+    "chunks_count": 6,
+    "chunks_list": [
+      "chunk-95a95799b444e882c827423bd8839b21",
+      "chunk-c7efe345f2cc874f48dfcb86ed3814cd",
+      "chunk-9a3d80fe442aee5d5f5a165915f1952c",
+      "chunk-82fbbc1be8f9f5a59c2ffa48c53eaca9",
+      "chunk-9695a7674e148942730c77bfcb6808d7",
+      "chunk-1f0a2a2aec516887b0c89496ff98028a"
+    ],
+    "content_summary": "Dispositivos para aplicação de insulina\n\nSeringas\n\nComo usar a seringa de insulina de forma segura\n\nMesmo com os avanços da tecnologia, a seringa ainda é o jeito mais comum de aplicar insulina no Brasil. Mas é importante saber que nem toda seringa se...",
+    "content_length": 22656,
+    "created_at": "2026-04-17T01:29:34.536189+00:00",
+    "updated_at": "2026-04-17T01:33:06.569237+00:00",
+    "file_path": "data/raw/INSULINOTERAPIA/Aplicação de insulina/Documento sem título.docx",
+    "track_id": "insert_20260417_012934_c8b5dac2",
+    "metadata": {
+      "processing_start_time": 1776389374,
+      "processing_end_time": 1776389586
+    }
+  },
+  "doc-26629c7483812932b1dbdc20e2ed7454": {
+    "status": "processed",
+    "chunks_count": 3,
+    "chunks_list": [
+      "chunk-b27547e321702cd287eef578925bb126",
+      "chunk-1cc62ec15bb689a3701996dd02ae5859",
+      "chunk-956677086f1aa823494a26d8bddc64b3"
+    ],
+    "content_summary": "Guia Prático: Canetas Reutilizáveis de Insulina no SUS\n\nO que você precisa saber\n\nO SUS agora oferece canetas reutilizáveis de insulina (NPH e Regular) para melhorar o\n\nengajamento (aderência) ao tratamento, reduzir erros de dose, promover segurança ...",
+    "content_length": 9142,
+    "created_at": "2026-04-17T01:33:08.802713+00:00",
+    "updated_at": "2026-04-17T01:34:56.071131+00:00",
+    "file_path": "data/raw/INSULINOTERAPIA/Aplicação de insulina/Guia-Pratico-SBD-Canetas-Reutilizaveis-de-Insulina-no-SUS.pdf",
+    "track_id": "insert_20260417_013308_2f4128da",
+    "metadata": {
+      "processing_start_time": 1776389588,
+      "processing_end_time": 1776389696
+    }
+  },
+  "doc-b155c0ec200c5ba951a83a7a7dd32ccc": {
+    "status": "processed",
+    "chunks_count": 1,
+    "chunks_list": [
+      "chunk-b155c0ec200c5ba951a83a7a7dd32ccc"
+    ],
+    "content_summary": "TÉCNICA DE APLICAÇÃO DA INSULINA\n\nLavar as mãos com água e sabão.\n\nReunir o material:  algodão,  álcool 70%,  canetas  agulha.\n\nMovimentar lenta- mente 20 vezes a ca- neta se, insulina lei- tosa.\n\nLimpar com álcool 70% no local em que será acopla...",
+    "content_length": 2306,
+    "created_at": "2026-04-17T01:34:57.081456+00:00",
+    "updated_at": "2026-04-17T01:36:06.096316+00:00",
+    "file_path": "data/raw/INSULINOTERAPIA/Aplicação de insulina/Insulinas CANETAS.pdf",
+    "track_id": "insert_20260417_013457_c6137c6c",
+    "metadata": {
+      "processing_start_time": 1776389697,
+      "processing_end_time": 1776389766
+    }
+  },
+  "doc-c7fb5aa79bc1274b4f3c9b5b8a4e0a16": {
+    "status": "processed",
+    "chunks_count": 1,
+    "chunks_list": [
+      "chunk-c7fb5aa79bc1274b4f3c9b5b8a4e0a16"
+    ],
+    "content_summary": "TÉCNICA DE APLICAÇÃO DA INSULINA\n\nLavar as mãos com água e sabão.\n\nRetirar a insulina da geladeira pelo menos 10-15min antes de aplicar. Reunir o ma- terial: algodão, álcool 70%, seringa.\n\nLimpar o fras- co com álcool a 70%.\n\nMovimentar lentamente 20...",
+    "content_length": 1940,
+    "created_at": "2026-04-17T01:36:07.038162+00:00",
+    "updated_at": "2026-04-17T01:37:03.382888+00:00",
+    "file_path": "data/raw/INSULINOTERAPIA/Aplicação de insulina/insulinas FRASCOS.pdf",
+    "track_id": "insert_20260417_013607_5317d229",
+    "metadata": {
+      "processing_start_time": 1776389767,
+      "processing_end_time": 1776389823
+    }
+  },
+  "doc-d848bf97bdd3ad3cbbc5e487ad615ae6": {
+    "status": "processed",
+    "chunks_count": 2,
+    "chunks_list": [
+      "chunk-5ea22914f5da06d6cf00156f3d3fd2ac",
+      "chunk-71c8dfb7ea12ae526d0f6dd1ebcff2fd"
+    ],
+    "content_summary": "CUIDADOS COM O ARMAZENAMENTO, PREPARO E ADMINISTRAÇÃO DE INSULINA COM SERINGA\n\nCID\n\nEMPRESA BRASILEIRA DE SERVIÇOS HOSPITALARES HOSPITAL UNIVERSITÁRIO DR. MIGUEL RIET CORRÊA JR. HU-FURG/EBSERH Rua Visconde de Paranaguá, 102 – Centro Rio Grande/RS – C...",
+    "content_length": 6476,
+    "created_at": "2026-04-17T01:37:04.737865+00:00",
+    "updated_at": "2026-04-17T01:39:01.120999+00:00",
+    "file_path": "data/raw/INSULINOTERAPIA/Aplicação de insulina/insulinas em seringa.pdf",
+    "track_id": "insert_20260417_013704_304709e5",
+    "metadata": {
+      "processing_start_time": 1776389824,
+      "processing_end_time": 1776389941
+    }
+  },
+  "doc-8a7313b8150e33789bc211e1d54986ea": {
+    "status": "processed",
+    "chunks_count": 12,
+    "chunks_list": [
+      "chunk-e903284db9eca88b00740b7701445db1",
+      "chunk-afac5786cd75c775e52a9648a7467c4d",
+      "chunk-7d342683ed91d3c94d22652f633cf25a",
+      "chunk-07d375315a52e567555700e0ccaf4e41",
+      "chunk-052f090fb39b70842f24c79a59434db1",
+      "chunk-a2a0334449315abe8bed92888d1d86c0",
+      "chunk-7c8d5811ecf472c2ceee1e5a0348b465",
+      "chunk-9f7d9273bef92f24b94e7e66dd1d92e1",
+      "chunk-864e9af39aec4276d6e66ce1dd58c4a4",
+      "chunk-d84b2921113f5b1c68a51f60b6923437",
+      "chunk-b56991b077fe4199d9e28c085c9eab27",
+      "chunk-6ede5c5c7620a8a8052acb39ed5b930f"
+    ],
+    "content_summary": "Práticas seguras para preparo e aplicação de insulina\n\nIntrodução\n\nA descoberta da insulina, em 1921, foi um marco na\n\nhistória do diabetes. Em 1922, ela foi prescrita a um jovem com diabetes mellitus tipo 1 (DM1), Leonard Thompson, de 14 anos de ida...",
+    "content_length": 48223,
+    "created_at": "2026-04-17T01:39:04.114877+00:00",
+    "updated_at": "2026-04-17T01:48:34.841051+00:00",
+    "file_path": "data/raw/INSULINOTERAPIA/Aplicação de insulina/uso da insulina - Diretrizes-Sociedade-Brasileira-de-Diabetes-2019-2020.pdf",
+    "track_id": "insert_20260417_013904_9a63ac54",
+    "metadata": {
+      "processing_start_time": 1776389944,
+      "processing_end_time": 1776390514
+    }
+  },
+  "doc-d699398c4ea27a718405f37a277ffc20": {
+    "status": "processed",
+    "chunks_count": 1,
+    "chunks_list": [
+      "chunk-d699398c4ea27a718405f37a277ffc20"
+    ],
+    "content_summary": "Como conservar a insulina do jeito certo\n\nA insulina funciona bem se for guardada corretamente.\n Ela dura bastante e mantém seu efeito, desde que siga as recomendações do fabricante.\n\nInsulina fechada (lacrada) e insulina já em uso têm formas diferen...",
+    "content_length": 1941,
+    "created_at": "2026-04-17T01:48:35.503077+00:00",
+    "updated_at": "2026-04-17T01:49:24.806681+00:00",
+    "file_path": "data/raw/INSULINOTERAPIA/Armazenamento e Transporte/Armazenamento e transporte.docx",
+    "track_id": "insert_20260417_014835_2f763bd2",
+    "metadata": {
+      "processing_start_time": 1776390515,
+      "processing_end_time": 1776390564
+    }
+  },
+  "doc-b9e26fcf52612ebb7f3f5b0aeb271ae7": {
+    "status": "processed",
+    "chunks_count": 1,
+    "chunks_list": [
+      "chunk-b9e26fcf52612ebb7f3f5b0aeb271ae7"
+    ],
+    "content_summary": "19/05/2025, 14:33\n\nCuidados com a Insulinoterapia\n\nCOMUNICA BR\n\nACESSO À INFORMAÇÃO\n\nPARTICIPE\n\nLEGISLAÇÃO\n\nÓRGÃOS DO GOVERNO\n\nLinhas de Cuidado\n\nPortal > Diabetes Mellitus tipo 2 (DM2) no Adulto > Cuidados com a Insulinoterapia\n\nCuidados com a Insul...",
+    "content_length": 2482,
+    "created_at": "2026-04-17T01:49:25.927665+00:00",
+    "updated_at": "2026-04-17T01:50:31.777235+00:00",
+    "file_path": "data/raw/INSULINOTERAPIA/Armazenamento e Transporte/Cuidados com a Insulinoterapia conservar.pdf",
+    "track_id": "insert_20260417_014925_26509b44",
+    "metadata": {
+      "processing_start_time": 1776390565,
+      "processing_end_time": 1776390631
+    }
+  },
+  "doc-93fa37babb2faf649c593ada021b4f27": {
+    "status": "processed",
+    "chunks_count": 3,
+    "chunks_list": [
+      "chunk-6d93b237ec4dad48e7a19e12490e18b1",
+      "chunk-719ff283ceb05a70e01ab61edf9992a5",
+      "chunk-534ef8d6302e0b1e787a98585de9bd64"
+    ],
+    "content_summary": "4.\n\n5.\n\nFrid AH, Kreugel G, Grassi G, Halimi S, Hicks D, Hirsch LJ et al. New insulin delivery recommendations. Mayo Clin Proc. 2016;91(9):1231-55. Frid A, Hirsch L, Gaspar R, Hicks D, Kreugel G, Liersch J et al. New injection recommendations for pat...",
+    "content_length": 9807,
+    "created_at": "2026-04-17T01:50:32.647322+00:00",
+    "updated_at": "2026-04-17T01:53:10.125232+00:00",
+    "file_path": "data/raw/INSULINOTERAPIA/Armazenamento e Transporte/Diretrizes-Sociedade-Brasileira-de-Diabetes-2019-20201.pdf",
+    "track_id": "insert_20260417_015032_c765d05c",
+    "metadata": {
+      "processing_start_time": 1776390632,
+      "processing_end_time": 1776390790
+    }
+  },
+  "doc-6827b653e3759491f155c43322d97456": {
+    "status": "processed",
+    "chunks_count": 2,
+    "chunks_list": [
+      "chunk-dae5b6b5e8822fa5c952887691ccd090",
+      "chunk-8d6187e0afe5f637d9d92787e6882606"
+    ],
+    "content_summary": "Práticas seguras para preparo e aplicação de insulina\n\nHomogeneização das suspensões de insulina\n\npara que a potência e a estabilidade sejam mantidas (Tabela 1).10 Deve-se anotar a data inicial de uso da insulina, a fim de acompanhar a validade, bem ...",
+    "content_length": 4908,
+    "created_at": "2026-04-17T01:53:10.984226+00:00",
+    "updated_at": "2026-04-17T01:55:07.904694+00:00",
+    "file_path": "data/raw/INSULINOTERAPIA/Armazenamento e Transporte/transporte e conservação Diretrizes-Sociedade-Brasileira-de-Diabetes-2019-20201.pdf",
+    "track_id": "insert_20260417_015310_9b7939cc",
+    "metadata": {
+      "processing_start_time": 1776390790,
+      "processing_end_time": 1776390907
+    }
+  },
+  "doc-e4e0b537651ba52668bdb4715dc6e1e1": {
+    "status": "processed",
+    "chunks_count": 1,
+    "chunks_list": [
+      "chunk-e4e0b537651ba52668bdb4715dc6e1e1"
+    ],
+    "content_summary": "TRANSPORTE DA INSULINA\n\nPara TRANSPORTE DA INSULINA sempre levá-la na bagagem de mão (Ex.: em bolsa, pochete, etc). Cuidar para não pegar luz solar direta, nunca deixar em porta-luvas, painel, bagageiro de carro ou ônibus. Lembrar que os frascos lacr...",
+    "content_length": 1323,
+    "created_at": "2026-04-17T01:55:08.570155+00:00",
+    "updated_at": "2026-04-17T01:55:47.071886+00:00",
+    "file_path": "data/raw/INSULINOTERAPIA/Armazenamento e Transporte/transporte insulinas.pdf",
+    "track_id": "insert_20260417_015508_f6a70304",
+    "metadata": {
+      "processing_start_time": 1776390908,
+      "processing_end_time": 1776390947
+    }
+  },
+  "doc-7cde3eabc825837906331f404cb17e13": {
+    "status": "processed",
+    "chunks_count": 1,
+    "chunks_list": [
+      "chunk-7cde3eabc825837906331f404cb17e13"
+    ],
+    "content_summary": "O que é lipodistrofia?\n\nLipodistrofia é uma mudança no tecido da pele onde a insulina é aplicada com frequência.\n Os dois tipos mais comuns são:\n\nLipo-hipertrofia (LH): é o mais comum. A pele fica com caroços ou nódulos duros por baixo, causados pelo...",
+    "content_length": 2714,
+    "created_at": "2026-04-17T01:55:47.751574+00:00",
+    "updated_at": "2026-04-17T01:56:54.281774+00:00",
+    "file_path": "data/raw/INSULINOTERAPIA/Complicações relacionadas ao uso da insulina/Documento sem título.docx",
+    "track_id": "insert_20260417_015547_3ddba718",
+    "metadata": {
+      "processing_start_time": 1776390947,
+      "processing_end_time": 1776391014
+    }
+  },
+  "doc-a54f6efcdf525bbf7265846f613a3dc3": {
+    "status": "processed",
+    "chunks_count": 10,
+    "chunks_list": [
+      "chunk-765c78d4f51fdac93e13e45fb99d373a",
+      "chunk-681314f9dcc082a68a4ef263e07d6d21",
+      "chunk-d61398680714e7c13af556786e5f1d53",
+      "chunk-8976b2bcdf11ea0f85b055045a31de6e",
+      "chunk-1b087e31b84394e98ff97af5c400ddea",
+      "chunk-09dc9c34a816c11f6e2a266a22cad7c4",
+      "chunk-e39e2e1d1ea1cdef89261a2ea923a4bb",
+      "chunk-ccfd401990dc9b3df99608502517ceff",
+      "chunk-10a35fad3c659926a6c157a66cc87b25",
+      "chunk-cff76e567a348821b2cf7de76d6b0724"
+    ],
+    "content_summary": "Lipodistrofias\n\nIntrodução\n\nou generalizada) e a aquisição da doença (congênita ou adquirida).\n\nAs lipodistrofias são doenças relativamente raras, sub-\n\ndiagnosticadas e muitas vezes confundidas com dia- betes tipo 2 (DM2) devido à resistência insulí...",
+    "content_length": 40270,
+    "created_at": "2026-04-17T01:56:56.905954+00:00",
+    "updated_at": "2026-04-17T02:09:07.388934+00:00",
+    "file_path": "data/raw/INSULINOTERAPIA/Complicações relacionadas ao uso da insulina/LIPODISTROFIAS.pdf",
+    "track_id": "insert_20260417_015656_0936670c",
+    "metadata": {
+      "processing_start_time": 1776391017,
+      "processing_end_time": 1776391747
+    }
+  },
+  "doc-845e37bfc4c3f380d94bce1e34bf3ff7": {
+    "status": "processed",
+    "chunks_count": 1,
+    "chunks_list": [
+      "chunk-845e37bfc4c3f380d94bce1e34bf3ff7"
+    ],
+    "content_summary": "O que você precisa saber sobre Lipohipertrofia\n\nDr. Augusto Pimazoni Netto\n\nA lipohipertrofia é um efeito colateral\n\nbastante comum em pacientes\n\nsubmetidos à terapia insulínica de longo\n\nprazo, sendo caracterizada por lesões\n\nfibrosas e pobremente v...",
+    "content_length": 2652,
+    "created_at": "2026-04-17T02:09:08.750245+00:00",
+    "updated_at": "2026-04-17T02:09:46.566117+00:00",
+    "file_path": "data/raw/INSULINOTERAPIA/Complicações relacionadas ao uso da insulina/O que você precisa saber sobre Lipohipertrofia - Sociedade Brasileira de Diabetes.pdf",
+    "track_id": "insert_20260417_020908_1580a799",
+    "metadata": {
+      "processing_start_time": 1776391748,
+      "processing_end_time": 1776391786
+    }
+  },
+  "doc-f545d850687c6a409a7b7fcc2c529979": {
+    "status": "processed",
+    "chunks_count": 1,
+    "chunks_list": [
+      "chunk-f545d850687c6a409a7b7fcc2c529979"
+    ],
+    "content_summary": "♻️ Descarte correto dos materiais de diabetes: cuide da sua saúde e do meio ambiente\n\nVocê sabia que jogar seringas, agulhas, lancetas e canetas de insulina no lixo comum pode machucar outras pessoas e espalhar doenças como hepatite?\n\nAlém disso, ess...",
+    "content_length": 1866,
+    "created_at": "2026-04-17T02:09:47.224772+00:00",
+    "updated_at": "2026-04-17T02:10:42.932171+00:00",
+    "file_path": "data/raw/INSULINOTERAPIA/Descarte/Documento sem título.docx",
+    "track_id": "insert_20260417_020947_c43771f1",
+    "metadata": {
+      "processing_start_time": 1776391787,
+      "processing_end_time": 1776391842
+    }
+  },
+  "dup-88044609a578131e6a3740a884d640b1": {
+    "status": "failed",
+    "content_summary": "[DUPLICATE] Original document: doc-20539fb8f990fb5268820d6c24541777",
+    "content_length": 27237,
+    "chunks_count": 0,
+    "chunks_list": [],
+    "created_at": "2026-04-17T02:10:46.448505+00:00",
+    "updated_at": "2026-04-17T02:10:46.448526+00:00",
+    "file_path": "data/raw/INSULINOTERAPIA/Descarte/Técnicas de aplicação de insulina.pdf",
+    "track_id": "insert_20260417_021046_b3e874b9",
+    "error_msg": "Content already exists. Original doc_id: doc-20539fb8f990fb5268820d6c24541777, Status: DocStatus.PROCESSED",
+    "metadata": {
+      "is_duplicate": true,
+      "original_doc_id": "doc-20539fb8f990fb5268820d6c24541777",
+      "original_track_id": "insert_20260417_011941_1bf893cc"
+    }
+  },
+  "dup-5741108db635e5fb9469de40783cdbd1": {
+    "status": "failed",
+    "content_summary": "[DUPLICATE] Original document: doc-d848bf97bdd3ad3cbbc5e487ad615ae6",
+    "content_length": 6476,
+    "chunks_count": 0,
+    "chunks_list": [],
+    "created_at": "2026-04-17T02:10:47.645603+00:00",
+    "updated_at": "2026-04-17T02:10:47.645616+00:00",
+    "file_path": "data/raw/INSULINOTERAPIA/Descarte/armazenamento e descarte.pdf",
+    "track_id": "insert_20260417_021047_83206534",
+    "error_msg": "Content already exists. Original doc_id: doc-d848bf97bdd3ad3cbbc5e487ad615ae6, Status: DocStatus.PROCESSED",
+    "metadata": {
+      "is_duplicate": true,
+      "original_doc_id": "doc-d848bf97bdd3ad3cbbc5e487ad615ae6",
+      "original_track_id": "insert_20260417_013704_304709e5"
+    }
+  },
+  "doc-f20fafbbc1fa0ab3614aa9f0a31cc68c": {
+    "status": "processed",
+    "chunks_count": 1,
+    "chunks_list": [
+      "chunk-f20fafbbc1fa0ab3614aa9f0a31cc68c"
+    ],
+    "content_summary": "Departamento de Enfermagem - SBD\n\nSociedade Brasileira de Diabetes\n\nwww.diabetes.org.br\n\n/SBD.Diabetes\n\nRua Afonso Brás, 579, conj. 72/74 - São Paulo / Tel.: 3842 4932\n\nDESCARTE CORRETAMENTE O LIXO GERADO NO TRATAMENTO DO DIABETES\n\nJOGUE O SEU LIXO N...",
+    "content_length": 1936,
+    "created_at": "2026-04-17T02:10:49.217955+00:00",
+    "updated_at": "2026-04-17T02:11:27.566455+00:00",
+    "file_path": "data/raw/INSULINOTERAPIA/Descarte/descarte.pdf",
+    "track_id": "insert_20260417_021049_1d4b3a9e",
+    "metadata": {
+      "processing_start_time": 1776391849,
+      "processing_end_time": 1776391887
+    }
+  },
+  "doc-5cbb93d5b53dcad1f31187573ca36aca": {
+    "status": "processed",
+    "chunks_count": 16,
+    "chunks_list": [
+      "chunk-e9e8506ccd0873ed33aab251a51777db",
+      "chunk-e6b675d8c3862d7afc1820eea8dcb6d2",
+      "chunk-ba20f4ac003bf05454dd74a11af65344",
+      "chunk-787c79be47c4fa5628ccaa46df3b3ac3",
+      "chunk-446973a2b1587190cc7f16dced47b9b9",
+      "chunk-9a5b2140f8cc0b79d7a01035a65765d6",
+      "chunk-2bfe29e2b79736f6a5dc2f614af10c3e",
+      "chunk-9c97e72ed14f791af4ed00e286efb386",
+      "chunk-a98e4fb0c1df82574e2e684d4be1c9dd",
+      "chunk-40e5761166562f199ccbadc1a721b022",
+      "chunk-ec9392937cd75295223b4280f6f6a9cb",
+      "chunk-1a82ee5fc646264570058b0d35549c43",
+      "chunk-f305b0ca7df20042d05e919cc7c79084",
+      "chunk-26feee8d71b7c52e8ad689be52772bc8",
+      "chunk-7e120a4cfca263158ba16a5cb87e3bb1",
+      "chunk-09899adb641c51638a4f64a8e97ad7a8"
+    ],
+    "content_summary": "Sistema de infusão contínua de insulina: indicações e uso\n\nIntrodução\n\nNo início dos anos 1960, o doutor Arnold Kadish desen-\n\nvolveu o primeiro sistema de infusão contínua de insu- lina (SICI), popularmente conhecido como bomba de insulina. Consisti...",
+    "content_length": 65514,
+    "created_at": "2026-04-17T02:11:33.096030+00:00",
+    "updated_at": "2026-04-17T02:30:13.609788+00:00",
+    "file_path": "data/raw/INSULINOTERAPIA/SICI (bomba de insulina)/sici.pdf",
+    "track_id": "insert_20260417_021133_fea6066a",
+    "metadata": {
+      "processing_start_time": 1776391893,
+      "processing_end_time": 1776393013
+    }
+  },
+  "doc-c4a00e3112052deb6e50f38044ebbaaf": {
+    "status": "processed",
+    "chunks_count": 1,
+    "chunks_list": [
+      "chunk-c4a00e3112052deb6e50f38044ebbaaf"
+    ],
+    "content_summary": "💉 Tratamento com Insulina – Entenda Passo a Passo\n\nSe você tem diabetes tipo 1 ou tipo 2, pode ser que precise usar insulina para controlar o açúcar no sangue. A insulina ajuda a manter a glicemia (nível de açúcar) nos valores certos, evitando compli...",
+    "content_length": 4225,
+    "created_at": "2026-04-17T02:30:14.352430+00:00",
+    "updated_at": "2026-04-17T02:31:13.284552+00:00",
+    "file_path": "data/raw/INSULINOTERAPIA/Tipos de insulinas/Documento sem título.docx",
+    "track_id": "insert_20260417_023014_de9d16d7",
+    "metadata": {
+      "processing_start_time": 1776393014,
+      "processing_end_time": 1776393073
+    }
+  },
+  "dup-cfdf54a3f8a5c2d500855fbbce67631f": {
+    "status": "failed",
+    "content_summary": "[DUPLICATE] Original document: doc-26629c7483812932b1dbdc20e2ed7454",
+    "content_length": 9142,
+    "chunks_count": 0,
+    "chunks_list": [],
+    "created_at": "2026-04-17T02:31:15.409814+00:00",
+    "updated_at": "2026-04-17T02:31:15.409839+00:00",
+    "file_path": "data/raw/INSULINOTERAPIA/Tipos de insulinas/Guia-Pratico-SBD-Canetas-Reutilizaveis-de-Insulina-no-SUS.pdf",
+    "track_id": "insert_20260417_023115_2072853e",
+    "error_msg": "Content already exists. Original doc_id: doc-26629c7483812932b1dbdc20e2ed7454, Status: DocStatus.PROCESSED",
+    "metadata": {
+      "is_duplicate": true,
+      "original_doc_id": "doc-26629c7483812932b1dbdc20e2ed7454",
+      "original_track_id": "insert_20260417_013308_2f4128da"
+    }
+  },
+  "doc-73289bbe16819272f50e7efba220a031": {
+    "status": "processed",
+    "chunks_count": 9,
+    "chunks_list": [
+      "chunk-1be3aaa29698d5bc01415acd5d596d6b",
+      "chunk-cc9aaff137055c336ca7c62fe28c2711",
+      "chunk-4b35b59916454225da864a1d20ad42fa",
+      "chunk-9cc4aeb900cb6b471036108e250d9b69",
+      "chunk-09b77a8b0ae185e5a360314c7c8ad7e8",
+      "chunk-8e6a4b7b215bc74884e7d316a5d5b426",
+      "chunk-2003d6d3b6bd90def01d5e6f4dc0d45b",
+      "chunk-b1d4b8d0f95c25ca0cf04ec46431aa4e",
+      "chunk-241a693891509816aa402dd442e5eb0b"
+    ],
+    "content_summary": "(https://diretriz.diabetes.org.br/)\n\nInicial Comitê Central Autoria Revistas Internacionais Edições Anteriores\n\nÍndice  Editorial\n\nFale Conosco\n\nInsulinoterapia no DM1\n\n Diabetes na criança e no adolescente (https://diretriz.diabetes.org.br/categor...",
+    "content_length": 32850,
+    "created_at": "2026-04-17T02:31:21.630699+00:00",
+    "updated_at": "2026-04-17T02:41:12.836699+00:00",
+    "file_path": "data/raw/INSULINOTERAPIA/Tipos de insulinas/Insulinoterapia – Diretriz da Sociedade Brasileira de Diabetes – Ed. 2024.pdf",
+    "track_id": "insert_20260417_023121_65f5530d",
+    "metadata": {
+      "processing_start_time": 1776393081,
+      "processing_end_time": 1776393672
+    }
+  },
+  "doc-68b69c9ff6a7fc83a32a01c2a6fb8e24": {
+    "status": "processed",
+    "chunks_count": 13,
+    "chunks_list": [
+      "chunk-2f185a9a8ed64d8260821ebce6ac6d30",
+      "chunk-a24a2ffea32f4267809ed57961ca021d",
+      "chunk-0e3e2f4fd58ea40d4b8ed88a912915d8",
+      "chunk-0643f80f3dcb5af2304a36d66b64747f",
+      "chunk-e5efa251efb8d408446792c670f288bb",
+      "chunk-f1c0bdac09a381c7400cc43819a4956c",
+      "chunk-4b131d02f8b2e4b740c9635ec2a81ce2",
+      "chunk-f0b54a15d03ed8b48e1cc9d268f8851c",
+      "chunk-2729b02a82b0bbb2308248a8c793b282",
+      "chunk-a88ad4df29585708cd8c09f77f212a6d",
+      "chunk-fc915c8be84931828f52adf18dc11d85",
+      "chunk-81f3ec9d4bd61df4ea0fc28648fdb3db",
+      "chunk-fc3606b2a6efce547652e075717b38ec"
+    ],
+    "content_summary": "23/06/2025, 16:06\n\nInsulin100: The Discovery and Development – Defining Moments Canada\n\n\n\n \n\nInsulin100 \n\nInsulin100: The Discovery and Development\n\nInsulin100: The Discovery and Development\n\nCite [#citation]\n\nEXPLORE OUR VIRTUAL EXHIBIT\n\nBy arti...",
+    "content_length": 56275,
+    "created_at": "2026-04-17T02:41:22.468552+00:00",
+    "updated_at": "2026-04-17T02:50:01.170526+00:00",
+    "file_path": "data/raw/INSULINOTERAPIA/Tipos de insulinas/The Discovery and Development.pdf",
+    "track_id": "insert_20260417_024122_10c339f7",
+    "metadata": {
+      "processing_start_time": 1776393682,
+      "processing_end_time": 1776394201
+    }
+  },
+  "doc-45acb51b7ae6abbca3f62be75cb06013": {
+    "status": "processed",
+    "chunks_count": 2,
+    "chunks_list": [
+      "chunk-9b8ed41e44da1b4da17d65ea646a6b30",
+      "chunk-fab2f9ab1c0327eb7224e7f039b7a269"
+    ],
+    "content_summary": "23/06/2025, 16:05\n\nUnderstanding insulin - International Diabetes Federation\n\nUnderstanding insulin\n\nInsulin is a hormone the pancreas makes that\n\nregulates blood glucose (sugar) levels. Insulin\n\nacts like a key to let glucose pass from the\n\nbloodstr...",
+    "content_length": 9724,
+    "created_at": "2026-04-17T02:50:03.586018+00:00",
+    "updated_at": "2026-04-17T02:53:24.854816+00:00",
+    "file_path": "data/raw/INSULINOTERAPIA/Tipos de insulinas/Understanding insulin - International Diabetes Federation.pdf",
+    "track_id": "insert_20260417_025003_f65ce752",
+    "metadata": {
+      "processing_start_time": 1776394203,
+      "processing_end_time": 1776394404
+    }
+  },
+  "doc-4ae1584aefa4591eef3bb603e237eaf9": {
+    "status": "processed",
+    "chunks_count": 1,
+    "chunks_list": [
+      "chunk-4ae1584aefa4591eef3bb603e237eaf9"
+    ],
+    "content_summary": "📲 Monitorização Contínua de Glicose (CGM)\n\nA tecnologia que mostra como está sua glicemia 24 horas por dia\n\nNos últimos anos, ficou mais comum o uso de sensores de glicose, que são pequenos dispositivos colados na pele e que medem a glicemia o tempo ...",
+    "content_length": 3692,
+    "created_at": "2026-04-17T02:53:26.179356+00:00",
+    "updated_at": "2026-04-17T02:54:03.698332+00:00",
+    "file_path": "data/raw/MONITORIZAÇÃO GLICÊMICA/CGM/Documento sem título.docx",
+    "track_id": "insert_20260417_025326_313e02c1",
+    "metadata": {
+      "processing_start_time": 1776394406,
+      "processing_end_time": 1776394443
+    }
+  },
+  "doc-558354bfd05a75d9967bcb874c617e60": {
+    "status": "processed",
+    "chunks_count": 29,
+    "chunks_list": [
+      "chunk-5b3cb8d98fe2f3e99cc21f9813694d7a",
+      "chunk-b729a29694da16ad4bdb4db1d68866f8",
+      "chunk-d81cba4da2d4cbe4097deaff044854fc",
+      "chunk-bda1a54695e8bf893e2092bfcae341c5",
+      "chunk-46d2c7d6491d3085ba6ded7d1ba1789f",
+      "chunk-ca48c6855c7e67d82c7ff555353c4975",
+      "chunk-c96bfd7a3adace716b96df7dc4e549de",
+      "chunk-e5d2991b05a1409e54d762e939e6aab0",
+      "chunk-5fa77e9c4af33c5b35fd0efdafce1d80",
+      "chunk-bf511f5ca167210fd1bad6dcdd6c0b63",
+      "chunk-5cd0904c2c2d55abaa459c84eddaf6c6",
+      "chunk-b5a5a33c5858349a4f033d03bba6f28f",
+      "chunk-fe82037eb58ffe6405b0d8dae54d53c0",
+      "chunk-cb22f3f2f25a0c3fbcc772ed5191e4fc",
+      "chunk-5b2741f006d0e46b99f2071877c96b60",
+      "chunk-5d1ff9ac9f838fdb6eaf321b9c2f9954",
+      "chunk-406a89bb135bac137a9630af2ca30008",
+      "chunk-cc7f3fcf9b2333cd28ea6febcc71bba9",
+      "chunk-1b0a2247ca93f6c5829d90c531aadff1",
+      "chunk-6dc523ebf672bf2feeaae96003e30113",
+      "chunk-6b4e7c97c2ef36e54f97262fc88be441",
+      "chunk-5f4a2353f268b40100f2d6d4b7d81a8b",
+      "chunk-5f6cd1cd9aa6a9e2a90ab5945249a0a2",
+      "chunk-78cf79c2ea521e5e05dda50ad3769694",
+      "chunk-8981adfe59fd832499114ded7e38f8fd",
+      "chunk-39d8fc472aaca25063c47f1cb4db45c7",
+      "chunk-68c3ae645615f7659db22579533fdafb",
+      "chunk-3487180e84738cd10e00c75aa0348f64",
+      "chunk-0f2e58b901c921e1032893396bb2ec3e"
+    ],
+    "content_summary": "Diabetes Care Volume 46, Supplement 1, January 2023\n\n7. Diabetes Technology: Standards ofCareinDiabetes—2023 Diabetes Care 2023;46(Suppl. 1):S111–S127 | https://doi.org/10.2337/dc23-S007\n\nThe American Diabetes Association (ADA) “Standards of Care in ...",
+    "content_length": 122499,
+    "created_at": "2026-04-17T02:54:09.196642+00:00",
+    "updated_at": "2026-04-17T03:18:44.832425+00:00",
+    "file_path": "data/raw/MONITORIZAÇÃO GLICÊMICA/CGM/blood glucose monitoring.pdf",
+    "track_id": "insert_20260417_025409_7e59bd99",
+    "metadata": {
+      "processing_start_time": 1776394449,
+      "processing_end_time": 1776395924
+    }
+  },
+  "doc-1a395f8e178a0b6e141d8aea9c36827c": {
+    "status": "processed",
+    "chunks_count": 3,
+    "chunks_list": [
+      "chunk-2f4684d9cd01bccad7f0bb94b8cfc986",
+      "chunk-3f43375a0efac5d82c194bd09f0f5848",
+      "chunk-c416f9f30be5fe232b97a95c10d3f853"
+    ],
+    "content_summary": "Metas glicêmicas para adultos, gestantes e crianças\n\nTIR\n\nHbA1c %\n\n50%\n\n8,3\n\n60%\n\n7,5\n\n70%\n\n6,7\n\n80%\n\n5,9\n\n90%\n\n5,1\n\n100%\n\n4,3\n\nO tempo no alvo ganhou força com os trabalhos re- centes que conseguiram correlacionar o TIR com com- plicações microvascu...",
+    "content_length": 9891,
+    "created_at": "2026-04-17T03:18:46.377346+00:00",
+    "updated_at": "2026-04-17T03:20:19.465080+00:00",
+    "file_path": "data/raw/MONITORIZAÇÃO GLICÊMICA/CGM/cgm.pdf",
+    "track_id": "insert_20260417_031846_5ec54edf",
+    "metadata": {
+      "processing_start_time": 1776395926,
+      "processing_end_time": 1776396019
+    }
+  },
+  "doc-f9c56f17541a30d9d3e6a056f5271b9e": {
+    "status": "processed",
+    "chunks_count": 4,
+    "chunks_list": [
+      "chunk-23b594c5a1fa38dcf4561c687857d178",
+      "chunk-884a19a3f8a6dc025e65c20612b36651",
+      "chunk-27fa71c8e4f5579d5dffc3fc8da80a26",
+      "chunk-e9f82b68674ff6d712897cfbc86f820e"
+    ],
+    "content_summary": "Uso de tecnologia para melhor gerenciamento da glicemia\n\nIntroducao\n\npartir do final do século XX, aconteceram grandes avan-\n\ncos tecnoldgicos no tratamento do diabetes. Esses avan-\n\ncos permitiram que milhares de pacientes pudessem ter melhorias nos...",
+    "content_length": 14097,
+    "created_at": "2026-04-17T03:20:51.530596+00:00",
+    "updated_at": "2026-04-17T03:23:35.554724+00:00",
+    "file_path": "data/raw/MONITORIZAÇÃO GLICÊMICA/CGM/monitoramento contínuo de glicose.pdf",
+    "track_id": "insert_20260417_032051_4ef6bc37",
+    "metadata": {
+      "processing_start_time": 1776396051,
+      "processing_end_time": 1776396215
+    }
+  },
+  "doc-9853addb07052bb826b320259ba04921": {
+    "status": "processed",
+    "chunks_count": 2,
+    "chunks_list": [
+      "chunk-fa2179f7d63de01d74dc89ae43d694e5",
+      "chunk-ff04a80c5dee02972963f28d4548444a"
+    ],
+    "content_summary": "Metas glicêmicas para adultos, gestantes e crianças\n\nTabela 8. Metas de glicemia capilar para DM na gestação, segundo sociedades científicas.\n\nSociedade\n\nEm jejum (mg/dL)\n\n1 hora pós-prandial (mg/dL)\n\n2 horas pós-prandial (mg/dL)\n\nACOG\n\n< 90\n\n< 140\n\n...",
+    "content_length": 5417,
+    "created_at": "2026-04-17T03:23:36.466032+00:00",
+    "updated_at": "2026-04-17T03:25:16.224028+00:00",
+    "file_path": "data/raw/MONITORIZAÇÃO GLICÊMICA/CGM/ref.pdf",
+    "track_id": "insert_20260417_032336_c907e53d",
+    "metadata": {
+      "processing_start_time": 1776396216,
+      "processing_end_time": 1776396316
+    }
+  },
+  "doc-cd1b8bbe45f58c8124c451e0f7be0515": {
+    "status": "processed",
+    "chunks_count": 3,
+    "chunks_list": [
+      "chunk-9800753be19ca733f3e642d4bca375c0",
+      "chunk-6edac4e55da49c908f17d926092ee851",
+      "chunk-4ec50c5fb671549ffcc8859969bf6de0"
+    ],
+    "content_summary": "🩸 Entendendo o Diabetes e o Controle da Glicose\n\n🤔 O que é o diabetes?\n\nO diabetes mellitus (DM) é uma doença que acontece quando o corpo não consegue produzir ou usar a insulina corretamente. A insulina é o hormônio que ajuda o açúcar (glicose) a en...",
+    "content_length": 11332,
+    "created_at": "2026-04-17T03:25:17.287577+00:00",
+    "updated_at": "2026-04-17T03:27:16.896508+00:00",
+    "file_path": "data/raw/MONITORIZAÇÃO GLICÊMICA/GLICEMIAS CAPILARES/Documento sem título.docx",
+    "track_id": "insert_20260417_032517_e7dc3361",
+    "metadata": {
+      "processing_start_time": 1776396317,
+      "processing_end_time": 1776396436
+    }
+  },
+  "doc-7faff25d64c5a6b58175a76a461d7c42": {
+    "status": "processed",
+    "chunks_count": 2,
+    "chunks_list": [
+      "chunk-7faff25d64c5a6b58175a76a461d7c42",
+      "chunk-a716069fd7395a8bca248de73facf396"
+    ],
+    "content_summary": "COMO TRATAR A HIPOGLICEMIA?\n\nAçúcar baixo: menor que 70 mg/dL ou LO)\n\nLO = abaixo do limite de detecção do aparelho.\n\nSintomas: Suor excessivo; Tremor; Tontura;\n\nPalidez; Palpitação; Sensação de fome; Mudança de\n\ncomportamento; confusão mental; alter...",
+    "content_length": 3891,
+    "created_at": "2026-04-17T03:27:18.113495+00:00",
+    "updated_at": "2026-04-17T03:28:30.805341+00:00",
+    "file_path": "data/raw/MONITORIZAÇÃO GLICÊMICA/GLICEMIAS CAPILARES/HIPO_HIPER.pdf",
+    "track_id": "insert_20260417_032718_ae42e023",
+    "metadata": {
+      "processing_start_time": 1776396438,
+      "processing_end_time": 1776396510
+    }
+  },
+  "doc-559ec136def9fd87e7706221d82deded": {
+    "status": "processed",
+    "chunks_count": 4,
+    "chunks_list": [
+      "chunk-b680eacdfb555aa0bcc8de9689c8be98",
+      "chunk-d6edb14783588f33400c8ef21b6523f2",
+      "chunk-13c79c954d9ba30265965c0aa151b4b2",
+      "chunk-28ef276cd133d547b849d4471598874d"
+    ],
+    "content_summary": "Sociedade Brasileira de Diabetes\n\nDepartamento de Enfermagem\n\nGestão 2022-2023\n\nORIENTAÇÕES SOBRE GLICEMIA\n\nCAPILAR PARA PROFISSIONAIS\n\nDE SAÚDE\n\n2023\n\nCOORDENADORAS:\n\nMaria Gabriela Secco Cavicchioli\n\nSherida Karanini Paz de Oliveira\n\nAUTORAS:\n\nAnto...",
+    "content_length": 16537,
+    "created_at": "2026-04-17T03:28:32.905938+00:00",
+    "updated_at": "2026-04-17T03:32:15.555442+00:00",
+    "file_path": "data/raw/MONITORIZAÇÃO GLICÊMICA/GLICEMIAS CAPILARES/Orientacoes_Glicemia_SBD.pdf",
+    "track_id": "insert_20260417_032832_9f741120",
+    "metadata": {
+      "processing_start_time": 1776396512,
+      "processing_end_time": 1776396735
+    }
+  },
+  "doc-c02f371092325cf0bcb454cf42fe266b": {
+    "status": "processed",
+    "chunks_count": 5,
+    "chunks_list": [
+      "chunk-e7d2fedfda2770a0c1d0da724b2340e7",
+      "chunk-1e4857c197260d4e0fe3930d829f0e40",
+      "chunk-94c439748fa7d6c84be45d88281a2ff2",
+      "chunk-7ad725fd0b642f1df1e1e8636686d2e6",
+      "chunk-70c4b996bdb68daf6c3fac08be42ca47"
+    ],
+    "content_summary": "Metodos para avaliacao do\n\ncontrole glicémico\n\nIntroducao\n\ndiabetes mellitus (DM) é um disturbio metabdlico com-\n\nplexo, resultante da destruicéo imunomediada de cé-\n\nlulas produtoras de insulina nas ilhotas de Langerhans (DM1) ou da combinagao de re...",
+    "content_length": 19500,
+    "created_at": "2026-04-17T03:33:00.618158+00:00",
+    "updated_at": "2026-04-17T03:36:40.944862+00:00",
+    "file_path": "data/raw/MONITORIZAÇÃO GLICÊMICA/GLICEMIAS CAPILARES/glicemias capilares.pdf",
+    "track_id": "insert_20260417_033300_f4583048",
+    "metadata": {
+      "processing_start_time": 1776396780,
+      "processing_end_time": 1776397000
+    }
+  },
+  "dup-1cdc7fb6f8a11a18c644acab9b744745": {
+    "status": "failed",
+    "content_summary": "[DUPLICATE] Original document: doc-7faff25d64c5a6b58175a76a461d7c42",
+    "content_length": 3891,
+    "chunks_count": 0,
+    "chunks_list": [],
+    "created_at": "2026-04-17T03:36:42.127254+00:00",
+    "updated_at": "2026-04-17T03:36:42.127263+00:00",
+    "file_path": "data/raw/MONITORIZAÇÃO GLICÊMICA/METAS GLICÊMICAS/Cópia de HIPO_HIPER.pdf",
+    "track_id": "insert_20260417_033642_b0969246",
+    "error_msg": "Content already exists. Original doc_id: doc-7faff25d64c5a6b58175a76a461d7c42, Status: DocStatus.PROCESSED",
+    "metadata": {
+      "is_duplicate": true,
+      "original_doc_id": "doc-7faff25d64c5a6b58175a76a461d7c42",
+      "original_track_id": "insert_20260417_032718_ae42e023"
+    }
+  },
+  "doc-92a30c38d6f424d7e8bc74f61fa6d81c": {
+    "status": "processed",
+    "chunks_count": 38,
+    "chunks_list": [
+      "chunk-5127dc37aacd36cf42f1920c99e6582f",
+      "chunk-179ce2c633b84b240278120663d1a835",
+      "chunk-852d7e38b2e86126de069b652a139510",
+      "chunk-932ca37b054c344a8d68b1c81b109333",
+      "chunk-d66f0b4f1a3839ae3d9a656d6e5ed084",
+      "chunk-d2b6f8ed2c64d600a56676da2a0912a3",
+      "chunk-3a5f0c738d95a2eac772760c30caf275",
+      "chunk-634bc9a45eac0f31695d8da18726f045",
+      "chunk-d6274035257d4f2f2dc136eb85e63ec1",
+      "chunk-165f5c0433c9073b7c988f507c025570",
+      "chunk-d5a5957d3735cd1ae6842f42db87f59c",
+      "chunk-f6b007183efc30b50bb1735dd83331b2",
+      "chunk-d7a615e21c1a14e73491f8e98ff1b690",
+      "chunk-91cc6f0f264f8c06bb58d87417336356",
+      "chunk-6e7792a5f7680a76e506cd8dfad1485e",
+      "chunk-3131c786dc267c9acb0a3197a6f1d6b4",
+      "chunk-40fdffd651a33e02cc4b235929048438",
+      "chunk-b3b0929ac7b3b9da2362d9ba71bd1642",
+      "chunk-8fffd7149aaa706671cd23bba01c4704",
+      "chunk-8953e80779270d91ede6b928643e38d4",
+      "chunk-870415a60dd887faaff79fda00f56a42",
+      "chunk-d7f3aec1ad7d8c152faf4d9eaae34ed9",
+      "chunk-adde535460e4c80e93f46ef4671b932a",
+      "chunk-09881c81b4c290e15a7ece7637098241",
+      "chunk-5587171f363d118226a34e0c433d1c1c",
+      "chunk-357261cf2e3250f23398676d7c906b98",
+      "chunk-7956a355cfd7ee15e8b98c1b7a58e0bc",
+      "chunk-7d064b21f97d6fac8447cae533cc05d2",
+      "chunk-06bb7834072f2e3fa5d480d63fefeb5e",
+      "chunk-ab49011ece64caa43454d6d79ca42d38",
+      "chunk-5462097512962ab92207c483d9a6d14b",
+      "chunk-69ad13fab4d366f426036b7eb4a50324",
+      "chunk-b2a32604cf700d0242176eead2f11f6e",
+      "chunk-cb07341068b13e3965668fa622d4c706",
+      "chunk-cb5a5599a354326815896f2984fc6679",
+      "chunk-0581147bdd3951b4b250e9137b07843c",
+      "chunk-09bacd257ed862132c6fa29d01c2e93e",
+      "chunk-a985a61356756bc0dc4c2d651230a17c"
+    ],
+    "content_summary": "Diabetes Care Volume 46, Supplement 1, January 2023\n\n2. Classification and Diagnosis of Diabetes: StandardsofCarein Diabetes—2023 Diabetes Care 2023;46(Suppl. 1):S19–S40 | https://doi.org/10.2337/dc23-S002\n\nThe American Diabetes Association (ADA) “St...",
+    "content_length": 154569,
+    "created_at": "2026-04-17T03:36:50.019719+00:00",
+    "updated_at": "2026-04-17T04:13:47.251388+00:00",
+    "file_path": "data/raw/MONITORIZAÇÃO GLICÊMICA/METAS GLICÊMICAS/Diagnostico e Classificação/Classification and Diagnosis of.pdf",
+    "track_id": "insert_20260417_033650_794d9c97",
+    "metadata": {
+      "processing_start_time": 1776397010,
+      "processing_end_time": 1776399227
+    }
+  },
+  "doc-986076c3d9f00fc7ac81b1c5c95061d1": {
+    "status": "processed",
+    "chunks_count": 13,
+    "chunks_list": [
+      "chunk-7a8e0365faa30050c56d8ecd18655ba3",
+      "chunk-07ce3dfb3a4bb1ebb3d70ca23dfa8b2f",
+      "chunk-30e6c0304fbc457721c1773ec90f1c3a",
+      "chunk-ccd63accdc73d14812925f2d754ebea2",
+      "chunk-19450eaef32f8aaf2164d45f63e4fbbf",
+      "chunk-a2113d94eb30d1ba55a4bf215bc6d4eb",
+      "chunk-7f01bb4eaac3b954dc0fc5511f29c5dd",
+      "chunk-8776a1e03eeca2e843693d88ebfec04f",
+      "chunk-28603155c6f5434e32d7474fa2140712",
+      "chunk-ba30caf571e3a866ff636cbcbbbd30da",
+      "chunk-2dbafc28939bcb9074c92d80d0395511",
+      "chunk-e32032246905f54b5ae0a13f5085eff2",
+      "chunk-fa9662ac9d6048ab344fd21dbc60f517"
+    ],
+    "content_summary": "Classiﬁcação do diabetes\n\nResumo das recomendações\n\nAutores: Melanie Rodacki, Milena Teles, Monica Gabbay, Rodrigo Lamounier Editor de Seção: Renan Montenegro Editor Chefe: Marcello Bertoluci Última revisão em: 14/12/2023 DOI: 10.29327/557753.2022-1 ...",
+    "content_length": 51676,
+    "created_at": "2026-04-17T04:13:53.593024+00:00",
+    "updated_at": "2026-04-17T04:25:55.452890+00:00",
+    "file_path": "data/raw/MONITORIZAÇÃO GLICÊMICA/METAS GLICÊMICAS/Diagnostico e Classificação/Classificação do diabetes.pdf",
+    "track_id": "insert_20260417_041353_68a2bf4e",
+    "metadata": {
+      "processing_start_time": 1776399233,
+      "processing_end_time": 1776399955
+    }
+  },
+  "doc-f82b9caa944103b8bdaa469f23b8509c": {
+    "status": "processed",
+    "chunks_count": 20,
+    "chunks_list": [
+      "chunk-054894918e21d189b5cc2198558ceb05",
+      "chunk-659a02537eedf70b936ad6968f23564d",
+      "chunk-dda5c34e260a7f1399dc715e6f6c9911",
+      "chunk-ed8e477e12b7b25733611d3d2c0c1b9e",
+      "chunk-ef663f98664ebd9f4b2b53a897135711",
+      "chunk-4b95726ff58166af4c4efde6824610a6",
+      "chunk-2aa42a255ce0d5ee3d0a435b5fbf6843",
+      "chunk-29526ec77084ff9f2586287e7be696b4",
+      "chunk-b8d6dd96664420ffbe79753ede91bbe2",
+      "chunk-c28e1df6ced7f40307ed125a8438fd98",
+      "chunk-5e5bcefdadf84bc6a38805f552278456",
+      "chunk-41a714748a302933617a1028e7ada0de",
+      "chunk-d31f9d33c8f3246e911b8a6959ef2b47",
+      "chunk-e2b4b7fffada844dd9f73e803616fc34",
+      "chunk-7ebc102c246008dd2c55f324ee7df389",
+      "chunk-6c703963f47e955f6cf366ae1369c582",
+      "chunk-d8e651e0e486147a18f07c19dd7b1d00",
+      "chunk-7d83534aaabbc2df5439b6c4add519e9",
+      "chunk-9b53ff16799c0df8ac61c43c025030ad",
+      "chunk-bdbea535e824495974951aefae646f88"
+    ],
+    "content_summary": "Diagnóstico de diabetes mellitus\n\nResumo das recomendações\n\nAutores: Melanie Rodacki, Roberta A. Cobas, Lenita Zajdenverg, Wellington Santana da Silva Júnior, Luciano Giacaglia, Luis Eduardo Calliari, Renata Maria Noronha (in memoriam), Cynthia Valer...",
+    "content_length": 73293,
+    "created_at": "2026-04-17T04:26:04.484801+00:00",
+    "updated_at": "2026-04-17T04:41:52.621264+00:00",
+    "file_path": "data/raw/MONITORIZAÇÃO GLICÊMICA/METAS GLICÊMICAS/Diagnostico e Classificação/Diagnóstico de diabetes mellitus.pdf",
+    "track_id": "insert_20260417_042604_e23f46f1",
+    "metadata": {
+      "processing_start_time": 1776399964,
+      "processing_end_time": 1776400912
+    }
+  },
+  "doc-45722ec243cb2641e466c18b0b4aad54": {
+    "status": "processed",
+    "chunks_count": 3,
+    "chunks_list": [
+      "chunk-e9773f3de771e215fecc9de8345bce85",
+      "chunk-7bc6693f58adba601d01de0d98296d2d",
+      "chunk-baa5ff744ee27d73b43d09cf2c2cb876"
+    ],
+    "content_summary": "🎯 METAS NO TRATAMENTO DO DIABETES (em linguagem simples)\n\n🧠 Por que definir metas no tratamento?\n\nQuando se tem diabetes, é muito importante manter o açúcar do sangue (glicose) bem controlado. Isso ajuda a evitar problemas nos olhos, rins, coração, n...",
+    "content_length": 10717,
+    "created_at": "2026-04-17T04:41:53.700000+00:00",
+    "updated_at": "2026-04-17T04:45:13.969391+00:00",
+    "file_path": "data/raw/MONITORIZAÇÃO GLICÊMICA/METAS GLICÊMICAS/Documento sem título.docx",
+    "track_id": "insert_20260417_044153_18262be1",
+    "metadata": {
+      "processing_start_time": 1776400913,
+      "processing_end_time": 1776401113
+    }
+  },
+  "doc-87343a915cf23880d21c44f2364bd811": {
+    "status": "processed",
+    "chunks_count": 9,
+    "chunks_list": [
+      "chunk-f46715d3d3e5cf19d2a6110e934f9c74",
+      "chunk-4889e9c3113485c638f7bbfcc8e31621",
+      "chunk-b06eefe548dcc6063943499360ae25de",
+      "chunk-b139944ce05e6ae9cfae8e1f199d4e2a",
+      "chunk-286d5c7b7f8b9a6c7d6cb7c8fedc8c5f",
+      "chunk-f6b23e51b18641d2f9d8aca9360da17a",
+      "chunk-e055abfc8ef3a346f27331d7737338ac",
+      "chunk-a88c2043842eb0875c0f5dbeba7be6e3",
+      "chunk-2a0699e0c5189a0b4e71fdcea873a74e"
+    ],
+    "content_summary": "Metas no tratamento do diabetes\n\nResumo das recomendações\n\nAutores: Bianca de Almeida-Pititto, Monike Lourenço Dias, Fabio Ferreira de Moura, Rodrigo Lamounier, Sérgio Vencio e Luis Eduardo Calliari Editor Chefe: Marcello Bertoluci Ultima revisão em:...",
+    "content_length": 33172,
+    "created_at": "2026-04-17T04:45:18.501190+00:00",
+    "updated_at": "2026-04-17T04:54:45.343516+00:00",
+    "file_path": "data/raw/MONITORIZAÇÃO GLICÊMICA/METAS GLICÊMICAS/Metas glicêmicas/Metas no tratamento.pdf",
+    "track_id": "insert_20260417_044518_e067812a",
+    "metadata": {
+      "processing_start_time": 1776401118,
+      "processing_end_time": 1776401685
+    }
+  },
+  "doc-d4323faf87f58856d1dd74cca276cc36": {
+    "status": "processed",
+    "chunks_count": 22,
+    "chunks_list": [
+      "chunk-cd373bab56ec598a45795216a825efe6",
+      "chunk-a73f0d28b833aff8bd94fd5d96ac3198",
+      "chunk-dc3a4f0dd0118ee7ee3bdfc5d62d122a",
+      "chunk-6001b519b9f9d585d96507de6183ee56",
+      "chunk-39e2f93bc990daf3876044ac99bd6ee8",
+      "chunk-853a48dbdcbd2c6a1bfe2ed61b2067c7",
+      "chunk-5cec53f9718cece433fee1eea093764a",
+      "chunk-82309aa4717bb323fdb4e96d8c9d8087",
+      "chunk-2c6f568f293bc59a6c11820a095130be",
+      "chunk-9f300c6fe35507e0332a655e72f278ed",
+      "chunk-0183d700cb2925cf43ad18c0f919e671",
+      "chunk-92a3537ae98ef40c8aee35ff9ed9dc6b",
+      "chunk-4141cec0d3df867705c9c4e50068deec",
+      "chunk-fb423f6b0ccf3ab6b608026ce7669004",
+      "chunk-d65554a2c7d01a17081d300e54400756",
+      "chunk-b1da007b26e23e14d27a5bc88e5f69f9",
+      "chunk-bdf77ec67db8f81fe1960075ab16bd95",
+      "chunk-45507ce9f22a7421f41a18e22110f4e3",
+      "chunk-16a8e94b24328974362682bdd7f58581",
+      "chunk-b78e9ea458edd006e679dbb36bce2c56",
+      "chunk-0ccf0ffef05315f002032f60e4aedda4",
+      "chunk-14e2672a8d279c38af86f9a8acf01ee8"
+    ],
+    "content_summary": "Diabetes Care Volume 46, Supplement 1, January 2023\n\n6. Glycemic Targets: Standardsof CareinDiabetes—2023 Diabetes Care 2023;46(Suppl. 1):S97–S110 | https://doi.org/10.2337/dc23-S006\n\nThe American Diabetes Association (ADA) “Standards of Care in Diab...",
+    "content_length": 87708,
+    "created_at": "2026-04-17T04:54:50.942797+00:00",
+    "updated_at": "2026-04-17T05:12:19.308523+00:00",
+    "file_path": "data/raw/MONITORIZAÇÃO GLICÊMICA/METAS GLICÊMICAS/Metas glicêmicas/metas cuidado do diabetes.pdf",
+    "track_id": "insert_20260417_045450_94eba037",
+    "metadata": {
+      "processing_start_time": 1776401691,
+      "processing_end_time": 1776402739
+    }
+  },
+  "doc-a79918ff8fe5a21b7ade6526a41109be": {
+    "status": "processed",
+    "chunks_count": 2,
+    "chunks_list": [
+      "chunk-8682d5d12ee4750c4059f7845780136e",
+      "chunk-493ede8be4782e7c359c63bdcbcc062b"
+    ],
+    "content_summary": "01/07/25, 18:41 Signs, Symptoms, and Treatment for Hypoglycemia (Low Blood Glucose) | American Diabetes Association\n\nAmerican Diabetes » Association.\n\nHome Life With Diabetes Low Blood Glucose (Hypoglycemia) Signs, Symptoms, and Treatment For Hypogly...",
+    "content_length": 9567,
+    "created_at": "2026-04-17T05:12:50.382727+00:00",
+    "updated_at": "2026-04-17T05:15:07.089970+00:00",
+    "file_path": "data/raw/MONITORIZAÇÃO GLICÊMICA/METAS GLICÊMICAS/hipoglicemia.pdf",
+    "track_id": "insert_20260417_051250_9d509471",
+    "metadata": {
+      "processing_start_time": 1776402770,
+      "processing_end_time": 1776402907
+    }
+  }
+}

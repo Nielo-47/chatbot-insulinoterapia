@@ -2,14 +2,24 @@ import { z } from 'zod'
 
 import { env } from './env'
 import { authStorage } from './auth'
-import type { QueryPayload, QueryResult } from '../types/chat'
+import type { ConversationHistoryMessage, QueryPayload, QueryResult } from '../types/chat'
+
+export class ApiError extends Error {
+  status: number
+
+  constructor(message: string, status: number) {
+    super(message)
+    this.name = 'ApiError'
+    this.status = status
+    Object.setPrototypeOf(this, ApiError.prototype)
+  }
+}
 
 const queryResultSchema = z.object({
   response: z.string(),
   sources: z.array(z.string()),
   source_count: z.number(),
   summarized: z.boolean(),
-  session_id: z.string(),
 })
 
 const healthResultSchema = z.object({
@@ -30,8 +40,10 @@ const currentUserSchema = z.object({
 const conversationHistorySchema = z.object({
   messages: z.array(
     z.object({
-      role: z.string(),
+      role: z.enum(['user', 'assistant', 'system']),
       content: z.string(),
+      sources: z.array(z.string()).default([]),
+      source_count: z.number().default(0),
     }),
   ),
 })
@@ -45,13 +57,11 @@ async function request<T>(
   const controller = new AbortController()
   const timeout = window.setTimeout(() => controller.abort(), env.requestTimeoutMs)
   const token = authStorage.getToken()
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-    ...(init.headers || {}),
-  }
+  const headers = new Headers(init.headers)
+  headers.set('Content-Type', 'application/json')
 
   if (!options?.skipAuth && token) {
-    headers.Authorization = `Bearer ${token}`
+    headers.set('Authorization', `Bearer ${token}`)
   }
 
   try {
@@ -71,7 +81,7 @@ async function request<T>(
       } catch {
         // Keep the status-only message when the response is not JSON.
       }
-      throw new Error(detail)
+      throw new ApiError(detail, response.status)
     }
 
     const json = await response.json()
@@ -121,11 +131,15 @@ export async function getCurrentUser(): Promise<{ id: number; username: string }
   return request('/auth/me', { method: 'GET' }, currentUserSchema)
 }
 
+export async function deleteAccount(): Promise<void> {
+  await request('/auth/me', { method: 'DELETE' }, z.object({ message: z.string() }))
+}
+
 export async function clearAuthSession(): Promise<void> {
   authStorage.clearToken()
 }
 
-export async function getConversationHistory(): Promise<{ role: string; content: string }[]> {
+export async function getConversationHistory(): Promise<ConversationHistoryMessage[]> {
   const result = await request('/user/conversations', { method: 'GET' }, conversationHistorySchema)
   return result.messages
 }
@@ -134,6 +148,8 @@ export async function sendQuery(payload: QueryPayload): Promise<QueryResult> {
   return request('/query', { method: 'POST', body: JSON.stringify(payload) }, queryResultSchema)
 }
 
-export async function clearSession(_sessionId?: string): Promise<void> {
+export async function clearConversation(): Promise<void> {
   await request(`/user/conversations`, { method: 'DELETE' }, z.object({ message: z.string() }))
 }
+
+export const clearSession = clearConversation

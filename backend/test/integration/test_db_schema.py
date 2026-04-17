@@ -14,8 +14,7 @@ class DatabaseSchemaTests(unittest.TestCase):
         db_url = os.getenv("TEST_DATABASE_URL")
         if not db_url:
             raise RuntimeError(
-                "TEST_DATABASE_URL must be set explicitly for schema tests. "
-                "Do not reuse DATABASE_URL."
+                "TEST_DATABASE_URL must be set explicitly for schema tests. " "Do not reuse DATABASE_URL."
             )
 
         parsed = make_url(db_url)
@@ -25,15 +24,13 @@ class DatabaseSchemaTests(unittest.TestCase):
         db_name = (parsed.database or "").lower()
         if not db_name.endswith("_test"):
             raise RuntimeError(
-                "Refusing to run schema tests on a non-test database. "
-                "Database name must end with '_test'."
+                "Refusing to run schema tests on a non-test database. " "Database name must end with '_test'."
             )
 
         host = (parsed.host or "").lower()
         if host not in {"localhost", "127.0.0.1", "postgres"}:
             raise RuntimeError(
-                "Refusing to run schema tests on non-local host. "
-                "Allowed hosts: localhost, 127.0.0.1, postgres."
+                "Refusing to run schema tests on non-local host. " "Allowed hosts: localhost, 127.0.0.1, postgres."
             )
 
         if any(token in db_name for token in ("prod", "production", "main")):
@@ -98,6 +95,12 @@ class DatabaseSchemaTests(unittest.TestCase):
         index_names = {index["name"] for index in indexes}
 
         self.assertIn("ix_messages_conversation_created", index_names)
+
+    def test_messages_table_has_sources_column(self) -> None:
+        inspector = inspect(self.engine)
+        columns = {column["name"] for column in inspector.get_columns("messages", schema=self.test_schema)}
+
+        self.assertIn("sources_json", columns)
 
 
 if __name__ == "__main__":

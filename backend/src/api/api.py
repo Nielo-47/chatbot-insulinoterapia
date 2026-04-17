@@ -186,7 +186,15 @@ def get_user_conversations(
         messages = chatbot.get_history(current_user.id)
         logger.info(f"Retrieved {len(messages)} messages for user {current_user.id}")
         return ConversationHistoryResponse(
-            messages=[ConversationMessage(role=msg["role"], content=msg["content"]) for msg in messages]
+            messages=[
+                ConversationMessage(
+                    role=msg["role"],
+                    content=msg["content"],
+                    sources=msg.get("sources", []),
+                    source_count=msg.get("source_count", len(msg.get("sources", []))),
+                )
+                for msg in messages
+            ]
         )
     except Exception as e:
         logger.error(f"Error retrieving conversation history: {type(e).__name__}: {e}")

@@ -25,3 +25,58 @@ body {
 .font-serif {
   font-family: 'Source Serif 4', Georgia, serif;
 }
+
+.chat-scroll-area {
+  scrollbar-gutter: stable;
+}
+
+.chat-scroll-area::-webkit-scrollbar {
+  width: 10px;
+}
+
+.chat-scroll-area::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background-clip: content-box;
+  background-color: #94a3b8;
+}
+
+.markdown-content {
+  overflow-wrap: anywhere;
+}
+
+.markdown-content > *:first-child {
+  margin-top: 0;
+}
+
+.markdown-content > *:last-child {
+  margin-bottom: 0;
+}
+
+.markdown-content p,
+.markdown-content ul,
+.markdown-content ol,
+.markdown-content pre,
+.markdown-content blockquote {
+  margin: 0.45rem 0;
+}
+
+.markdown-content ul,
+.markdown-content ol {
+  padding-left: 1.2rem;
+}
+
+.markdown-content li + li {
+  margin-top: 0.25rem;
+}
+
+.markdown-content blockquote {
+  border-left: 3px solid #67e8f9;
+  padding-left: 0.8rem;
+  color: #334155;
+}
+
+.markdown-content pre {
+  margin-top: 0.7rem;
+  margin-bottom: 0.7rem;
+}

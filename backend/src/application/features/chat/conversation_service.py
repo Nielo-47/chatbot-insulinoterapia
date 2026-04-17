@@ -35,7 +35,7 @@ class ConversationService:
             return
         self._resolve_conversation_id(user_id=user_id, create_if_missing=True)
 
-    def get_conversation(self, user_id: int, limit: Optional[int] = None) -> List[Dict[str, str]]:
+    def get_conversation(self, user_id: int, limit: Optional[int] = None) -> List[Dict[str, Any]]:
         if user_id is None:
             return []
 
@@ -46,7 +46,13 @@ class ConversationService:
         history_limit = limit or CONVERSATION_HISTORY_LIMIT
         return self.messages_repository.list_recent_messages(conversation_id=conversation_id, limit=history_limit)
 
-    def add_message(self, user_id: int, role: str, content: str) -> None:
+    def add_message(
+        self,
+        user_id: int,
+        role: str,
+        content: str,
+        sources: Optional[List[str]] = None,
+    ) -> None:
         if user_id is None:
             return
 
@@ -58,7 +64,12 @@ class ConversationService:
         if conversation_id is None:
             return
 
-        self.messages_repository.add_message(conversation_id=conversation_id, role=role, content=clean_content)
+        self.messages_repository.add_message(
+            conversation_id=conversation_id,
+            role=role,
+            content=clean_content,
+            sources=sources,
+        )
         self.conversations_repository.touch_conversation(conversation_id=conversation_id)
 
         try:
@@ -166,5 +177,3 @@ class ConversationService:
         if was_summarized:
             self.sessions_summarized.discard(user_id)
         return was_summarized
-
-

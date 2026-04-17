@@ -6,7 +6,7 @@ export interface ChatSource {
 }
 
 export interface ChatMessage {
-  id: string
+  id?: string  // Backend-generated, not needed from frontend
   role: MessageRole
   content: string
   createdAt: string
@@ -18,7 +18,6 @@ export interface ChatMessage {
 
 export interface QueryPayload {
   query: string
-  session_id?: string
 }
 
 export interface QueryResult {
@@ -26,5 +25,11 @@ export interface QueryResult {
   sources: string[]
   source_count: number
   summarized: boolean
-  session_id: string
+}
+
+export interface ConversationHistoryMessage {
+  role: MessageRole
+  content: string
+  sources: string[]
+  source_count: number
 }

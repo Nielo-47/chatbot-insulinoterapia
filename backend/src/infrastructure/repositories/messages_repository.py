@@ -1,4 +1,5 @@
-from typing import Dict, List, Protocol
+import json
+from typing import Any, Dict, List, Protocol
 
 from sqlalchemy import delete, func, select
 
@@ -9,9 +10,9 @@ from backend.src.infrastructure.data.db_client import get_db_session
 
 
 class ConversationCacheLike(Protocol):
-    def get_messages(self, conversation_id: int) -> List[Dict[str, str]] | None: ...
+    def get_messages(self, conversation_id: int) -> List[Dict[str, Any]] | None: ...
 
-    def set_messages(self, conversation_id: int, messages: List[Dict[str, str]]) -> None: ...
+    def set_messages(self, conversation_id: int, messages: List[Dict[str, Any]]) -> None: ...
 
     def invalidate(self, conversation_id: int) -> None: ...
 
@@ -24,19 +25,28 @@ class MessagesRepository:
             key_prefix=CHAT_CACHE_KEY_PREFIX,
         )
 
-    def add_message(self, conversation_id: int, role: str, content: str) -> None:
+    def add_message(
+        self,
+        conversation_id: int,
+        role: str,
+        content: str,
+        sources: List[str] | None = None,
+    ) -> None:
+        serialized_sources = json.dumps(sources or [])
         with get_db_session() as db:
-            db.add(Message(conversation_id=conversation_id, role=role, content=content))
+            db.add(
+                Message(conversation_id=conversation_id, role=role, content=content, sources_json=serialized_sources)
+            )
         self.cache.invalidate(conversation_id)
 
-    def list_recent_messages(self, conversation_id: int, limit: int) -> List[Dict[str, str]]:
+    def list_recent_messages(self, conversation_id: int, limit: int) -> List[Dict[str, Any]]:
         cached = self.cache.get_messages(conversation_id)
         if cached is not None:
             return cached[-limit:] if limit > 0 else cached
 
         with get_db_session() as db:
             stmt = (
-                select(Message.role, Message.content)
+                select(Message.role, Message.content, Message.sources_json)
                 .where(Message.conversation_id == conversation_id)
                 .order_by(Message.created_at.desc(), Message.id.desc())
                 .limit(limit)
@@ -44,7 +54,23 @@ class MessagesRepository:
             rows = db.execute(stmt).all()
 
         rows = list(reversed(rows))
-        messages = [{"role": role, "content": content} for role, content in rows]
+        messages: List[Dict[str, Any]] = []
+        for role, content, sources_json in rows:
+            try:
+                sources = json.loads(sources_json) if sources_json else []
+            except json.JSONDecodeError:
+                sources = []
+            if not isinstance(sources, list):
+                sources = []
+            cleaned_sources = [str(source).strip() for source in sources if str(source).strip()]
+            messages.append(
+                {
+                    "role": role,
+                    "content": content,
+                    "sources": cleaned_sources,
+                    "source_count": len(cleaned_sources),
+                }
+            )
         self.cache.set_messages(conversation_id, messages)
         return messages
 

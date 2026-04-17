@@ -1,14 +1,24 @@
 import logging
 from typing import Any, Awaitable, Callable, Dict, List, Literal, Optional
 
-import numpy as np
 from lightrag import LightRAG, QueryParam
 from lightrag.utils import EmbeddingFunc
-from openai import AsyncOpenAI
 
+from backend.src.config.infrastructure import OPENROUTER_API_KEY, OPENROUTER_BASE_URL
 from backend.src.config.prompts import SYSTEM_PROMPT
-from backend.src.config.rag import EMBED_MODEL, EMBEDDING_DIM, LLM_MODEL, MAX_TOKENS, RAG_WORKING_DIR
+from backend.src.config.rag import (
+    EMBED_MODEL,
+    EMBEDDING_DIM,
+    EMBEDDING_FALLBACK_MODEL,
+    EMBEDDING_FALLBACK_RETRIES,
+    EMBEDDING_PRIMARY_RETRIES,
+    EMBEDDING_TIMEOUT_SECONDS,
+    LLM_MODEL,
+    MAX_TOKENS,
+    RAG_WORKING_DIR,
+)
 from backend.src.infrastructure.rag.cleaner import extract_sources
+from backend.src.infrastructure.rag.resilient_embeddings import EmbeddingProviderConfig, build_embedding_callable
 
 logger = logging.getLogger(__name__)
 
@@ -35,24 +45,24 @@ class RAGRuntime:
                 max_tokens=500,
             )
 
-        async def tei_embed_func(texts: List[str]) -> np.ndarray:
-            if isinstance(texts, str):
-                texts = [texts]
-            logger.debug("tei_embed_func called with %d text(s)", len(texts))
-            logger.debug("Using embed base_url: %s", self.embed_base_url)
-            try:
-                client = AsyncOpenAI(api_key=self.embed_api_key, base_url=self.embed_base_url)
-
-                logger.debug("Calling embeddings.create with model=%s", EMBED_MODEL)
-                response = await client.embeddings.create(
-                    model=EMBED_MODEL,
-                    input=texts,
-                )
-                logger.debug("Embeddings received: %d embeddings", len(response.data))
-                return np.array([item.embedding for item in response.data])
-            except Exception as e:
-                logger.exception("Embedding failed: %s: %s", type(e).__name__, e)
-                raise
+        tei_embed_func = build_embedding_callable(
+            primary=EmbeddingProviderConfig(
+                name="tei",
+                base_url=self.embed_base_url,
+                api_key=self.embed_api_key,
+                model=EMBED_MODEL,
+            ),
+            fallback=EmbeddingProviderConfig(
+                name="openrouter",
+                base_url=OPENROUTER_BASE_URL,
+                api_key=OPENROUTER_API_KEY,
+                model=EMBEDDING_FALLBACK_MODEL,
+            ),
+            embedding_dim=EMBEDDING_DIM,
+            timeout_seconds=EMBEDDING_TIMEOUT_SECONDS,
+            primary_retries=EMBEDDING_PRIMARY_RETRIES,
+            fallback_retries=EMBEDDING_FALLBACK_RETRIES,
+        )
 
         self.rag = LightRAG(
             working_dir=RAG_WORKING_DIR,
@@ -82,21 +92,38 @@ class RAGRuntime:
         if self.rag is None:
             raise RuntimeError("RAG is not initialized")
 
-        rag_data = self.rag.query_data(
-            query,
-            param=QueryParam(
-                mode=mode,
-                user_prompt=system_prompt or SYSTEM_PROMPT,
-                max_total_tokens=max_total_tokens,
-                top_k=top_k,
-                enable_rerank=False,
-                conversation_history=conversation_history,
-            ),
-        )
-        sources, source_count = extract_sources(rag_data)
-
-        return {
-            "rag_data": rag_data,
-            "sources": sources,
-            "source_count": source_count,
-        }
+        try:
+            rag_data = self.rag.query_data(
+                query,
+                param=QueryParam(
+                    mode=mode,
+                    user_prompt=system_prompt or SYSTEM_PROMPT,
+                    max_total_tokens=max_total_tokens,
+                    top_k=top_k,
+                    enable_rerank=False,
+                    conversation_history=conversation_history,
+                ),
+            )
+            logger.warning("RAG RAW OUTPUT: %r", rag_data)
+            if not rag_data or not isinstance(rag_data, dict):
+                logger.error("RAG returned invalid data: %r", rag_data)
+            elif rag_data.get("status") != "success":
+                logger.error(
+                    "RAG FAILURE: status=%r, message=%r, metadata=%r",
+                    rag_data.get("status"),
+                    rag_data.get("message"),
+                    rag_data.get("metadata"),
+                )
+            sources, source_count = extract_sources(rag_data)
+            return {
+                "rag_data": rag_data,
+                "sources": sources,
+                "source_count": source_count,
+            }
+        except Exception as e:
+            logger.exception("Exception during RAG query_data: %s", e)
+            return {
+                "rag_data": {"status": "error", "message": str(e)},
+                "sources": [],
+                "source_count": 0,
+            }

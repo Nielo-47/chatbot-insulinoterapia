@@ -15,7 +15,7 @@ class ChatbotService:
         self._conversation = conversation_service
         self._query = query_processor
 
-    def get_history(self, user_id: int) -> List[Dict[str, str]]:
+    def get_history(self, user_id: int) -> List[Dict[str, Any]]:
         return self._conversation.get_conversation(user_id)
 
     def end_session(self, user_id: int) -> bool:

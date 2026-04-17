@@ -2,7 +2,7 @@ import logging
 from contextlib import contextmanager
 from typing import Any, Iterator
 
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine, inspect, text
 from sqlalchemy.orm import Session, sessionmaker
 
 from backend.src.config.infrastructure import DATABASE_URL, DB_MAX_OVERFLOW, DB_POOL_SIZE
@@ -51,4 +51,18 @@ def initialize_database() -> None:
     """Initialize persistent chat tables if they do not exist yet."""
     check_database_connection()
     Base.metadata.create_all(bind=engine)
+    _ensure_message_sources_column()
     logger.info("Database tables initialized")
+
+
+def _ensure_message_sources_column() -> None:
+    """Backfill schema changes for environments that already have existing tables."""
+    inspector = inspect(engine)
+    columns = {column["name"] for column in inspector.get_columns("messages")}
+    if "sources_json" in columns:
+        return
+
+    logger.warning("messages.sources_json column missing; applying compatibility ALTER TABLE")
+    with engine.begin() as conn:
+        conn.execute(text("ALTER TABLE messages ADD COLUMN sources_json TEXT"))
+    logger.info("messages.sources_json column added")
