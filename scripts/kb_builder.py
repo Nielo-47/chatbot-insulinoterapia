@@ -83,30 +83,29 @@ async def llm_model_func(prompt, system_prompt=None, history_messages=[], keywor
             try:
                 import openai as _openai
 
-                # common OpenAI error classes
-                is_rate = isinstance(
-                    e,
-                    getattr(
-                        _openai,
-                        "RateLimitError",
-                        getattr(_openai, "error", None) and _openai.error.RateLimitError,
-                    ),
-                )
-                is_server = isinstance(
-                    e,
-                    getattr(
-                        _openai,
-                        "InternalServerError",
-                        getattr(_openai, "error", None) and _openai.error.InternalServerError,
-                    ),
-                ) or isinstance(
-                    e,
-                    getattr(
-                        _openai,
-                        "APIError",
-                        getattr(_openai, "error", None) and _openai.error.APIError,
-                    ),
-                )
+                # Helper to safely get a class or None
+                def safe_get_class(obj, attr):
+                    val = getattr(obj, attr, None)
+                    return val if isinstance(val, type) else None
+
+                RateLimitError = safe_get_class(_openai, "RateLimitError")
+                InternalServerError = safe_get_class(_openai, "InternalServerError")
+                APIError = safe_get_class(_openai, "APIError")
+                error_mod = getattr(_openai, "error", None)
+                if error_mod:
+                    if RateLimitError is None:
+                        RateLimitError = safe_get_class(error_mod, "RateLimitError")
+                    if InternalServerError is None:
+                        InternalServerError = safe_get_class(error_mod, "InternalServerError")
+                    if APIError is None:
+                        APIError = safe_get_class(error_mod, "APIError")
+
+                if RateLimitError is not None:
+                    is_rate = isinstance(e, RateLimitError)
+                if InternalServerError is not None:
+                    is_server = isinstance(e, InternalServerError)
+                if APIError is not None:
+                    is_server = is_server or isinstance(e, APIError)
             except Exception:
                 # Fallback to string matching if class check fails
                 low = msg.lower()

@@ -26,3 +26,10 @@ export interface QueryResult {
   source_count: number
   summarized: boolean
 }
+
+export interface ConversationHistoryMessage {
+  role: MessageRole
+  content: string
+  sources: string[]
+  source_count: number
+}

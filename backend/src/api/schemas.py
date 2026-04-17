@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class LoginRequest(BaseModel):
@@ -34,6 +34,8 @@ class QueryResponse(BaseModel):
 class ConversationMessage(BaseModel):
     role: str
     content: str
+    sources: List[str] = Field(default_factory=list)
+    source_count: int = 0
 
 
 class ConversationHistoryResponse(BaseModel):
@@ -43,4 +45,3 @@ class ConversationHistoryResponse(BaseModel):
 class HealthResponse(BaseModel):
     status: str
     message: str
-

@@ -2,7 +2,7 @@ import { z } from 'zod'
 
 import { env } from './env'
 import { authStorage } from './auth'
-import type { QueryPayload, QueryResult } from '../types/chat'
+import type { ConversationHistoryMessage, QueryPayload, QueryResult } from '../types/chat'
 
 export class ApiError extends Error {
   status: number
@@ -40,8 +40,10 @@ const currentUserSchema = z.object({
 const conversationHistorySchema = z.object({
   messages: z.array(
     z.object({
-      role: z.string(),
+      role: z.enum(['user', 'assistant', 'system']),
       content: z.string(),
+      sources: z.array(z.string()).default([]),
+      source_count: z.number().default(0),
     }),
   ),
 })
@@ -137,7 +139,7 @@ export async function clearAuthSession(): Promise<void> {
   authStorage.clearToken()
 }
 
-export async function getConversationHistory(): Promise<{ role: string; content: string }[]> {
+export async function getConversationHistory(): Promise<ConversationHistoryMessage[]> {
   const result = await request('/user/conversations', { method: 'GET' }, conversationHistorySchema)
   return result.messages
 }

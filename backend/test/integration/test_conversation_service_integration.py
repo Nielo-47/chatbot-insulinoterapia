@@ -6,21 +6,25 @@ from backend.src.infrastructure.repositories.conversations_repository import Con
 from backend.src.infrastructure.repositories.messages_repository import MessagesRepository
 from backend.src.infrastructure.repositories.users_repository import UsersRepository
 from backend.src.application.features.chat.conversation_service import ConversationService
-from backend.test.integration.db_test_utils import bind_session_to_schema, create_isolated_test_engine, drop_isolated_schema
+from backend.test.integration.db_test_utils import (
+    bind_session_to_schema,
+    create_isolated_test_engine,
+    drop_isolated_schema,
+)
 
 
 class TrackingCache:
     def __init__(self) -> None:
-        self.store: Dict[int, List[Dict[str, str]]] = {}
+        self.store: Dict[int, List[Dict[str, object]]] = {}
         self.get_calls = 0
         self.set_calls = 0
         self.invalidate_calls = 0
 
-    def get_messages(self, conversation_id: int) -> Optional[List[Dict[str, str]]]:
+    def get_messages(self, conversation_id: int) -> Optional[List[Dict[str, object]]]:
         self.get_calls += 1
         return self.store.get(conversation_id)
 
-    def set_messages(self, conversation_id: int, messages: List[Dict[str, str]]) -> None:
+    def set_messages(self, conversation_id: int, messages: List[Dict[str, object]]) -> None:
         self.set_calls += 1
         self.store[conversation_id] = list(messages)
 
@@ -64,7 +68,13 @@ class ConversationServiceIntegrationTests(unittest.TestCase):
         first_read = self.service.get_conversation(user_id)
         second_read = self.service.get_conversation(user_id)
 
-        self.assertEqual(first_read, [{"role": "user", "content": "oi"}, {"role": "assistant", "content": "olá"}])
+        self.assertEqual(
+            first_read,
+            [
+                {"role": "user", "content": "oi", "sources": [], "source_count": 0},
+                {"role": "assistant", "content": "olá", "sources": [], "source_count": 0},
+            ],
+        )
         self.assertEqual(second_read, first_read)
         self.assertEqual(self.cache.set_calls, 1)
         self.assertGreaterEqual(self.cache.get_calls, 2)

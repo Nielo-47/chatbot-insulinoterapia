@@ -74,9 +74,25 @@ class QueryProcessor:
         return graph.compile()
 
     def _node_load_history(self, state: QueryGraphState) -> Dict[str, Any]:
+        raw_history = self.conversation_service.get_conversation(state.user_id)
         return {
-            "conversation_history": self.conversation_service.get_conversation(state.user_id),
+            "conversation_history": self._normalize_history(raw_history),
         }
+
+    @staticmethod
+    def _normalize_history(history: Any) -> List[Dict[str, str]]:
+        if not isinstance(history, list):
+            return []
+
+        cleaned: List[Dict[str, str]] = []
+        for item in history:
+            if not isinstance(item, dict):
+                continue
+            role = str(item.get("role", "")).strip()
+            content = str(item.get("content", "")).strip()
+            if role and content:
+                cleaned.append({"role": role, "content": content})
+        return cleaned
 
     def _node_retrieve_rag(self, state: QueryGraphState) -> Dict[str, Any]:
         query_params = state.query_params
@@ -159,6 +175,7 @@ class QueryProcessor:
             state.user_id,
             "assistant",
             state.final_response or state.initial_response,
+            sources=state.sources,
         )
         return {
             "was_summarized": self.conversation_service.consume_summarized(state.user_id),

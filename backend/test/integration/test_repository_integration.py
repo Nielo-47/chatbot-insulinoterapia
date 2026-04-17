@@ -39,7 +39,7 @@ class RepositoryIntegrationTests(unittest.TestCase):
         user = self.users.get_user_by_username("alice")
 
         self.messages.add_message(conversation_id, "user", "oi")
-        self.messages.add_message(conversation_id, "assistant", "olá")
+        self.messages.add_message(conversation_id, "assistant", "olá", sources=["doc-a.md", "doc-b.md"])
 
         self.assertIsNotNone(user)
         assert user is not None
@@ -50,8 +50,8 @@ class RepositoryIntegrationTests(unittest.TestCase):
         self.assertEqual(
             self.messages.list_recent_messages(conversation_id, limit=10),
             [
-                {"role": "user", "content": "oi"},
-                {"role": "assistant", "content": "olá"},
+                {"role": "user", "content": "oi", "sources": [], "source_count": 0},
+                {"role": "assistant", "content": "olá", "sources": ["doc-a.md", "doc-b.md"], "source_count": 2},
             ],
         )
 

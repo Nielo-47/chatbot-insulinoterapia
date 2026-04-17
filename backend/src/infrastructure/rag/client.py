@@ -92,21 +92,38 @@ class RAGRuntime:
         if self.rag is None:
             raise RuntimeError("RAG is not initialized")
 
-        rag_data = self.rag.query_data(
-            query,
-            param=QueryParam(
-                mode=mode,
-                user_prompt=system_prompt or SYSTEM_PROMPT,
-                max_total_tokens=max_total_tokens,
-                top_k=top_k,
-                enable_rerank=False,
-                conversation_history=conversation_history,
-            ),
-        )
-        sources, source_count = extract_sources(rag_data)
-
-        return {
-            "rag_data": rag_data,
-            "sources": sources,
-            "source_count": source_count,
-        }
+        try:
+            rag_data = self.rag.query_data(
+                query,
+                param=QueryParam(
+                    mode=mode,
+                    user_prompt=system_prompt or SYSTEM_PROMPT,
+                    max_total_tokens=max_total_tokens,
+                    top_k=top_k,
+                    enable_rerank=False,
+                    conversation_history=conversation_history,
+                ),
+            )
+            logger.warning("RAG RAW OUTPUT: %r", rag_data)
+            if not rag_data or not isinstance(rag_data, dict):
+                logger.error("RAG returned invalid data: %r", rag_data)
+            elif rag_data.get("status") != "success":
+                logger.error(
+                    "RAG FAILURE: status=%r, message=%r, metadata=%r",
+                    rag_data.get("status"),
+                    rag_data.get("message"),
+                    rag_data.get("metadata"),
+                )
+            sources, source_count = extract_sources(rag_data)
+            return {
+                "rag_data": rag_data,
+                "sources": sources,
+                "source_count": source_count,
+            }
+        except Exception as e:
+            logger.exception("Exception during RAG query_data: %s", e)
+            return {
+                "rag_data": {"status": "error", "message": str(e)},
+                "sources": [],
+                "source_count": 0,
+            }

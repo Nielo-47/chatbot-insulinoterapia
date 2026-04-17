@@ -31,8 +31,8 @@ class DummyChatbot:
 
     def get_history(self, user_id: int):
         return [
-            {"role": "user", "content": "Hello"},
-            {"role": "assistant", "content": "Hi there"},
+            {"role": "user", "content": "Hello", "sources": [], "source_count": 0},
+            {"role": "assistant", "content": "Hi there", "sources": ["source-1"], "source_count": 1},
         ]
 
     def end_session(self, user_id: int):
@@ -178,8 +178,10 @@ class ApiEndpointTests(unittest.TestCase):
         self.assertEqual(len(messages), 2)
         self.assertEqual(messages[0]["role"], "user")
         self.assertEqual(messages[0]["content"], "Hello")
+        self.assertEqual(messages[0]["sources"], [])
         self.assertEqual(messages[1]["role"], "assistant")
         self.assertEqual(messages[1]["content"], "Hi there")
+        self.assertEqual(messages[1]["sources"], ["source-1"])
 
     def test_me_endpoint_returns_current_user(self) -> None:
         token = self.client.post("/auth/login", json={"username": "alice", "password": "password123"}).json()[

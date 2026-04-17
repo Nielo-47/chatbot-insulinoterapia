@@ -57,3 +57,11 @@ class UsersRepository:
 
             db.delete(user)
             return True
+
+    def update_password(self, user_id: int, new_hashed_password: str) -> bool:
+        with get_db_session() as db:
+            user = db.get(UserModel, user_id)
+            if user is None:
+                return False
+            user.hashed_password = new_hashed_password
+            return True
