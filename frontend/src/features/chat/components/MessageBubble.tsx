@@ -55,12 +55,6 @@ export function MessageBubble({ message, onShowSources }: MessageBubbleProps) {
         </ReactMarkdown>
       </div>
 
-      {!isUser && message.summarized && (
-        <div className="mt-3 inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
-          Historico comprimido automaticamente
-        </div>
-      )}
-
       {hasSources && (
         <div className="group/references relative mt-3 inline-flex">
           <button

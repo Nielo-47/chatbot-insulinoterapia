@@ -37,3 +37,19 @@ class ConversationsRepository:
                 return
             conversation.updated_at = datetime.now(timezone.utc)
             db.add(conversation)
+
+    def get_summary(self, conversation_id: int) -> Optional[str]:
+        with get_db_session() as db:
+            conversation = db.get(Conversation, conversation_id)
+            if conversation is None:
+                return None
+            return conversation.summary
+
+    def update_summary(self, conversation_id: int, summary: str) -> None:
+        with get_db_session() as db:
+            conversation = db.get(Conversation, conversation_id)
+            if conversation is None:
+                return
+            conversation.summary = summary
+            conversation.updated_at = datetime.now(timezone.utc)
+            db.add(conversation)

@@ -16,6 +16,8 @@ from backend.src.config.rag import (
     EMBEDDING_TIMEOUT_SECONDS,
     LLM_MODEL,
     MAX_TOKENS,
+    RAG_QUERY_MAX_TOKENS,
+    RAG_QUERY_TEMPERATURE,
     RAG_WORKING_DIR,
     KV_STORAGE,
     VECTOR_STORAGE,
@@ -46,7 +48,8 @@ class RAGRuntime:
                 prompt=prompt,
                 system_prompt=system_prompt,
                 history_messages=history_messages,
-                max_tokens=500,
+                temperature=RAG_QUERY_TEMPERATURE,
+                max_tokens=RAG_QUERY_MAX_TOKENS,
             )
 
         tei_embed_func = build_embedding_callable(

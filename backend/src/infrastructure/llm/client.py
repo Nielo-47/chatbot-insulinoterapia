@@ -11,6 +11,7 @@ from openai.types.chat import (
 )
 
 from backend.src.config.infrastructure import OPENROUTER_HTTP_REFERER, OPENROUTER_SITE_TITLE
+from backend.src.config.conversation import DEFAULT_MAX_TOKENS, DEFAULT_TEMPERATURE
 from backend.src.config.rag import LLM_FALLBACK_MODEL, LLM_MODEL, LLM_PRIMARY_RETRIES, LLM_TIMEOUT_SECONDS
 
 logger = logging.getLogger(__name__)
@@ -115,8 +116,8 @@ class LLMClient:
         prompt: str,
         system_prompt: Optional[str] = None,
         history_messages: Optional[List[Dict[str, str]]] = None,
-        temperature: float = 0.1,
-        max_tokens: int = 800,
+        temperature: float = DEFAULT_TEMPERATURE,
+        max_tokens: int = DEFAULT_MAX_TOKENS,
     ) -> str:
         messages: List[ChatCompletionMessageParam] = []
         if system_prompt:

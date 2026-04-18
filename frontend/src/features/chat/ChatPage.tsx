@@ -34,7 +34,6 @@ export function ChatPage({ username, backendStatus, authStatus, onLogout, onDele
   const [isSending, setIsSending] = useState(false)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const [isDeletingAccount, setIsDeletingAccount] = useState(false)
-  const [compressionNotice, setCompressionNotice] = useState<string | null>(null)
   const [localError, setLocalError] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement | null>(null)
 
@@ -96,7 +95,6 @@ export function ChatPage({ username, backendStatus, authStatus, onLogout, onDele
     setMessages((current) => [...current, userMessage])
     setIsSending(true)
     setLocalError(null)
-    setCompressionNotice(null)
 
     try {
       const result = await sendQuery({ query: value })
@@ -111,7 +109,7 @@ export function ChatPage({ username, backendStatus, authStatus, onLogout, onDele
 
       setMessages((current) => [...current, assistantMessage])
       if (result.summarized) {
-        setCompressionNotice('Historico comprimido automaticamente pelo backend.')
+        console.log('[DEBUG] Conversation history was compressed by the backend')
       }
     } catch (error) {
       if (error instanceof ApiError && error.status === 401) {
@@ -134,7 +132,6 @@ export function ChatPage({ username, backendStatus, authStatus, onLogout, onDele
   const handleClearConversation = async () => {
     try {
       await clearConversation()
-      setCompressionNotice(null)
       setLocalError(null)
       setActiveSourcesMessage(null)
       setMessages([initialMessage])
@@ -193,12 +190,6 @@ export function ChatPage({ username, backendStatus, authStatus, onLogout, onDele
           {backendStatus === 'offline' && (
             <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
               Nao foi possivel validar o backend. Verifique se a API esta ativa e tente novamente.
-            </div>
-          )}
-
-          {compressionNotice && (
-            <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">
-              {compressionNotice}
             </div>
           )}
 

@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 from typing import Any, Dict, List, Optional
 
 import redis
@@ -85,3 +86,25 @@ class ConversationCache:
             self._client.delete(self._messages_key(conversation_id))
         except Exception as e:
             logger.warning("Failed to invalidate conversation cache: %s", e)
+
+
+def init_semantic_cache() -> None:
+    """Initialize Redis semantic cache for LLM responses."""
+    from backend.src.config.infrastructure import CHAT_CACHE_REDIS_URL
+
+    redis_url = os.getenv("CHAT_CACHE_REDIS_URL", os.getenv("REDIS_URI", "redis://localhost:6379"))
+    score_threshold = float(os.getenv("SEMANTIC_CACHE_THRESHOLD", "0.9"))
+
+    try:
+        from langchain_core.globals import set_llm_cache
+        from langchain_redis import RedisSemanticCache
+        from langchain_openai import OpenAIEmbeddings
+
+        cache = RedisSemanticCache(
+            redis_url=redis_url,
+            embedding=OpenAIEmbeddings(),
+            score_threshold=score_threshold,
+        )
+        set_llm_cache(cache)
+    except Exception as e:
+        logger.warning("Could not initialize semantic cache: %s", e)
