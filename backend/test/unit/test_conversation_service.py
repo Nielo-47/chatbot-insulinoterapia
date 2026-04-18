@@ -1,19 +1,25 @@
 import unittest
-from typing import Any, Dict, List, Optional, cast
+from typing import Any, Dict, List, Optional
 
+from backend.src.application.contracts.repositories import (
+    ConversationsRepositoryLike,
+    MessagesRepositoryLike,
+    UsersRepositoryLike,
+)
 from backend.src.application.features.chat.conversation_service import ConversationService
 
 
-class InMemoryUsersRepository:
+class InMemoryUsersRepository(UsersRepositoryLike):
     def delete_user_by_id(self, user_id: int) -> bool:
         return False
 
 
-class InMemoryConversationsRepository:
+class InMemoryConversationsRepository(ConversationsRepositoryLike):
     def __init__(self) -> None:
         self._by_user: Dict[int, int] = {}
         self._next = 1
         self.touched_ids: List[int] = []
+        self._summaries: Dict[int, str] = {}
 
     def get_conversation_id_by_user(self, user_id: int) -> Optional[int]:
         return self._by_user.get(user_id)
@@ -27,12 +33,18 @@ class InMemoryConversationsRepository:
     def touch_conversation(self, conversation_id: int) -> None:
         self.touched_ids.append(conversation_id)
 
+    def get_summary(self, conversation_id: int) -> Optional[str]:
+        return self._summaries.get(conversation_id)
 
-class InMemoryMessagesRepository:
+    def update_summary(self, conversation_id: int, summary: str) -> None:
+        self._summaries[conversation_id] = summary
+
+
+class InMemoryMessagesRepository(MessagesRepositoryLike):
     def __init__(self) -> None:
         self._messages: Dict[int, List[Dict[str, str]]] = {}
 
-    def add_message(self, conversation_id: int, role: str, content: str) -> None:
+    def add_message(self, conversation_id: int, role: str, content: str, sources: Optional[List[str]] = None) -> None:
         self._messages.setdefault(conversation_id, []).append({"role": role, "content": content})
 
     def list_recent_messages(self, conversation_id: int, limit: int) -> List[Dict[str, str]]:
@@ -69,9 +81,9 @@ class ConversationServiceTests(unittest.TestCase):
         self.messages_repo = InMemoryMessagesRepository()
 
         self.service = ConversationService(
-            users_repository=cast(Any, self.users_repo),
-            conversations_repository=cast(Any, self.conversations_repo),
-            messages_repository=cast(Any, self.messages_repo),
+            users_repository=self.users_repo,
+            conversations_repository=self.conversations_repo,
+            messages_repository=self.messages_repo,
         )
 
     def test_single_conversation_per_user(self) -> None:

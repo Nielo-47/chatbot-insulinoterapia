@@ -30,6 +30,7 @@ from backend.src.api.dependencies import (
 )
 from backend.src.application.features.auth import AuthenticationService
 from backend.src.application.features.chat.chatbot_service import ChatbotService
+from backend.src.infrastructure.data.cache import init_semantic_cache
 from backend.src.config.security import JWT_SECRET_KEY
 from backend.src.infrastructure.data import initialize_database
 
@@ -115,6 +116,8 @@ async def lifespan(app: FastAPI):
     logger.info("Initializing chatbot...")
     initialize_database()
     logger.info("Database initialized successfully")
+    init_semantic_cache()
+    logger.info("Semantic cache initialized")
     app.state.chatbot = await build_chatbot_service()
     app.state.auth_service = build_auth_service()
     logger.info("Chatbot initialized successfully")

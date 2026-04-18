@@ -13,7 +13,7 @@ class DummyRAGRuntime:
         self._error = error
         self.last_history: List[Dict[str, str]] = []
 
-    def query_data(
+    async def query_data(
         self,
         query: str,
         mode: str,
@@ -39,6 +39,7 @@ class DummyConversationService:
         self.history = history or []
         self.summarized = summarized
         self.added_messages: List[tuple[int, str, str, List[str]]] = []
+        self._summary: Optional[str] = None
 
     def get_conversation(self, user_id: int, limit: Optional[int] = None) -> List[Dict[str, str]]:
         _ = (user_id, limit)
@@ -46,6 +47,14 @@ class DummyConversationService:
 
     def add_message(self, user_id: int, role: str, content: str, sources: Optional[List[str]] = None) -> None:
         self.added_messages.append((user_id, role, content, list(sources or [])))
+
+    def get_summary(self, user_id: int) -> Optional[str]:
+        _ = user_id
+        return self._summary
+
+    def store_summary(self, user_id: int, summary: str) -> None:
+        _ = user_id
+        self._summary = summary
 
     def consume_summarized(self, user_id: int) -> bool:
         _ = user_id
@@ -75,7 +84,7 @@ class QueryProcessorTests(unittest.IsolatedAsyncioTestCase):
                 ],
             },
         }
-        conversation_service = DummyConversationService(history=[{"role": "user", "content": "Oi"}], summarized=True)
+        conversation_service = DummyConversationService(history=[{"role": "user", "content": "Oi"}])
         call_llm = AsyncMock(
             side_effect=[
                 "Resposta inicial",
@@ -89,7 +98,7 @@ class QueryProcessorTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result["response"], "Resposta inicial")
         self.assertEqual(result["sources"], ["doc1.md"])
         self.assertEqual(result["source_count"], 1)
-        self.assertTrue(result["summarized"])
+        self.assertFalse(result["summarized"])  # Not enough messages to trigger summarization
         self.assertEqual(result["session_id"], "sess-1")
         self.assertEqual(len(conversation_service.added_messages), 2)
         self.assertEqual(conversation_service.added_messages[0], (42, "user", "Pergunta", []))

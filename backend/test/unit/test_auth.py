@@ -1,9 +1,10 @@
 import unittest
 from unittest.mock import patch
-from typing import Any, cast
+from typing import Any, Optional
 
 import jwt
 
+from backend.src.application.contracts.repositories import UsersRepositoryLike
 from backend.src.config import Config
 from backend.src.application.features.auth.auth_service import AuthenticationService
 from backend.src.application.features.auth.auth_primitives import (
@@ -38,9 +39,9 @@ class AuthTests(unittest.TestCase):
                 decode_access_token(token)
 
     def test_delete_user_delegates_to_repository(self) -> None:
-        class UsersRepositoryStub:
+        class UsersRepositoryStub(UsersRepositoryLike):
             def __init__(self) -> None:
-                self.deleted_user_id = None
+                self.deleted_user_id: Optional[int] = None
 
             def delete_user_by_id(self, user_id: int) -> bool:
                 self.deleted_user_id = user_id
@@ -48,7 +49,7 @@ class AuthTests(unittest.TestCase):
 
         users_repository = UsersRepositoryStub()
         service = AuthenticationService(
-            users_repository=cast(Any, users_repository),
+            users_repository=users_repository,
             verify_password=verify_password,
             create_access_token=create_access_token,
             decode_access_token=decode_access_token,

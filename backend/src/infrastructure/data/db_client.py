@@ -1,6 +1,6 @@
 import logging
 from contextlib import contextmanager
-from typing import Any, Iterator
+from typing import Any, Iterator, Optional
 
 from sqlalchemy import create_engine, inspect, text
 from sqlalchemy.orm import Session, sessionmaker
@@ -52,6 +52,7 @@ def initialize_database() -> None:
     check_database_connection()
     Base.metadata.create_all(bind=engine)
     _ensure_message_sources_column()
+    _ensure_summary_column()
     logger.info("Database tables initialized")
 
 
@@ -66,3 +67,38 @@ def _ensure_message_sources_column() -> None:
     with engine.begin() as conn:
         conn.execute(text("ALTER TABLE messages ADD COLUMN sources_json TEXT"))
     logger.info("messages.sources_json column added")
+
+
+def _ensure_summary_column() -> None:
+    """Backfill schema changes for conversations.summary column."""
+    inspector = inspect(engine)
+    columns = {column["name"] for column in inspector.get_columns("conversations")}
+    if "summary" in columns:
+        return
+
+    logger.warning("conversations.summary column missing; applying compatibility ALTER TABLE")
+    with engine.begin() as conn:
+        conn.execute(text("ALTER TABLE conversations ADD COLUMN summary TEXT"))
+    logger.info("conversations.summary column added")
+
+
+def create_postgres_checkpointer() -> Optional[Any]:
+    """Create PostgresSaver checkpointer for LangGraph state persistence."""
+    from backend.src.config.conversation import CHECKPOINTER_ENABLED
+
+    if not CHECKPOINTER_ENABLED:
+        return None
+
+    try:
+        from langgraph.checkpoint.postgres import PostgresSaver
+        import psycopg
+    except ImportError:
+        return None
+
+    try:
+        db_url = DATABASE_URL.replace("+psycopg", "")
+        conn = psycopg.connect(db_url)
+        return PostgresSaver(conn)
+    except Exception as e:
+        logger.warning("Could not create PostgresSaver checkpointer: %s", e)
+        return None
