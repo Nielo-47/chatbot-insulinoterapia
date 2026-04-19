@@ -7,7 +7,6 @@ from backend.src.application.features.chat.chatbot_service import ChatbotService
 from backend.src.application.features.chat.conversation_service import ConversationService
 from backend.src.application.features.chat.query_processor import QueryProcessor
 from backend.src.config.infrastructure import OPENROUTER_API_KEY, OPENROUTER_BASE_URL
-from backend.src.config.rag import EMBED_HOST
 from backend.src.infrastructure.llm.client import LLMClient
 from backend.src.infrastructure.rag.factory import RAGFactory
 from backend.src.infrastructure.repositories.conversations_repository import ConversationsRepository
@@ -23,10 +22,7 @@ async def build_chatbot_service() -> ChatbotService:
 
     llm_client = LLMClient(api_key=OPENROUTER_API_KEY, base_url=OPENROUTER_BASE_URL)
 
-    rag_runtime = RAGFactory.create(
-        embed_host=EMBED_HOST,
-        embed_api_key=os.getenv("EMBEDDING_API_KEY", ""),
-    )
+    rag_runtime = RAGFactory.create()
     await rag_runtime.initialize(llm_client.complete)
 
     conversation_service = ConversationService(

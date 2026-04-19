@@ -5,8 +5,8 @@ from lightrag.prompt import PROMPTS
 
 class RAGFactory:
     @staticmethod
-    def create(embed_host: str, embed_api_key: str) -> RAGRuntime:
-        runtime = RAGRuntime(embed_api_key, f"{embed_host}/v1")
+    def create() -> RAGRuntime:
+        runtime = RAGRuntime()
 
         # Keep fail response policy in config and apply at composition time.
         PROMPTS["fail_response"] = RAG_FAILURE_RESPONSE

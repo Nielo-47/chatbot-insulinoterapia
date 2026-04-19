@@ -32,9 +32,7 @@ QueryMode = Literal["local", "global", "hybrid", "naive", "mix", "bypass"]
 
 
 class RAGRuntime:
-    def __init__(self, embed_api_key: str, embed_base_url: str):
-        self.embed_api_key = embed_api_key
-        self.embed_base_url = embed_base_url
+    def __init__(self):
         self.rag: Optional[LightRAG] = None
 
     async def initialize(
@@ -52,11 +50,11 @@ class RAGRuntime:
                 max_tokens=RAG_QUERY_MAX_TOKENS,
             )
 
-        tei_embed_func = build_embedding_callable(
+        embed_func = build_embedding_callable(
             primary=EmbeddingProviderConfig(
-                name="tei",
-                base_url=self.embed_base_url,
-                api_key=self.embed_api_key,
+                name="openrouter",
+                base_url=OPENROUTER_BASE_URL,
+                api_key=OPENROUTER_API_KEY,
                 model=EMBED_MODEL,
             ),
             fallback=EmbeddingProviderConfig(
@@ -82,7 +80,7 @@ class RAGRuntime:
             embedding_func=EmbeddingFunc(
                 embedding_dim=EMBEDDING_DIM,
                 max_token_size=MAX_TOKENS,
-                func=tei_embed_func,
+                func=embed_func,
             ),
         )
 

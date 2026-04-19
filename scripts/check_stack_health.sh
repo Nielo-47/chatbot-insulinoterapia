@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
-services=(redis postgres qdrant neo4j tei backend ui)
+services=(redis postgres qdrant neo4j backend ui)
 
 echo "== Compose services =="
 docker compose ps
