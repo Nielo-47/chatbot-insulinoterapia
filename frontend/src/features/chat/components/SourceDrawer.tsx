@@ -27,10 +27,18 @@ export function SourceDrawer({ message, onClose }: SourceDrawerProps) {
           Limpar
         </button>
       </div>
-      <ol className="space-y-2 pl-4 text-sm text-emerald-900">
+      <ol className="space-y-3 pl-4 text-sm text-emerald-900">
         {message.sources.map((source) => (
-          <li key={source.id} className="list-decimal rounded-lg bg-white/80 px-2 py-1">
-            {source.label}
+          <li key={source.id} className="list-decimal rounded-lg bg-white/80 px-3 py-2">
+            <div className="font-medium">{source.path.split('/').pop()}</div>
+            {source.page != null && (
+              <div className="text-xs text-slate-500">Página {source.page}</div>
+            )}
+            {source.excerpt && (
+              <div className="mt-1 border-l-2 border-emerald-200 pl-2 italic text-slate-600">
+                "{source.excerpt}"
+              </div>
+            )}
           </li>
         ))}
       </ol>

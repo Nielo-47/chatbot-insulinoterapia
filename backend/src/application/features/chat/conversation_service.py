@@ -58,7 +58,7 @@ class ConversationService:
         user_id: int,
         role: str,
         content: str,
-        sources: Optional[List[str]] = None,
+        sources: Optional[List[Dict[str, Any]]] = None,
     ) -> None:
         if user_id is None:
             return

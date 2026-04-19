@@ -2,5 +2,5 @@
 __pycache__/
 data/raw/
 .env
-.pytest_cache/
+.pytest_cache
 /.kilo/

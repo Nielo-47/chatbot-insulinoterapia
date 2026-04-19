@@ -30,7 +30,7 @@ class MessagesRepository:
         conversation_id: int,
         role: str,
         content: str,
-        sources: List[str] | None = None,
+        sources: List[dict] | None = None,
     ) -> None:
         serialized_sources = json.dumps(sources or [])
         with get_db_session() as db:
@@ -57,18 +57,31 @@ class MessagesRepository:
         messages: List[Dict[str, Any]] = []
         for role, content, sources_json in rows:
             try:
-                sources = json.loads(sources_json) if sources_json else []
+                raw_sources = json.loads(sources_json) if sources_json else []
             except json.JSONDecodeError:
-                sources = []
-            if not isinstance(sources, list):
-                sources = []
-            cleaned_sources = [str(source).strip() for source in sources if str(source).strip()]
+                raw_sources = []
+            if not isinstance(raw_sources, list):
+                raw_sources = []
+
+            # Normalize to structured format (dicts with path/page/excerpt)
+            structured_sources: List[Dict[str, Any]] = []
+            for src in raw_sources:
+                if isinstance(src, dict):
+                    structured_sources.append(src)
+                elif isinstance(src, str):
+                    # Legacy format: just a path string
+                    structured_sources.append({"path": src, "page": None, "excerpt": None})
+                else:
+                    continue
+
+            # Filter out entries without a path
+            sources_list = [s for s in structured_sources if s.get("path")]
             messages.append(
                 {
                     "role": role,
                     "content": content,
-                    "sources": cleaned_sources,
-                    "source_count": len(cleaned_sources),
+                    "sources": sources_list,
+                    "source_count": len(sources_list),
                 }
             )
         self.cache.set_messages(conversation_id, messages)

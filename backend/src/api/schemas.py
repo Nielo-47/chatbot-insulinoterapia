@@ -3,6 +3,12 @@ from typing import List, Optional
 from pydantic import BaseModel, Field
 
 
+class SourceItem(BaseModel):
+    path: str
+    page: Optional[int] = None
+    excerpt: Optional[str] = None
+
+
 class LoginRequest(BaseModel):
     username: str
     password: str
@@ -25,7 +31,7 @@ class QueryRequest(BaseModel):
 
 class QueryResponse(BaseModel):
     response: str
-    sources: List[str]
+    sources: List[SourceItem]
     source_count: int
     summarized: bool
     session_id: str
@@ -34,7 +40,7 @@ class QueryResponse(BaseModel):
 class ConversationMessage(BaseModel):
     role: str
     content: str
-    sources: List[str] = Field(default_factory=list)
+    sources: List[SourceItem] = Field(default_factory=list)
     source_count: int = 0
 
 

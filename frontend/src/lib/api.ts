@@ -15,9 +15,17 @@ export class ApiError extends Error {
   }
 }
 
+const sourceItemSchema = z.object({
+  id: z.string().optional(),
+  path: z.string(),
+  page: z.number().optional(),
+  excerpt: z.string().optional(),
+  label: z.string().optional(),
+})
+
 const queryResultSchema = z.object({
   response: z.string(),
-  sources: z.array(z.string()),
+  sources: z.array(sourceItemSchema),
   source_count: z.number(),
   summarized: z.boolean(),
 })
@@ -42,7 +50,7 @@ const conversationHistorySchema = z.object({
     z.object({
       role: z.enum(['user', 'assistant', 'system']),
       content: z.string(),
-      sources: z.array(z.string()).default([]),
+      sources: z.array(sourceItemSchema).default([]),
       source_count: z.number().default(0),
     }),
   ),

@@ -1,18 +1,54 @@
 import os
 import json
 import asyncio
-import nest_asyncio
 import requests
 import time
 import sys
 from pathlib import Path
 from datetime import datetime
+
+# ──────────────────────────────────────────────────────────────
+# Patch LightRAG's openai_embed BEFORE any LightRAG imports.
+# OpenRouter occasionally returns response.data = None which causes
+# "TypeError: 'NoneType' object is not iterable". We retry 5× and,
+# on final failure, return zero vectors so the document can continue.
+# ──────────────────────────────────────────────────────────────
+try:
+    import lightrag.llm.openai as _lightrag_openai
+    _original_openai_embed = _lightrag_openai.openai_embed
+
+    async def _patched_openai_embed(*args, **kwargs):
+        for attempt in range(5):
+            try:
+                return await _original_openai_embed(*args, **kwargs)
+            except TypeError as e:
+                if "'NoneType' object is not iterable" in str(e):
+                    if attempt < 4:
+                        await asyncio.sleep(2 ** attempt)
+                        continue
+                    # Final attempt: return zero vectors so processing can continue
+                    texts_arg = args[1] if len(args) > 1 else kwargs.get('texts', [])
+                    texts = texts_arg if isinstance(texts_arg, list) else [texts_arg]
+                    dim = kwargs.get('embedding_dim') or (args[2] if len(args) > 2 else 1024)
+                    import numpy as np
+                    return np.zeros((len(texts), int(dim)), dtype=np.float32)
+                raise
+
+    _lightrag_openai.openai_embed = _patched_openai_embed
+    print("[kilo] Patched lightrag.llm.openai.openai_embed (5 retries, zero-vector fallback)")
+except Exception as exc:
+    print(f"[kilo] Warning: could not patch lightrag openai_embed: {exc}")
+
+import nest_asyncio
+nest_asyncio.apply()
+
+# Now import LightRAG and other modules
 from lightrag import LightRAG, QueryParam
 from lightrag.llm.openai import openai_complete_if_cache
 from lightrag.utils import EmbeddingFunc, setup_logger
 from langchain_unstructured import UnstructuredLoader
 
-ROOT_DIR = Path(__file__).resolve().parents[1]
+ROOT_DIR = Path(__file__).resolve().parents[2]
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
@@ -29,8 +65,6 @@ from backend.src.infrastructure.rag.resilient_embeddings import (
     EmbeddingProviderConfig,
     build_embedding_callable,
 )
-
-nest_asyncio.apply()
 
 WORKING_DIR = "data/processed/"
 RAW_DATA_DIR = "data/raw/"
@@ -225,17 +259,19 @@ async def process_document(file_path, rag):
         loader = UnstructuredLoader(str(file_path), languages=["pt", "en"])
         docs = loader.load()
 
-        pages = []
+        page_contents = []
         for doc in docs:
-            t = doc.page_content.strip()
-            if t:
-                pages.append(t)
+            page_num = doc.metadata.get('page_number', 1)
+            content = doc.page_content.strip()
+            if content:
+                marked_content = f"[PAGE {page_num}]\n\n{content}"
+                page_contents.append(marked_content)
 
-        if not pages:
+        if not page_contents:
             print(f"⚠️  No content extracted from {file_path}")
             return False
 
-        text = "\n\n".join(pages)
+        text = "\n\n".join(page_contents)
 
         # Insert with proper file_paths parameter for citation
         await rag.ainsert(input=text, file_paths=str(file_path))
@@ -334,7 +370,12 @@ async def main():
         if not url:
             continue
         print(f"Checking availability of {name} at {url}...")
-        ok = await asyncio.get_event_loop().run_in_executor(None, wait_for_service, url, service_wait_timeout, 1)
+        # Skip HTTP check for non-HTTP schemes (e.g., bolt://, redis://) — LightRAG will handle connectivity
+        if url.startswith(('bolt://', 'redis://')):
+            print(f"  → Skipping HTTP check for {url}; will be verified by RAG initialization.")
+            ok = True
+        else:
+            ok = await asyncio.get_event_loop().run_in_executor(None, wait_for_service, url, service_wait_timeout, 1)
         if not ok:
             print(
                 f"Warning: Service '{name}' at {url} not reachable after {service_wait_timeout}s; continuing anyway."

@@ -41,6 +41,14 @@ def _is_retryable_error(error: Exception) -> bool:
         status_code = getattr(error, "status_code", None)
         return status_code in {408, 429, 500, 502, 503, 504}
 
+    # OpenRouter sometimes returns response.data = None
+    if isinstance(error, TypeError) and "NoneType" in str(error):
+        return True
+
+    # Our own check for null response data
+    if isinstance(error, ValueError) and "null data" in str(error).lower():
+        return True
+
     message = str(error).lower()
     return any(
         token in message
@@ -71,6 +79,8 @@ async def _call_embedding_provider(
 
     logger.debug("Calling embedding provider %s with model=%s", provider.name, provider.model)
     response = await client.embeddings.create(model=provider.model, input=texts)
+    if response.data is None:
+        raise ValueError(f"{provider.name} returned null data")
     embeddings = np.array([item.embedding for item in response.data])
 
     if embeddings.size == 0:

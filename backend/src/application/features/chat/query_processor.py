@@ -25,7 +25,7 @@ class QueryGraphState(BaseModel):
     conversation_history: List[Dict[str, str]] = Field(default_factory=list)
     summary: str = ""
     rag_data: Any = None
-    sources: List[str] = Field(default_factory=list)
+    sources: List[dict] = Field(default_factory=list)
     source_count: int = 0
     initial_response: str = ""
     final_response: str = ""

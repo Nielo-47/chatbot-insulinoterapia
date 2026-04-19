@@ -1,8 +1,11 @@
 export type MessageRole = 'user' | 'assistant' | 'system'
 
 export interface ChatSource {
-  id: string
-  label: string
+  id?: string
+  path: string          // file path (relative)
+  page?: number        // optional page number
+  excerpt?: string     // short text excerpt
+  label?: string       // computed friendly label (optional)
 }
 
 export interface ChatMessage {
@@ -22,7 +25,7 @@ export interface QueryPayload {
 
 export interface QueryResult {
   response: string
-  sources: string[]
+  sources: ChatSource[]
   source_count: number
   summarized: boolean
 }
@@ -30,6 +33,6 @@ export interface QueryResult {
 export interface ConversationHistoryMessage {
   role: MessageRole
   content: string
-  sources: string[]
+  sources: ChatSource[]
   source_count: number
 }

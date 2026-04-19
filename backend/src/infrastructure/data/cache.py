@@ -44,19 +44,28 @@ class ConversationCache:
                 role = str(item.get("role", "")).strip()
                 content = str(item.get("content", "")).strip()
                 if role and content:
-                    sources = item.get("sources", [])
-                    if not isinstance(sources, list):
-                        sources = []
-                    source_count = item.get("source_count", len(sources))
+                    raw_sources = item.get("sources", [])
+                    if not isinstance(raw_sources, list):
+                        raw_sources = []
+                    # Normalize sources to structured dicts (handle legacy string format)
+                    structured_sources: List[Dict[str, Any]] = []
+                    for src in raw_sources:
+                        if isinstance(src, dict):
+                            structured_sources.append(src)
+                        elif isinstance(src, str):
+                            structured_sources.append({"path": src, "page": None, "excerpt": None})
+                        else:
+                            continue
+                    source_count = item.get("source_count", len(structured_sources))
                     try:
                         source_count = int(source_count)
                     except (TypeError, ValueError):
-                        source_count = len(sources)
+                        source_count = len(structured_sources)
                     cleaned.append(
                         {
                             "role": role,
                             "content": content,
-                            "sources": [str(source).strip() for source in sources if str(source).strip()],
+                            "sources": structured_sources,
                             "source_count": source_count,
                         }
                     )

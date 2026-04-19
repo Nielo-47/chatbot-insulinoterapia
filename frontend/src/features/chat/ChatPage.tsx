@@ -16,8 +16,19 @@ const initialMessage: ChatMessage = {
   createdAt: new Date().toISOString(),
 }
 
-function normalizeSources(sources: string[]) {
-  return sources.map((source, index) => ({ id: `${index}-${source.slice(0, 24)}`, label: source }))
+function normalizeSources(sources: Array<{path: string, page?: number, excerpt?: string}>) {
+  return sources.map((source, index) => ({
+    id: `${index}-${source.path.slice(0, 24)}-${source.page || '0'}`,
+    path: source.path,
+    page: source.page,
+    excerpt: source.excerpt,
+    label: getFriendlyLabel(source),
+  }));
+}
+
+function getFriendlyLabel(source: {path: string, page?: number}): string {
+  const filename = source.path.split('/').pop()?.replace(/_/g, ' ') || source.path
+  return source.page != null ? `${filename} (p. ${source.page})` : filename
 }
 
 interface ChatPageProps {
