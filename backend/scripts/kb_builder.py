@@ -194,19 +194,8 @@ async def llm_model_func(prompt, system_prompt=None, history_messages=[], keywor
 
 
 async def initialize_rag():
-    # Allow building directly into remote storages by setting env vars:
-    # KV_STORAGE (JsonKVStorage|RedisKVStorage|PGKVStorage|MongoKVStorage)
-    # VECTOR_STORAGE (NanoVectorDBStorage|QdrantVectorDBStorage|MilvusVectorDBStorage|...)
-    # GRAPH_STORAGE (NetworkXStorage|Neo4JStorage|PGGraphStorage|AGEStorage)
-    kv_storage = require("KV_STORAGE")
-    vector_storage = require("VECTOR_STORAGE")
-    graph_storage = require("GRAPH_STORAGE")
-
     rag = LightRAG(
         working_dir=WORKING_DIR,
-        kv_storage=kv_storage,
-        vector_storage=vector_storage,
-        graph_storage=graph_storage,
         llm_model_func=llm_model_func,
         embedding_func=EmbeddingFunc(
             embedding_dim=EMBEDDING_DIM,
@@ -236,7 +225,7 @@ async def initialize_rag():
     await rag.initialize_storages()
 
     # Helpful logs about where data will be stored
-    print(f"RAG Storage configuration: KV={kv_storage}, VECTOR={vector_storage}, GRAPH={graph_storage}")
+    print("RAG Storage: using LightRAG defaults (local files)")
 
     return rag
 
@@ -394,27 +383,15 @@ async def main():
     # Wait for core services to be reachable before initializing RAG
     service_wait_timeout = require_int("SERVICE_WAIT_TIMEOUT")
 
-    for name, url in {
-        "embeddings": require("EMBEDDING_BINDING_HOST") + "/v1",
-        "qdrant": require("QDRANT_URL"),
-        "neo4j": require("NEO4J_URI"),
-        "redis": require("REDIS_URI"),
-    }.items():
-        if not url:
-            continue
-        print(f"Checking availability of {name} at {url}...")
-        # Skip HTTP check for non-HTTP schemes (e.g., bolt://, redis://) — LightRAG will handle connectivity
-        if url.startswith(("bolt://", "redis://")):
-            print(f"  → Skipping HTTP check for {url}; will be verified by RAG initialization.")
-            ok = True
-        else:
-            ok = await asyncio.get_event_loop().run_in_executor(None, wait_for_service, url, service_wait_timeout, 1)
-        if not ok:
-            print(
-                f"Warning: Service '{name}' at {url} not reachable after {service_wait_timeout}s; continuing anyway."
-            )
-        else:
-            print(f"Service '{name}' at {url} is reachable.")
+    embeddings_url = require("EMBEDDING_BINDING_HOST") + "/v1"
+    print(f"Checking availability of embeddings at {embeddings_url}...")
+    ok = await asyncio.get_event_loop().run_in_executor(None, wait_for_service, embeddings_url, service_wait_timeout, 1)
+    if not ok:
+        print(
+            f"Warning: Embeddings service at {embeddings_url} not reachable after {service_wait_timeout}s; continuing anyway."
+        )
+    else:
+        print(f"Embeddings service at {embeddings_url} is reachable.")
 
     # Initialize RAG and process only the files that need it
     rag = await initialize_rag()

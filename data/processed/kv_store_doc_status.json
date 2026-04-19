@@ -1,7 +1,6 @@
 {
   "doc-4ddf4671fc8d3d036eef35a67c86297a": {
-    "status": "failed",
-    "error_msg": "`Médias`: VDB entity_upsert failed for Médias after 3 attempts: No embedding data received",
+    "status": "processing",
     "chunks_count": 17,
     "chunks_list": [
       "chunk-2a0a3f492aa5ef7771b2246547cb5f02",
@@ -25,12 +24,11 @@
     "content_summary": "[PAGE 1]\n\nINSULINOTERAPIA\n\n[PAGE 1]\n\n💉 Tratamento com Insulina – Entenda Passo a Passo\n\n[PAGE 1]\n\nSe você tem diabetes tipo 1 ou tipo 2, pode ser que precise usar insulina para controlar o açúcar no sangue. A insulina ajuda a manter a glicemia (nível...",
     "content_length": 64807,
     "created_at": "2026-04-19T17:00:16.673525+00:00",
-    "updated_at": "2026-04-19T20:53:20.238335+00:00",
+    "updated_at": "2026-04-19T21:06:01.887221+00:00",
     "file_path": "data/raw/DOC Completo.docx",
     "track_id": "insert_20260419_170016_519daf66",
     "metadata": {
-      "processing_start_time": 1776631834,
-      "processing_end_time": 1776632000
+      "processing_start_time": 1776632761
     }
   },
   "doc-a4a3c40b2200857505ed63190350c8e2": {
@@ -175,8 +173,7 @@
     }
   },
   "doc-a032d0252fbd76a8a4a0a1a3fc5d932d": {
-    "status": "failed",
-    "error_msg": "`1, 2`: VDB entity_upsert failed for 1, 2 after 3 attempts: No embedding data received",
+    "status": "processing",
     "chunks_count": 13,
     "chunks_list": [
       "chunk-a04357a03a35f68e0068d23b80593b8c",
@@ -196,12 +193,11 @@
     "content_summary": "[PAGE 1]\n\nPráticas seguras para preparo e aplicação de insulina\n\n[PAGE 1]\n\nIntrodução\n\n[PAGE 1]\n\nA descoberta da insulina, em 1921, foi um marco na\n\n[PAGE 1]\n\nhistória do diabetes. Em 1922, ela foi prescrita a um jovem com diabetes mellitus tipo 1 (D...",
     "content_length": 50953,
     "created_at": "2026-04-19T17:55:16.479551+00:00",
-    "updated_at": "2026-04-19T20:55:29.689386+00:00",
+    "updated_at": "2026-04-19T21:06:01.890457+00:00",
     "file_path": "data/raw/INSULINOTERAPIA/Aplicação de insulina/uso da insulina - Diretrizes-Sociedade-Brasileira-de-Diabetes-2019-2020.pdf",
     "track_id": "insert_20260419_175516_4e847b95",
     "metadata": {
-      "processing_start_time": 1776631834,
-      "processing_end_time": 1776632129
+      "processing_start_time": 1776632761
     }
   },
   "doc-8336dc27990f6189c99863d64435c6c6": {
@@ -310,7 +306,9 @@
     }
   },
   "doc-75e0aac5761ed7c91f4f7ff3b08753e6": {
-    "status": "processing",
+    "status": "pending",
+    "content_summary": "[PAGE 1]\n\nLipodistrofias\n\n[PAGE 1]\n\nIntrodução\n\n[PAGE 1]\n\nou generalizada) e a aquisição da doença (congênita ou adquirida).\n\n[PAGE 1]\n\nAs lipodistrofias são doenças relativamente raras, sub-\n\n[PAGE 1]\n\ndiagnosticadas e muitas vezes confundidas com d...",
+    "content_length": 41790,
     "chunks_count": 11,
     "chunks_list": [
       "chunk-c072c5ad49b2fb7ef54c9a2fe121badb",
@@ -325,15 +323,12 @@
       "chunk-5a6a69d5100e0e8263f965a83797d48b",
       "chunk-55c9f6328c4401f126aa9ac11be639b6"
     ],
-    "content_summary": "[PAGE 1]\n\nLipodistrofias\n\n[PAGE 1]\n\nIntrodução\n\n[PAGE 1]\n\nou generalizada) e a aquisição da doença (congênita ou adquirida).\n\n[PAGE 1]\n\nAs lipodistrofias são doenças relativamente raras, sub-\n\n[PAGE 1]\n\ndiagnosticadas e muitas vezes confundidas com d...",
-    "content_length": 41790,
     "created_at": "2026-04-19T18:21:18.339297+00:00",
-    "updated_at": "2026-04-19T20:53:20.259369+00:00",
+    "updated_at": "2026-04-19T21:06:01.834050+00:00",
     "file_path": "data/raw/INSULINOTERAPIA/Complicações relacionadas ao uso da insulina/LIPODISTROFIAS.pdf",
     "track_id": "insert_20260419_182118_313e19c4",
-    "metadata": {
-      "processing_start_time": 1776632000
-    }
+    "error_msg": "",
+    "metadata": {}
   },
   "doc-202f1dba3a8254f9d5867b459cdbcfa2": {
     "status": "processed",
@@ -421,7 +416,9 @@
     }
   },
   "doc-0bb83180aa139be165ec5a2f852551fb": {
-    "status": "processing",
+    "status": "pending",
+    "content_summary": "[PAGE 1]\n\nSistema de infusão contínua de insulina: indicações e uso\n\n[PAGE 1]\n\nIntrodução\n\n[PAGE 1]\n\nNo início dos anos 1960, o doutor Arnold Kadish desen-\n\n[PAGE 1]\n\nvolveu o primeiro sistema de infusão contínua de insu- lina (SICI), popularmente co...",
+    "content_length": 70413,
     "chunks_count": 18,
     "chunks_list": [
       "chunk-ba79a92f9b31fdbcd854ba496c498efb",
@@ -443,15 +440,12 @@
       "chunk-93bddc99b2e70c378921ff59ddb3b954",
       "chunk-b8d6904368d45b0f9532b36061a00e7c"
     ],
-    "content_summary": "[PAGE 1]\n\nSistema de infusão contínua de insulina: indicações e uso\n\n[PAGE 1]\n\nIntrodução\n\n[PAGE 1]\n\nNo início dos anos 1960, o doutor Arnold Kadish desen-\n\n[PAGE 1]\n\nvolveu o primeiro sistema de infusão contínua de insu- lina (SICI), popularmente co...",
-    "content_length": 70413,
     "created_at": "2026-04-19T19:03:22.387139+00:00",
-    "updated_at": "2026-04-19T20:55:29.732282+00:00",
+    "updated_at": "2026-04-19T21:06:01.835065+00:00",
     "file_path": "data/raw/INSULINOTERAPIA/SICI (bomba de insulina)/sici.pdf",
     "track_id": "insert_20260419_190322_4654457d",
-    "metadata": {
-      "processing_start_time": 1776632129
-    }
+    "error_msg": "",
+    "metadata": {}
   },
   "doc-918f5492b9b0785e3a14e667373f221b": {
     "status": "processed",
@@ -508,7 +502,7 @@
       "chunk-fee5ba3e0460b418d02918f3b8aa380e"
     ],
     "created_at": "2026-04-19T19:36:21.008897+00:00",
-    "updated_at": "2026-04-19T20:50:34.252489+00:00",
+    "updated_at": "2026-04-19T21:06:01.835838+00:00",
     "file_path": "data/raw/INSULINOTERAPIA/Tipos de insulinas/Insulinoterapia – Diretriz da Sociedade Brasileira de Diabetes – Ed. 2024.pdf",
     "track_id": "insert_20260419_193621_d1ed5b24",
     "error_msg": "",
@@ -549,21 +543,23 @@
     }
   },
   "doc-a42e941d3759779e336030cab884ac48": {
-    "status": "pending",
-    "content_summary": "[PAGE 1]\n\n23/06/2025, 16:05\n\n[PAGE 1]\n\nUnderstanding insulin - International Diabetes Federation\n\n[PAGE 1]\n\nUnderstanding insulin\n\n[PAGE 1]\n\nInsulin is a hormone the pancreas makes that\n\n[PAGE 1]\n\nregulates blood glucose (sugar) levels. Insulin\n\n[PAG...",
-    "content_length": 11524,
+    "status": "processed",
     "chunks_count": 3,
     "chunks_list": [
       "chunk-0522904b9c236fceb86e75d6da872d4b",
       "chunk-2841f77ed9254c0e5372f3c45f6d3da2",
       "chunk-0dd0ac30945c224efc81753de13bdebf"
     ],
+    "content_summary": "[PAGE 1]\n\n23/06/2025, 16:05\n\n[PAGE 1]\n\nUnderstanding insulin - International Diabetes Federation\n\n[PAGE 1]\n\nUnderstanding insulin\n\n[PAGE 1]\n\nInsulin is a hormone the pancreas makes that\n\n[PAGE 1]\n\nregulates blood glucose (sugar) levels. Insulin\n\n[PAG...",
+    "content_length": 11524,
     "created_at": "2026-04-19T20:01:49.652703+00:00",
-    "updated_at": "2026-04-19T20:50:34.252953+00:00",
+    "updated_at": "2026-04-19T21:05:42.139853+00:00",
     "file_path": "data/raw/INSULINOTERAPIA/Tipos de insulinas/Understanding insulin - International Diabetes Federation.pdf",
     "track_id": "insert_20260419_200149_a46dd434",
-    "error_msg": "",
-    "metadata": {}
+    "metadata": {
+      "processing_start_time": 1776632513,
+      "processing_end_time": 1776632742
+    }
   },
   "doc-08c7f7bb0209cabd75e27f9c8556c214": {
     "status": "processed",
@@ -623,7 +619,7 @@
       "chunk-498e4bb45447ec837c66b8fa72136a1b"
     ],
     "created_at": "2026-04-19T20:27:06.514798+00:00",
-    "updated_at": "2026-04-19T20:50:34.253723+00:00",
+    "updated_at": "2026-04-19T21:06:01.837033+00:00",
     "file_path": "data/raw/MONITORIZAÇÃO GLICÊMICA/CGM/blood glucose monitoring.pdf",
     "track_id": "insert_20260419_202706_abea02b8",
     "error_msg": "",
@@ -641,7 +637,7 @@
       "chunk-d3c544741e57de2429f8284d89f5688f"
     ],
     "created_at": "2026-04-19T20:40:50.707418+00:00",
-    "updated_at": "2026-04-19T20:50:34.254110+00:00",
+    "updated_at": "2026-04-19T21:06:01.837583+00:00",
     "file_path": "data/raw/MONITORIZAÇÃO GLICÊMICA/CGM/cgm.pdf",
     "track_id": "insert_20260419_204050_0df21f00",
     "error_msg": "",
@@ -651,10 +647,28 @@
     "status": "pending",
     "content_summary": "[PAGE 1]\n\nUso de tecnologia para melhor gerenciamento da glicemia\n\n[PAGE 1]\n\nIntroducao\n\n[PAGE 1]\n\npartir do final do século XX, aconteceram grandes avan-\n\n[PAGE 1]\n\ncos tecnoldgicos no tratamento do diabetes. Esses avan-\n\n[PAGE 1]\n\ncos permitiram qu...",
     "content_length": 14597,
+    "chunks_count": 4,
+    "chunks_list": [
+      "chunk-3aeabf750656ceb7619502d5fd50ebe6",
+      "chunk-bdbc37da05a342443ccfd48642dd1c3b",
+      "chunk-636a6ab7d0bef06e011ae7bf2140d2e8",
+      "chunk-cbbd13d3e688c25e68d838e8069fec5c"
+    ],
     "created_at": "2026-04-19T20:50:34.201907+00:00",
-    "updated_at": "2026-04-19T20:50:34.201918+00:00",
+    "updated_at": "2026-04-19T21:06:01.838114+00:00",
     "file_path": "data/raw/MONITORIZAÇÃO GLICÊMICA/CGM/monitoramento contínuo de glicose.pdf",
     "track_id": "insert_20260419_205034_7262e89a",
+    "error_msg": "",
+    "metadata": {}
+  },
+  "doc-5a6892f73bcafbe7ae581c46e8365dfb": {
+    "status": "pending",
+    "content_summary": "[PAGE 1]\n\nMetas glicêmicas para adultos, gestantes e crianças\n\n[PAGE 1]\n\nTabela 8. Metas de glicemia capilar para DM na gestação, segundo sociedades científicas.\n\n[PAGE 1]\n\nSociedade\n\n[PAGE 1]\n\nEm jejum (mg/dL)\n\n[PAGE 1]\n\n1 hora pós-prandial (mg/dL)\n...",
+    "content_length": 5937,
+    "created_at": "2026-04-19T21:06:01.801538+00:00",
+    "updated_at": "2026-04-19T21:06:01.801551+00:00",
+    "file_path": "data/raw/MONITORIZAÇÃO GLICÊMICA/CGM/ref.pdf",
+    "track_id": "insert_20260419_210601_e4ad142d",
     "chunks_list": []
   }
 }

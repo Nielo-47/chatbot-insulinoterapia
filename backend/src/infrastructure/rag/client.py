@@ -19,9 +19,6 @@ from backend.src.config.rag import (
     RAG_QUERY_MAX_TOKENS,
     RAG_QUERY_TEMPERATURE,
     RAG_WORKING_DIR,
-    KV_STORAGE,
-    VECTOR_STORAGE,
-    GRAPH_STORAGE,
 )
 from backend.src.infrastructure.rag.cleaner import extract_sources
 from backend.src.infrastructure.rag.resilient_embeddings import EmbeddingProviderConfig, build_embedding_callable
@@ -71,9 +68,6 @@ class RAGRuntime:
 
         self.rag = LightRAG(
             working_dir=RAG_WORKING_DIR,
-            kv_storage=KV_STORAGE,
-            vector_storage=VECTOR_STORAGE,
-            graph_storage=GRAPH_STORAGE,
             llm_model_func=openrouter_model_complete,
             llm_model_name=LLM_MODEL,
             enable_llm_cache=False,

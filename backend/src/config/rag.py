@@ -2,10 +2,6 @@ from .env import require, require_float, require_int
 
 RAG_WORKING_DIR = require("WORKING_DIR")
 
-KV_STORAGE = require("KV_STORAGE")
-VECTOR_STORAGE = require("VECTOR_STORAGE")
-GRAPH_STORAGE = require("GRAPH_STORAGE")
-
 LLM_MODEL = require("LLM_MODEL")
 LLM_FALLBACK_MODEL = require("LLM_MODEL_FALLBACK")
 LLM_TIMEOUT_SECONDS = require_float("LLM_TIMEOUT_SECONDS")
