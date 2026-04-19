@@ -32,14 +32,12 @@ from backend.src.application.features.auth import AuthenticationService
 from backend.src.application.features.chat.chatbot_service import ChatbotService
 from backend.src.infrastructure.data.cache import init_semantic_cache
 from backend.src.config.security import JWT_SECRET_KEY
+from backend.src.config.env import require
 from backend.src.infrastructure.data import initialize_database
 
 
 def _parse_frontend_origins() -> List[str]:
-    raw_origins = os.getenv(
-        "FRONTEND_ORIGINS",
-        "http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174,http://127.0.0.1:5174",
-    )
+    raw_origins = require("FRONTEND_ORIGINS")
     return [origin.strip() for origin in raw_origins.split(",") if origin.strip()]
 
 
@@ -93,7 +91,7 @@ def _validate_jwt_secret() -> None:
     local environments can start without a production-grade secret.
     """
     secret = JWT_SECRET_KEY
-    is_dev = os.getenv("DEV", "false").lower() in ("1", "true", "yes")
+    is_dev = require("DEV").lower() in ("1", "true", "yes")
     weak = secret == _DEFAULT_JWT_SECRET or len(secret) < _MIN_JWT_SECRET_LENGTH
     if weak:
         if is_dev:

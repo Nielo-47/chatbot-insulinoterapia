@@ -1,5 +1,3 @@
-import os
-
 from fastapi import HTTPException, Request, status
 
 from backend.src.application.features.auth import AuthenticationService, build_authentication_service
@@ -17,9 +15,7 @@ from backend.src.infrastructure.security.token import create_access_token, decod
 
 
 async def build_chatbot_service() -> ChatbotService:
-    if not OPENROUTER_API_KEY:
-        raise RuntimeError("OPENROUTER_API_KEY is required. Set the OPENROUTER_API_KEY environment variable.")
-
+    # OPENROUTER_API_KEY and OPENROUTER_BASE_URL are already required by infrastructure.py
     llm_client = LLMClient(api_key=OPENROUTER_API_KEY, base_url=OPENROUTER_BASE_URL)
 
     rag_runtime = RAGFactory.create()

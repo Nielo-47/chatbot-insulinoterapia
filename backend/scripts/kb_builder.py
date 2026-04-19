@@ -4,6 +4,7 @@ import asyncio
 import requests
 import time
 import sys
+import argparse
 from pathlib import Path
 from datetime import datetime
 
@@ -15,6 +16,7 @@ from datetime import datetime
 # ──────────────────────────────────────────────────────────────
 try:
     import lightrag.llm.openai as _lightrag_openai
+
     _original_openai_embed = _lightrag_openai.openai_embed
 
     async def _patched_openai_embed(*args, **kwargs):
@@ -24,13 +26,14 @@ try:
             except TypeError as e:
                 if "'NoneType' object is not iterable" in str(e):
                     if attempt < 4:
-                        await asyncio.sleep(2 ** attempt)
+                        await asyncio.sleep(2**attempt)
                         continue
                     # Final attempt: return zero vectors so processing can continue
-                    texts_arg = args[1] if len(args) > 1 else kwargs.get('texts', [])
+                    texts_arg = args[1] if len(args) > 1 else kwargs.get("texts", [])
                     texts = texts_arg if isinstance(texts_arg, list) else [texts_arg]
-                    dim = kwargs.get('embedding_dim') or (args[2] if len(args) > 2 else 1024)
+                    dim = kwargs.get("embedding_dim") or (args[2] if len(args) > 2 else 1024)
                     import numpy as np
+
                     return np.zeros((len(texts), int(dim)), dtype=np.float32)
                 raise
 
@@ -40,6 +43,7 @@ except Exception as exc:
     print(f"[kilo] Warning: could not patch lightrag openai_embed: {exc}")
 
 import nest_asyncio
+
 nest_asyncio.apply()
 
 # Now import LightRAG and other modules
@@ -65,9 +69,10 @@ from backend.src.infrastructure.rag.resilient_embeddings import (
     EmbeddingProviderConfig,
     build_embedding_callable,
 )
+from backend.src.config.env import require, require_int, require_float
 
-WORKING_DIR = "data/processed/"
-RAW_DATA_DIR = "data/raw/"
+WORKING_DIR = require("WORKING_DIR")
+RAW_DATA_DIR = require("RAW_DATA_DIR")
 
 if not os.path.exists(WORKING_DIR):
     os.makedirs(WORKING_DIR, exist_ok=True)
@@ -75,39 +80,41 @@ if not os.path.exists(WORKING_DIR):
 
 async def llm_model_func(prompt, system_prompt=None, history_messages=[], keyword_extraction=False, **kwargs) -> str:
     # Use OpenRouter (OpenAI-compatible) for LLM completions
-    model = os.getenv("LLM_MODEL", os.getenv("OPENROUTER_MODEL"))
-    api_key = os.getenv("OPENROUTER_API_KEY") or os.getenv("OPENAI_API_KEY")
-    base_url = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
+    model = require("KB_BUILD_LLM_MODEL")
+    fallback_model = require("KB_BUILD_LLM_MODEL_FALLBACK")
+    api_key = require("OPENROUTER_API_KEY")
+    base_url = require("OPENROUTER_BASE_URL")
 
     extra_headers = {}
-    referer = os.getenv("OPENROUTER_HTTP_REFERER", "")
-    title = os.getenv("OPENROUTER_SITE_TITLE", "")
+    referer = require("OPENROUTER_HTTP_REFERER")
+    title = require("OPENROUTER_SITE_TITLE")
     if referer:
         extra_headers["HTTP-Referer"] = referer
     if title:
         extra_headers["X-Title"] = title
 
     # Rate limit and server error handling: wait-and-retry on 429/500 responses
-    max_rate_retries = int(os.getenv("LLM_RATE_LIMIT_RETRIES", "1"))
-    sleep_on_rate = int(os.getenv("LLM_RATE_LIMIT_SLEEP", "60"))  # seconds
+    max_rate_retries = require_int("LLM_RATE_LIMIT_RETRIES")
+    sleep_on_rate = require_int("LLM_RATE_LIMIT_SLEEP")
 
-    max_server_retries = int(os.getenv("LLM_SERVER_ERROR_RETRIES", "1"))
-    sleep_on_server = int(os.getenv("LLM_SERVER_ERROR_SLEEP", "60"))  # seconds
+    max_server_retries = require_int("LLM_SERVER_ERROR_RETRIES")
+    sleep_on_server = require_int("LLM_SERVER_ERROR_SLEEP")
 
     attempt_rate = 0
     attempt_server = 0
+    use_fallback = False
 
     while True:
         try:
             return await openai_complete_if_cache(
-                model,
+                fallback_model if use_fallback else model,
                 prompt,
                 system_prompt=system_prompt,
                 history_messages=history_messages,
                 api_key=api_key,
                 base_url=base_url,
                 extra_headers=extra_headers if extra_headers else None,
-                temperature=float(os.getenv("LLM_TEMPERATURE", 0.1)),
+                temperature=require_float("LLM_TEMPERATURE"),
                 **kwargs,
             )
         except Exception as e:
@@ -151,8 +158,13 @@ async def llm_model_func(prompt, system_prompt=None, history_messages=[], keywor
             if is_rate:
                 attempt_rate += 1
                 if attempt_rate > max_rate_retries:
-                    print(f"OpenAI rate limit hit and retries exhausted (attempts={attempt_rate}). Raising error.")
-                    raise
+                    if use_fallback:
+                        print(f"OpenAI rate limit hit on fallback model and retries exhausted. Raising error.")
+                        raise
+                    print(f"OpenAI rate limit hit; switching to fallback model...")
+                    use_fallback = True
+                    attempt_rate = 0
+                    continue
 
                 print(
                     f"OpenAI rate limit hit; sleeping {sleep_on_rate}s before retrying (attempt {attempt_rate}/{max_rate_retries})..."
@@ -163,10 +175,13 @@ async def llm_model_func(prompt, system_prompt=None, history_messages=[], keywor
             if is_server:
                 attempt_server += 1
                 if attempt_server > max_server_retries:
-                    print(
-                        f"OpenAI internal/server error and retries exhausted (attempts={attempt_server}). Raising error."
-                    )
-                    raise
+                    if use_fallback:
+                        print(f"OpenAI internal/server error on fallback model and retries exhausted. Raising error.")
+                        raise
+                    print(f"OpenAI internal/server error; switching to fallback model...")
+                    use_fallback = True
+                    attempt_server = 0
+                    continue
 
                 print(
                     f"OpenAI internal/server error; sleeping {sleep_on_server}s before retrying (attempt {attempt_server}/{max_server_retries})..."
@@ -183,9 +198,9 @@ async def initialize_rag():
     # KV_STORAGE (JsonKVStorage|RedisKVStorage|PGKVStorage|MongoKVStorage)
     # VECTOR_STORAGE (NanoVectorDBStorage|QdrantVectorDBStorage|MilvusVectorDBStorage|...)
     # GRAPH_STORAGE (NetworkXStorage|Neo4JStorage|PGGraphStorage|AGEStorage)
-    kv_storage = os.getenv("KV_STORAGE", "JsonKVStorage")
-    vector_storage = os.getenv("VECTOR_STORAGE", "NanoVectorDBStorage")
-    graph_storage = os.getenv("GRAPH_STORAGE", "NetworkXStorage")
+    kv_storage = require("KV_STORAGE")
+    vector_storage = require("VECTOR_STORAGE")
+    graph_storage = require("GRAPH_STORAGE")
 
     rag = LightRAG(
         working_dir=WORKING_DIR,
@@ -195,12 +210,12 @@ async def initialize_rag():
         llm_model_func=llm_model_func,
         embedding_func=EmbeddingFunc(
             embedding_dim=EMBEDDING_DIM,
-            max_token_size=int(os.getenv("MAX_EMBED_TOKENS", "8192")),
+            max_token_size=require_int("MAX_EMBED_TOKENS"),
             func=build_embedding_callable(
                 primary=EmbeddingProviderConfig(
                     name="tei",
-                    base_url=os.getenv("EMBEDDING_BINDING_HOST", "http://localhost:8000") + "/v1",
-                    api_key=os.getenv("EMBEDDING_API_KEY", ""),
+                    base_url=require("EMBEDDING_BINDING_HOST") + "/v1",
+                    api_key=require("EMBEDDING_API_KEY"),
                     model=EMBED_MODEL,
                 ),
                 fallback=EmbeddingProviderConfig(
@@ -261,7 +276,7 @@ async def process_document(file_path, rag):
 
         page_contents = []
         for doc in docs:
-            page_num = doc.metadata.get('page_number', 1)
+            page_num = doc.metadata.get("page_number", 1)
             content = doc.page_content.strip()
             if content:
                 marked_content = f"[PAGE {page_num}]\n\n{content}"
@@ -302,14 +317,26 @@ def wait_for_service(url, timeout=60, interval=1):
 
 
 async def main():
+    # Parse command-line arguments
+    parser = argparse.ArgumentParser(description="Build the knowledge base by processing documents")
+    parser.add_argument("--max-docs", type=int, default=0, help="Limit processing to first N documents (0 = no limit)")
+    parser.add_argument(
+        "--force-reprocess", action="store_true", help="Reprocess all documents regardless of modification time"
+    )
+    parser.add_argument(
+        "--run-on-startup", action="store_true", help="Allow builder to run (bypasses RUN_KB_ON_STARTUP env check)"
+    )
+    args = parser.parse_args()
+
     # Respect env var RUN_KB_ON_STARTUP (default false) to avoid running KB builder on every container start
-    run_on_startup = os.getenv("RUN_KB_ON_STARTUP", "false").lower() == "true"
+    # Can be overridden with --run-on-startup flag
+    run_on_startup = args.run_on_startup or require("RUN_KB_ON_STARTUP").lower() == "true"
     if not run_on_startup:
-        print("RUN_KB_ON_STARTUP is not 'true'. Exiting without running KB builder.")
+        print("RUN_KB_ON_STARTUP is not 'true' and --run-on-startup not set. Exiting without running KB builder.")
         return
 
-    # Determine whether there are new or changed documents to process first (avoid heavy work if none)
-    force_reprocess = os.getenv("RUN_KB_FORCE_REPROCESS", "false").lower() == "true"
+    # Force reprocess: use flag first, then env var
+    force_reprocess = args.force_reprocess or require("RUN_KB_FORCE_REPROCESS").lower() == "true"
     processed_index_file = Path(WORKING_DIR) / "processed_index.json"
     processed_index = {}
 
@@ -353,25 +380,31 @@ async def main():
     print(f"\nFound {len(documents)} documents ({len(to_process)} to process, {skipped} skipped)")
     print(f"{'='*80}\n")
 
+    # Limit processing for testing if --max-docs CLI flag is set
+    max_docs = args.max_docs
+    if max_docs and max_docs > 0 and len(to_process) > max_docs:
+        print(f"⚠️  Limiting to first {max_docs} documents (out of {len(to_process)}) for testing")
+        to_process = to_process[:max_docs]
+
     # Nothing to do -> exit early to avoid reprocessing or LLM calls
     if not to_process:
         print("No new or modified documents to process. Exiting.")
         return
 
     # Wait for core services to be reachable before initializing RAG
-    service_wait_timeout = int(os.getenv("SERVICE_WAIT_TIMEOUT", "120"))
+    service_wait_timeout = require_int("SERVICE_WAIT_TIMEOUT")
 
     for name, url in {
-        "embeddings": os.getenv("EMBEDDING_BINDING_HOST", "http://localhost:8000/v1"),
-        "qdrant": os.getenv("QDRANT_URL", "http://qdrant:6333"),
-        "neo4j": os.getenv("NEO4J_URI", "bolt://neo4j:7687"),
-        "redis": os.getenv("REDIS_URI", "redis://redis:6379/0"),
+        "embeddings": require("EMBEDDING_BINDING_HOST") + "/v1",
+        "qdrant": require("QDRANT_URL"),
+        "neo4j": require("NEO4J_URI"),
+        "redis": require("REDIS_URI"),
     }.items():
         if not url:
             continue
         print(f"Checking availability of {name} at {url}...")
         # Skip HTTP check for non-HTTP schemes (e.g., bolt://, redis://) — LightRAG will handle connectivity
-        if url.startswith(('bolt://', 'redis://')):
+        if url.startswith(("bolt://", "redis://")):
             print(f"  → Skipping HTTP check for {url}; will be verified by RAG initialization.")
             ok = True
         else:

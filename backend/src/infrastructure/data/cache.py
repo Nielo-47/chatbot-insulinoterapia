@@ -101,8 +101,10 @@ def init_semantic_cache() -> None:
     """Initialize Redis semantic cache for LLM responses."""
     from backend.src.config.infrastructure import CHAT_CACHE_REDIS_URL
 
-    redis_url = os.getenv("CHAT_CACHE_REDIS_URL", os.getenv("REDIS_URI", "redis://localhost:6379"))
-    score_threshold = float(os.getenv("SEMANTIC_CACHE_THRESHOLD", "0.9"))
+    from backend.src.config.env import require, require_float
+
+    redis_url = require("CHAT_CACHE_REDIS_URL")
+    score_threshold = require_float("SEMANTIC_CACHE_THRESHOLD")
 
     try:
         from langchain_core.globals import set_llm_cache
@@ -111,8 +113,8 @@ def init_semantic_cache() -> None:
 
         cache = RedisSemanticCache(
             redis_url=redis_url,
-            embedding=OpenAIEmbeddings(),
-            score_threshold=score_threshold,
+            embeddings=OpenAIEmbeddings(),
+            distance_threshold=score_threshold,
         )
         set_llm_cache(cache)
     except Exception as e:
