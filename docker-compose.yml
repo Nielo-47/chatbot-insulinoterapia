@@ -1,23 +1,4 @@
 services:
-  kb_builder:
-    build:
-      context: .
-      dockerfile: dockerfile.backend
-    depends_on:
-      redis:
-        condition: service_healthy
-    env_file: .env
-    environment:
-      - EMBEDDING_BINDING_HOST=${OPENROUTER_BASE_URL:-https://openrouter.ai/api}
-      - EMBEDDING_API_KEY=${OPENROUTER_API_KEY}
-      - EMBEDDING_PRIMARY_RETRIES=5
-      - EMBEDDING_FALLBACK_RETRIES=2
-    volumes:
-      - ./data:/app/data
-    command: ["python", "backend/scripts/kb_builder.py"]
-    profiles:
-      - kb
-
   redis:
     image: redis:alpine
     restart: always
@@ -66,7 +47,7 @@ services:
       - EMBEDDING_API_KEY=${OPENROUTER_API_KEY}
       - PYTHONPATH=/app
     volumes:
-      - ./data:/app/data
+      - ./data/processed:/app/data/processed
     ports:
       - "${BACKEND_PORT:-8000}:8000"
     depends_on:

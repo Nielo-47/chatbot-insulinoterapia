@@ -6,7 +6,11 @@ import time
 import sys
 import argparse
 from pathlib import Path
-from datetime import datetime
+
+# Load environment variables from .env file
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # ──────────────────────────────────────────────────────────────
 # Patch LightRAG's openai_embed BEFORE any LightRAG imports.
@@ -72,7 +76,7 @@ from backend.src.infrastructure.rag.resilient_embeddings import (
 from backend.src.config.env import require, require_int, require_float
 
 WORKING_DIR = require("WORKING_DIR")
-RAW_DATA_DIR = require("RAW_DATA_DIR")
+RAW_DATA_DIR = os.getenv("RAW_DATA_DIR", "data/raw")
 
 if not os.path.exists(WORKING_DIR):
     os.makedirs(WORKING_DIR, exist_ok=True)
@@ -84,14 +88,6 @@ async def llm_model_func(prompt, system_prompt=None, history_messages=[], keywor
     fallback_model = require("KB_BUILD_LLM_MODEL_FALLBACK")
     api_key = require("OPENROUTER_API_KEY")
     base_url = require("OPENROUTER_BASE_URL")
-
-    extra_headers = {}
-    referer = require("OPENROUTER_HTTP_REFERER")
-    title = require("OPENROUTER_SITE_TITLE")
-    if referer:
-        extra_headers["HTTP-Referer"] = referer
-    if title:
-        extra_headers["X-Title"] = title
 
     # Rate limit and server error handling: wait-and-retry on 429/500 responses
     max_rate_retries = require_int("LLM_RATE_LIMIT_RETRIES")
@@ -113,7 +109,6 @@ async def llm_model_func(prompt, system_prompt=None, history_messages=[], keywor
                 history_messages=history_messages,
                 api_key=api_key,
                 base_url=base_url,
-                extra_headers=extra_headers if extra_headers else None,
                 temperature=require_float("LLM_TEMPERATURE"),
                 **kwargs,
             )
@@ -202,9 +197,9 @@ async def initialize_rag():
             max_token_size=require_int("MAX_EMBED_TOKENS"),
             func=build_embedding_callable(
                 primary=EmbeddingProviderConfig(
-                    name="tei",
-                    base_url=require("EMBEDDING_BINDING_HOST") + "/v1",
-                    api_key=require("EMBEDDING_API_KEY"),
+                    name="openrouter",
+                    base_url=OPENROUTER_BASE_URL,
+                    api_key=OPENROUTER_API_KEY,
                     model=EMBED_MODEL,
                 ),
                 fallback=EmbeddingProviderConfig(
@@ -257,7 +252,7 @@ async def process_document(file_path, rag):
     """
     try:
         print(f"\n{'='*80}")
-        print(f"Processing: {file_path}")
+        print(f"Reading file: {file_path}")
         print(f"{'='*80}")
 
         loader = UnstructuredLoader(str(file_path), languages=["pt", "en"])
@@ -277,10 +272,12 @@ async def process_document(file_path, rag):
 
         text = "\n\n".join(page_contents)
 
-        # Insert with proper file_paths parameter for citation
+        # Insert with proper file_paths parameter for citation.
+        # LightRAG will automatically check its internal kv_store_doc_status.json
+        # to see if this exact content has already been processed.
         await rag.ainsert(input=text, file_paths=str(file_path))
 
-        print(f"✓ Successfully processed: {file_path.name}")
+        print(f"✓ File parsed and passed to LightRAG: {file_path.name}")
         return True
 
     except Exception as e:
@@ -309,75 +306,22 @@ async def main():
     # Parse command-line arguments
     parser = argparse.ArgumentParser(description="Build the knowledge base by processing documents")
     parser.add_argument("--max-docs", type=int, default=0, help="Limit processing to first N documents (0 = no limit)")
-    parser.add_argument(
-        "--force-reprocess", action="store_true", help="Reprocess all documents regardless of modification time"
-    )
-    parser.add_argument(
-        "--run-on-startup", action="store_true", help="Allow builder to run (bypasses RUN_KB_ON_STARTUP env check)"
-    )
     args = parser.parse_args()
 
-    # Respect env var RUN_KB_ON_STARTUP (default false) to avoid running KB builder on every container start
-    # Can be overridden with --run-on-startup flag
-    run_on_startup = args.run_on_startup or require("RUN_KB_ON_STARTUP").lower() == "true"
-    if not run_on_startup:
-        print("RUN_KB_ON_STARTUP is not 'true' and --run-on-startup not set. Exiting without running KB builder.")
-        return
-
-    # Force reprocess: use flag first, then env var
-    force_reprocess = args.force_reprocess or require("RUN_KB_FORCE_REPROCESS").lower() == "true"
-    processed_index_file = Path(WORKING_DIR) / "processed_index.json"
-    processed_index = {}
-
-    # Load processed index if available
-    if processed_index_file.exists():
-        try:
-            processed_index = json.loads(processed_index_file.read_text())
-        except Exception:
-            print("Warning: Unable to read processed index; will treat all files as new.")
-            processed_index = {}
-
-    # Gather documents and compute which need processing
+    # Gather documents
     documents = get_all_documents(RAW_DATA_DIR)
 
-    # Remove index entries for deleted files
-    existing_paths = {str(p) for p in documents}
-    for key in list(processed_index.keys()):
-        if key not in existing_paths:
-            del processed_index[key]
-
-    to_process = []
-    skipped = 0
-    for doc in documents:
-        doc_str = str(doc)
-        try:
-            mtime = os.path.getmtime(doc_str)
-        except Exception:
-            to_process.append(doc)
-            continue
-
-        prev = processed_index.get(doc_str)
-        if force_reprocess:
-            to_process.append(doc)
-        else:
-            # Allow a small tolerance for mtime differences (filesystem precision)
-            if prev and abs(float(prev.get("mtime", 0)) - float(mtime)) < 1.0:
-                skipped += 1
-            else:
-                to_process.append(doc)
-
-    print(f"\nFound {len(documents)} documents ({len(to_process)} to process, {skipped} skipped)")
+    print(f"\nFound {len(documents)} total documents in directory.")
     print(f"{'='*80}\n")
 
     # Limit processing for testing if --max-docs CLI flag is set
     max_docs = args.max_docs
-    if max_docs and max_docs > 0 and len(to_process) > max_docs:
-        print(f"⚠️  Limiting to first {max_docs} documents (out of {len(to_process)}) for testing")
-        to_process = to_process[:max_docs]
+    if max_docs and max_docs > 0 and len(documents) > max_docs:
+        print(f"⚠️  Limiting to first {max_docs} documents (out of {len(documents)}) for testing")
+        documents = documents[:max_docs]
 
-    # Nothing to do -> exit early to avoid reprocessing or LLM calls
-    if not to_process:
-        print("No new or modified documents to process. Exiting.")
+    if not documents:
+        print("No documents found. Exiting.")
         return
 
     # Wait for core services to be reachable before initializing RAG
@@ -385,7 +329,9 @@ async def main():
 
     embeddings_url = require("EMBEDDING_BINDING_HOST") + "/v1"
     print(f"Checking availability of embeddings at {embeddings_url}...")
-    ok = await asyncio.get_event_loop().run_in_executor(None, wait_for_service, embeddings_url, service_wait_timeout, 1)
+    ok = await asyncio.get_event_loop().run_in_executor(
+        None, wait_for_service, embeddings_url, service_wait_timeout, 1
+    )
     if not ok:
         print(
             f"Warning: Embeddings service at {embeddings_url} not reachable after {service_wait_timeout}s; continuing anyway."
@@ -393,52 +339,44 @@ async def main():
     else:
         print(f"Embeddings service at {embeddings_url} is reachable.")
 
-    # Initialize RAG and process only the files that need it
+    # Initialize RAG
     rag = await initialize_rag()
 
     successful = 0
     failed = 0
 
-    for doc_path in to_process:
+    for doc_path in documents:
         success = await process_document(doc_path, rag)
         if success:
             successful += 1
-            processed_index[str(doc_path)] = {
-                "mtime": os.path.getmtime(str(doc_path)),
-                "processed_at": datetime.utcnow().isoformat(),
-            }
         else:
             failed += 1
 
         await asyncio.sleep(0.5)
 
-    # Persist processed index
-    try:
-        processed_index_file.write_text(json.dumps(processed_index, indent=2))
-    except Exception as e:
-        print(f"Warning: Could not write processed index: {e}")
-
     # Summary
     print(f"\n{'='*80}")
-    print(f"Processing Complete!")
+    print(f"Script Execution Complete!")
     print(f"{'='*80}")
-    print(f"✓ Successfully processed: {successful} documents")
-    print(f"✗ Failed: {failed} documents")
-    print(f"Total: {len(to_process)} documents")
+    print(f"✓ Read successfully: {successful} documents")
+    print(f"✗ Failed to read: {failed} documents")
+    print(f"Total attempted: {len(documents)} documents")
+    print(
+        "\nNote: LightRAG handles actual duplication internally. It will skip graph extraction for files it has already processed in 'kv_store_doc_status.json'."
+    )
 
-    # Run a test query only if we processed something (to avoid unnecessary LLM usage)
-    if successful > 0:
-        print(f"\n{'='*80}")
-        print("Testing query...")
-        print(f"{'='*80}\n")
-        try:
-            result = await rag.aquery(
-                "Quais são os tipos de insulina disponíveis?",
-                param=QueryParam(mode="hybrid"),
-            )
-            print(f"Query result:\n{result}")
-        except Exception as e:
-            print(f"Query failed: {e}")
+    # Run a test query
+    print(f"\n{'='*80}")
+    print("Testing query...")
+    print(f"{'='*80}\n")
+    try:
+        result = await rag.aquery(
+            "Quais são os tipos de insulina disponíveis?",
+            param=QueryParam(mode="hybrid"),
+        )
+        print(f"Query result:\n{result}")
+    except Exception as e:
+        print(f"Query failed: {e}")
 
     await rag.finalize_storages()
 

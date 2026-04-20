@@ -1,6 +1,8 @@
+import os
+
 from .env import require, require_float, require_int
 
-RAG_WORKING_DIR = require("WORKING_DIR")
+RAG_WORKING_DIR = os.getenv("WORKING_DIR", "data/processed")
 
 LLM_MODEL = require("LLM_MODEL")
 LLM_FALLBACK_MODEL = require("LLM_MODEL_FALLBACK")
