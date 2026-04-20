@@ -26,7 +26,6 @@ const sourceItemSchema = z.object({
 const queryResultSchema = z.object({
   response: z.string(),
   sources: z.array(sourceItemSchema),
-  source_count: z.number(),
   summarized: z.boolean(),
 })
 
@@ -51,7 +50,6 @@ const conversationHistorySchema = z.object({
       role: z.enum(['user', 'assistant', 'system']),
       content: z.string(),
       sources: z.array(sourceItemSchema).default([]),
-      source_count: z.number().default(0),
     }),
   ),
 })

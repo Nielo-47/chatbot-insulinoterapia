@@ -71,7 +71,7 @@ function App() {
     } catch (error) {
       await clearAuthSession()
       if (error instanceof ApiError && error.status === 401) {
-        setAuthStatus('invalid')
+        setAuthStatus('signed_out')
       } else if (error instanceof ApiError && error.status >= 500) {
         setAuthStatus('unknown')
       } else {

@@ -56,17 +56,11 @@ class ConversationCache:
                             structured_sources.append({"path": src, "page": None, "excerpt": None})
                         else:
                             continue
-                    source_count = item.get("source_count", len(structured_sources))
-                    try:
-                        source_count = int(source_count)
-                    except (TypeError, ValueError):
-                        source_count = len(structured_sources)
                     cleaned.append(
                         {
                             "role": role,
                             "content": content,
                             "sources": structured_sources,
-                            "source_count": source_count,
                         }
                     )
             return cleaned

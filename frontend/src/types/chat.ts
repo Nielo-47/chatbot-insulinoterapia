@@ -14,7 +14,6 @@ export interface ChatMessage {
   content: string
   createdAt: string
   sources?: ChatSource[]
-  sourceCount?: number
   summarized?: boolean
   isError?: boolean
 }
@@ -26,7 +25,6 @@ export interface QueryPayload {
 export interface QueryResult {
   response: string
   sources: ChatSource[]
-  source_count: number
   summarized: boolean
 }
 
@@ -34,5 +32,4 @@ export interface ConversationHistoryMessage {
   role: MessageRole
   content: string
   sources: ChatSource[]
-  source_count: number
 }

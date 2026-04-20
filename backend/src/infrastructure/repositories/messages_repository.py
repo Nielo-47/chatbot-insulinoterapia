@@ -81,7 +81,6 @@ class MessagesRepository:
                     "role": role,
                     "content": content,
                     "sources": sources_list,
-                    "source_count": len(sources_list),
                 }
             )
         self.cache.set_messages(conversation_id, messages)

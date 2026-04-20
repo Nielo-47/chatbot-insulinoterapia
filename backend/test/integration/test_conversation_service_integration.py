@@ -71,8 +71,8 @@ class ConversationServiceIntegrationTests(unittest.TestCase):
         self.assertEqual(
             first_read,
             [
-                {"role": "user", "content": "oi", "sources": [], "source_count": 0},
-                {"role": "assistant", "content": "olá", "sources": [], "source_count": 0},
+                {"role": "user", "content": "oi", "sources": []},
+                {"role": "assistant", "content": "olá", "sources": []},
             ],
         )
         self.assertEqual(second_read, first_read)

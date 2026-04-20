@@ -32,7 +32,6 @@ class QueryRequest(BaseModel):
 class QueryResponse(BaseModel):
     response: str
     sources: List[SourceItem]
-    source_count: int
     summarized: bool
     session_id: str
 
@@ -41,7 +40,6 @@ class ConversationMessage(BaseModel):
     role: str
     content: str
     sources: List[SourceItem] = Field(default_factory=list)
-    source_count: int = 0
 
 
 class ConversationHistoryResponse(BaseModel):

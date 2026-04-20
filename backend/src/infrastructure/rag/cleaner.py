@@ -23,7 +23,7 @@ def extract_page_from_text(text: str) -> int | None:
     return int(match.group(1)) if match else None
 
 
-def extract_sources(rag_data: Any) -> tuple[list[dict], int]:
+def extract_sources(rag_data: Any) -> list[dict]:
     """Extract structured source info with page and excerpt from RAG response.
     
     Returns list of dicts: {path, page, excerpt}
@@ -32,15 +32,15 @@ def extract_sources(rag_data: Any) -> tuple[list[dict], int]:
     seen_chunk_ids = set()
 
     if not rag_data or not isinstance(rag_data, dict):
-        return sources, 0
+        return sources
 
     try:
         if rag_data.get("status") != "success":
-            return sources, 0
+            return sources
 
         data_section = rag_data.get("data", {})
         if not data_section:
-            return sources, 0
+            return sources
 
         # Build reference_id -> file_path mapping from references
         reference_to_file: dict[str, str] = {}
@@ -85,8 +85,8 @@ def extract_sources(rag_data: Any) -> tuple[list[dict], int]:
                     "excerpt": excerpt,
                 })
 
-        return sources, len(sources)
+        return sources
 
     except Exception as e:
         logging.warning(f"Failed to extract sources from RAG data: {e}")
-        return sources, 0
+        return sources

@@ -192,7 +192,6 @@ def get_user_conversations(
                     role=msg["role"],
                     content=msg["content"],
                     sources=msg.get("sources", []),
-                    source_count=msg.get("source_count", len(msg.get("sources", []))),
                 )
                 for msg in messages
             ]
@@ -228,7 +227,7 @@ async def query_chatbot(
         logger.info(
             f"Query completed for user {current_user.id} / session {session_id}: "
             f"response={len(result.get('response', ''))} chars, "
-            f"sources={result.get('source_count', 0)}, "
+            f"sources={len(result.get('sources', []))}, "
             f"summarized={result.get('summarized', False)}"
         )
 

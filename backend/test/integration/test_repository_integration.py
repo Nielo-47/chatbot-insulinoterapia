@@ -50,8 +50,8 @@ class RepositoryIntegrationTests(unittest.TestCase):
         self.assertEqual(
             self.messages.list_recent_messages(conversation_id, limit=10),
             [
-                {"role": "user", "content": "oi", "sources": [], "source_count": 0},
-                {"role": "assistant", "content": "olá", "sources": ["doc-a.md", "doc-b.md"], "source_count": 2},
+                {"role": "user", "content": "oi", "sources": []},
+                {"role": "assistant", "content": "olá", "sources": ["doc-a.md", "doc-b.md"]},
             ],
         )
 

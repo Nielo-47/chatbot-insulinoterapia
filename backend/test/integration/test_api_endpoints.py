@@ -24,15 +24,14 @@ class DummyChatbot:
         return {
             "response": f"echo:{query}",
             "sources": ["source-1"],
-            "source_count": 1,
             "summarized": False,
             "session_id": session_id or "generated-session",
         }
 
     def get_history(self, user_id: int):
         return [
-            {"role": "user", "content": "Hello", "sources": [], "source_count": 0},
-            {"role": "assistant", "content": "Hi there", "sources": ["source-1"], "source_count": 1},
+            {"role": "user", "content": "Hello", "sources": []},
+            {"role": "assistant", "content": "Hi there", "sources": ["source-1"]},
         ]
 
     def end_session(self, user_id: int):
@@ -119,7 +118,6 @@ class ApiEndpointTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         payload = response.json()
         self.assertEqual(payload["response"], "echo:Como aplicar insulina?")
-        self.assertEqual(payload["source_count"], 1)
         self.assertEqual(payload["sources"], ["source-1"])
         self.assertFalse(payload["summarized"])
         self.assertIsInstance(payload["session_id"], str)

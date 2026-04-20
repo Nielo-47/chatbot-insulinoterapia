@@ -22,13 +22,7 @@ function normalizeSources(sources: Array<{path: string, page?: number, excerpt?:
     path: source.path,
     page: source.page,
     excerpt: source.excerpt,
-    label: getFriendlyLabel(source),
   }));
-}
-
-function getFriendlyLabel(source: {path: string, page?: number}): string {
-  const filename = source.path.split('/').pop()?.replace(/_/g, ' ') || source.path
-  return source.page != null ? `${filename} (p. ${source.page})` : filename
 }
 
 interface ChatPageProps {
@@ -59,7 +53,6 @@ export function ChatPage({ username, backendStatus, authStatus, onLogout, onDele
             content: msg.content,
             createdAt: new Date().toISOString(),
             sources: normalizeSources(msg.sources),
-            sourceCount: msg.source_count,
           }))
           // Load conversation history after the welcome message
           setMessages([initialMessage, ...loadedMessages])
@@ -114,7 +107,6 @@ export function ChatPage({ username, backendStatus, authStatus, onLogout, onDele
         content: result.response,
         createdAt: new Date().toISOString(),
         sources: normalizeSources(result.sources),
-        sourceCount: result.source_count,
         summarized: result.summarized,
       }
 
@@ -193,7 +185,12 @@ export function ChatPage({ username, backendStatus, authStatus, onLogout, onDele
         <main className="flex max-h-[calc(100dvh-2.5rem)] min-h-[26rem] flex-col rounded-3xl border border-slate-200 bg-white/90 p-4 shadow-xl shadow-slate-200/40 backdrop-blur lg:min-h-[34rem] lg:p-6">
           <header className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-4">
             <div>
-              <h1 className="font-serif text-2xl font-semibold text-slate-900 lg:text-3xl">Chatbot de Insulinoterapia</h1>
+              <h1 className="font-serif text-2xl font-semibold text-slate-900 lg:text-3xl">
+                Chatbot de Insulinoterapia
+                <span className="ml-2 inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-amber-700">
+                  Teste Fechado
+                </span>
+              </h1>
               <p className="mt-1 text-sm text-slate-600">Perguntas e respostas com suporte de base de conhecimento e referencias.</p>
             </div>
           </header>

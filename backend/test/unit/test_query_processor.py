@@ -26,11 +26,10 @@ class DummyRAGRuntime:
         self.last_history = list(conversation_history)
         if self._error is not None:
             raise self._error
-        sources, source_count = extract_sources(self._rag_data)
+        sources = extract_sources(self._rag_data)
         return {
             "rag_data": self._rag_data,
             "sources": sources,
-            "source_count": source_count,
         }
 
 
@@ -97,7 +96,6 @@ class QueryProcessorTests(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(result["response"], "Resposta inicial")
         self.assertEqual(result["sources"], ["doc1.md"])
-        self.assertEqual(result["source_count"], 1)
         self.assertFalse(result["summarized"])  # Not enough messages to trigger summarization
         self.assertEqual(result["session_id"], "sess-1")
         self.assertEqual(len(conversation_service.added_messages), 2)
@@ -120,7 +118,6 @@ class QueryProcessorTests(unittest.IsolatedAsyncioTestCase):
         result = await processor.query("Pergunta", user_id=7)
 
         self.assertEqual(result["response"], "Resposta refinada")
-        self.assertEqual(result["source_count"], 0)
         self.assertFalse(result["summarized"])
         self.assertEqual(conversation_service.added_messages[0], (7, "user", "Pergunta", []))
         self.assertEqual(conversation_service.added_messages[1], (7, "assistant", "Resposta refinada", []))
@@ -170,7 +167,6 @@ class QueryProcessorTests(unittest.IsolatedAsyncioTestCase):
                     "role": "assistant",
                     "content": "Resposta anterior",
                     "sources": ["doc.md"],
-                    "source_count": 1,
                 }
             ]
         )

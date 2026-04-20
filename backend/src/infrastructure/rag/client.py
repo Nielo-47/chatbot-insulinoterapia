@@ -116,16 +116,14 @@ class RAGRuntime:
                     rag_data.get("message"),
                     rag_data.get("metadata"),
                 )
-            sources, source_count = extract_sources(rag_data)
+            sources = extract_sources(rag_data)
             return {
                 "rag_data": rag_data,
                 "sources": sources,
-                "source_count": source_count,
             }
         except Exception as e:
             logger.exception("Exception during RAG query_data: %s", e)
             return {
                 "rag_data": {"status": "error", "message": str(e)},
                 "sources": [],
-                "source_count": 0,
             }

@@ -30,13 +30,8 @@ export function LoginPage({ onLogin, errorMessage, isSubmitting, backendStatus, 
                 Assistente de insulinoterapia
               </h1>
               <p className="mt-4 max-w-xl text-sm leading-6 text-slate-300 sm:text-base">
-                Entre com sua conta para acessar o chat e manter o historico da conversa vinculado ao seu usuario.
+                Chatbot especializado em diabetes e insulinoterapia. Receba orientacoes sobre aplicacao, armazenamento, efeitos colaterais e muito mais.
               </p>
-            </div>
-
-            <div className="rounded-3xl border border-white/10 bg-white/5 p-5 text-sm text-slate-200 backdrop-blur">
-              <p className="font-medium text-white">Conta de teste</p>
-              <p className="mt-2 text-slate-300">Use as credenciais exibidas ao lado para entrar e validar o fluxo manualmente.</p>
             </div>
           </section>
 
@@ -44,7 +39,9 @@ export function LoginPage({ onLogin, errorMessage, isSubmitting, backendStatus, 
             <form onSubmit={handleSubmit} className="w-full max-w-md space-y-5">
               <div>
                 <h2 className="font-serif text-3xl font-semibold text-slate-900">Entrar</h2>
-                <p className="mt-2 text-sm text-slate-600">Entre com o usuario seedado para abrir o chat.</p>
+                <span className="mt-2 inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-amber-700">
+                  Teste Fechado
+                </span>
               </div>
 
               {backendStatus === 'offline' && (
@@ -66,7 +63,7 @@ export function LoginPage({ onLogin, errorMessage, isSubmitting, backendStatus, 
                   onChange={(event) => setUsername(event.target.value)}
                   autoComplete="username"
                   className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-cyan-500 focus:ring-4 focus:ring-cyan-100"
-                  placeholder="demo"
+                  placeholder="Seu usuario"
                 />
               </label>
 
@@ -78,7 +75,7 @@ export function LoginPage({ onLogin, errorMessage, isSubmitting, backendStatus, 
                   onChange={(event) => setPassword(event.target.value)}
                   autoComplete="current-password"
                   className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-cyan-500 focus:ring-4 focus:ring-cyan-100"
-                  placeholder="demo12345"
+                  placeholder="Sua senha"
                 />
               </label>
 
@@ -95,9 +92,7 @@ export function LoginPage({ onLogin, errorMessage, isSubmitting, backendStatus, 
                 {isSubmitting ? 'Entrando...' : backendStatus === 'offline' ? 'Backend indisponivel' : 'Entrar'}
               </button>
 
-              <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-xs leading-5 text-slate-600">
-                Credenciais seedadas: <span className="font-semibold">demo</span> / <span className="font-semibold">demo12345</span>
-              </div>
+              
             </form>
           </section>
         </div>

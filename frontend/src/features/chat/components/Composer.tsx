@@ -1,5 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { FormEvent, KeyboardEvent } from 'react'
+
+import { useDebounce } from '../../../hooks/useDebounce'
+import { draftStorage } from '../../lib/storage'
 
 interface ComposerProps {
   disabled?: boolean
@@ -7,7 +10,18 @@ interface ComposerProps {
 }
 
 export function Composer({ disabled, onSubmit }: ComposerProps) {
-  const [value, setValue] = useState('')
+  const [value, setValue] = useState(() => draftStorage.getDraft() ?? '')
+  const debouncedValue = useDebounce(value, 500)
+
+  useEffect(() => {
+    draftStorage.saveDraft(debouncedValue)
+  }, [debouncedValue])
+
+  useEffect(() => {
+    return () => {
+      draftStorage.clearDraft()
+    }
+  }, [])
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault()
@@ -19,6 +33,7 @@ export function Composer({ disabled, onSubmit }: ComposerProps) {
 
     await onSubmit(trimmed)
     setValue('')
+    draftStorage.clearDraft()
   }
 
   const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {

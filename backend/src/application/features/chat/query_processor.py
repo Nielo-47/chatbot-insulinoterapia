@@ -26,7 +26,6 @@ class QueryGraphState(BaseModel):
     summary: str = ""
     rag_data: Any = None
     sources: List[dict] = Field(default_factory=list)
-    source_count: int = 0
     initial_response: str = ""
     final_response: str = ""
     critique: Dict[str, Any] = Field(default_factory=dict)
@@ -124,7 +123,6 @@ class QueryProcessor:
             return {
                 "rag_data": result["rag_data"],
                 "sources": result.get("sources", []),
-                "source_count": result.get("source_count", 0),
             }
         return {"rag_data": result}
 
@@ -238,7 +236,6 @@ class QueryProcessor:
         return {
             "response": data.get("final_response") or data.get("initial_response", ""),
             "sources": data.get("sources", []),
-            "source_count": data.get("source_count", 0),
             "summarized": data.get("was_summarized", False),
             "session_id": data.get("session_id", session_label),
         }
