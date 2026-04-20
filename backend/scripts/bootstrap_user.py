@@ -2,15 +2,18 @@
 
 import argparse
 import getpass
+import os
+from pathlib import Path
 
 from dotenv import load_dotenv
+
+# Load environment variables BEFORE importing modules that depend on them
+project_root = Path(__file__).resolve().parent.parent.parent
+load_dotenv(project_root / ".env")
 
 from backend.src.application.features.auth import hash_password
 from backend.src.infrastructure.data import initialize_database
 from backend.src.infrastructure.repositories.users_repository import UsersRepository
-
-
-load_dotenv()
 
 
 def main() -> int:
