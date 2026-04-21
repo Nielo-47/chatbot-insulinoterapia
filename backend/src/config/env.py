@@ -22,3 +22,19 @@ def require_float(key: str) -> float:
         return float(value)
     except ValueError:
         raise RuntimeError(f"Environment variable '{key}' must be a float, got: {value}")
+
+
+def get_int(key: str, default: int) -> int:
+    """Get an integer environment variable with a default value."""
+    value = os.getenv(key)
+    if value is None or value == "":
+        return default
+    try:
+        return int(value)
+    except ValueError:
+        return default
+
+
+def get_str(key: str, default: str) -> str:
+    """Get a string environment variable with a default value."""
+    return os.getenv(key, default)

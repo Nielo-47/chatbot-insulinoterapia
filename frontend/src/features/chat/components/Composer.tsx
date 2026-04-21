@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import type { FormEvent, KeyboardEvent } from 'react'
 
 import { useDebounce } from '../../../hooks/useDebounce'
-import { draftStorage } from '../../lib/storage'
+import { draftStorage } from '../../../lib/storage'
 
 interface ComposerProps {
   disabled?: boolean

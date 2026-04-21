@@ -7,8 +7,11 @@ from contextlib import asynccontextmanager
 from typing import List
 
 import nest_asyncio
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 from dotenv import load_dotenv
-from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi import Depends, FastAPI, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
@@ -29,11 +32,16 @@ from backend.src.api.dependencies import (
     get_chatbot_service,
 )
 from backend.src.application.features.auth import AuthenticationService
+from backend.src.application.features.auth.auth_service import AccountLockedException, RateLimitExceededException
 from backend.src.application.features.chat.chatbot_service import ChatbotService
 from backend.src.infrastructure.data.cache import init_semantic_cache
 from backend.src.config.security import JWT_SECRET_KEY
 from backend.src.config.env import require
 from backend.src.infrastructure.data import initialize_database
+
+
+# Rate limiter using client IP
+limiter = Limiter(key_func=get_remote_address)
 
 
 def _parse_frontend_origins() -> List[str]:
@@ -58,7 +66,7 @@ logger = logging.getLogger(__name__)
 auth_scheme = HTTPBearer(auto_error=False)
 
 
-def _unauthorized(detail: str = "Not authenticated") -> HTTPException:
+def _unauthorized(detail: str = "Nao autenticado") -> HTTPException:
     return HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail=detail,
@@ -75,7 +83,7 @@ def get_current_user(
 
     principal = auth_service.resolve_principal_from_token(credentials.credentials)
     if principal is None:
-        raise _unauthorized("Invalid or expired access token")
+        raise _unauthorized("Token de acesso invalido ou expirado")
 
     return AuthenticatedUser(id=principal.id, username=principal.username)
 
@@ -130,6 +138,10 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# Add rate limiter
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
 
 def _raise_api_error(exc: Exception, user_message: str) -> None:
     if isinstance(exc, HTTPException):
@@ -152,18 +164,54 @@ app.add_middleware(
 
 
 @app.post("/auth/login", response_model=TokenResponse)
-def login(request: LoginRequest, auth_service: AuthenticationService = Depends(get_auth_service)):
-    principal = auth_service.authenticate_credentials(request.username, request.password)
-    if principal is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid username or password")
+@limiter.limit("5/minute")  # Rate limit: 5 login attempts per minute per IP
+def login(request: Request, login_request: LoginRequest, auth_service: AuthenticationService = Depends(get_auth_service)):
+    # Get client IP for rate limiting
+    client_ip = request.client.host if request.client else None
+    
+    try:
+        principal = auth_service.authenticate_credentials(
+            login_request.username, 
+            login_request.password,
+            client_ip=client_ip,
+        )
+        if principal is None:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Nome de usuario ou senha invalidos")
 
-    access_token = auth_service.issue_access_token(principal)
-    return TokenResponse(access_token=access_token)
+        access_token = auth_service.issue_access_token(principal)
+        return TokenResponse(access_token=access_token)
+    
+    except AccountLockedException as e:
+        raise HTTPException(
+            status_code=status.HTTP_423_LOCKED,
+            detail=f"Account is locked. Try again in {e.remaining_seconds} seconds.",
+        )
+    except RateLimitExceededException as e:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=f"Too many login attempts. Try again in {e.remaining_seconds} seconds.",
+        )
 
 
 @app.get("/auth/me", response_model=AuthenticatedUser)
 def read_current_user(current_user: AuthenticatedUser = Depends(get_current_user)):
     return current_user
+
+
+@app.post("/auth/logout")
+def logout(
+    request: Request,
+    current_user: AuthenticatedUser = Depends(get_current_user),
+    auth_service: AuthenticationService = Depends(get_auth_service),
+):
+    """Logout the current user by blacklisting their token."""
+    # Get the token from the Authorization header
+    auth_header = request.headers.get("Authorization", "")
+    if auth_header.lower().startswith("bearer "):
+        token = auth_header[7:]  # Remove "Bearer " prefix
+        auth_service.logout_token(token)
+    
+    return {"message": "Desconectado com sucesso"}
 
 
 @app.delete("/auth/me")
@@ -173,8 +221,8 @@ def delete_current_user(
 ):
     deleted = auth_service.delete_user(current_user.id)
     if not deleted:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    return {"message": "User deleted successfully"}
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuario nao encontrado")
+    return {"message": "Usuario excluido com sucesso"}
 
 
 @app.get("/user/conversations", response_model=ConversationHistoryResponse)
@@ -198,7 +246,7 @@ def get_user_conversations(
         )
     except Exception as e:
         logger.error(f"Error retrieving conversation history: {type(e).__name__}: {e}")
-        _raise_api_error(e, "Error retrieving conversation history")
+        _raise_api_error(e, "Erro ao recuperar historico da conversa")
 
 
 @app.get("/health", response_model=HealthResponse)
@@ -235,7 +283,7 @@ async def query_chatbot(
 
     except Exception as e:
         logger.error(f"Error processing query: {type(e).__name__}: {e}")
-        _raise_api_error(e, "Error processing query")
+        _raise_api_error(e, "Erro ao processar consulta")
 
 
 @app.delete("/user/conversations")
@@ -248,11 +296,11 @@ async def clear_user_conversations(
         cleared = chatbot.end_session(current_user.id)
         if cleared:
             logger.info(f"Cleared conversation for user {current_user.id}")
-            return {"message": "Conversation cleared successfully"}
+            return {"message": "Conversa limpa com sucesso"}
         return {"message": "No conversation found"}
     except Exception as e:
         logger.error(f"Error clearing conversation: {type(e).__name__}: {e}")
-        _raise_api_error(e, "Error clearing conversation")
+        _raise_api_error(e, "Erro ao limpar conversa")
 
 
 @app.get("/")

@@ -16,3 +16,4 @@ alembic
 redis
 PyJWT
 langgraph
+slowapi

@@ -211,7 +211,7 @@ class QueryProcessor:
         **query_params,
     ) -> Dict[str, Any]:
         if user_id is None:
-            raise ValueError("user_id is required")
+            raise ValueError("user_id e obrigatorio")
 
         logger.info("Processing query (mode=%s): %.100s", mode, query)
         session_label = session_id or str(uuid.uuid4())

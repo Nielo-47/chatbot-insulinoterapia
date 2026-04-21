@@ -1,6 +1,6 @@
 import os
 
-from .env import require, require_int
+from .env import require, require_int, get_int, get_str
 
 OPENROUTER_API_KEY = require("OPENROUTER_API_KEY")
 OPENROUTER_BASE_URL = require("OPENROUTER_BASE_URL")
@@ -14,3 +14,7 @@ DB_MAX_OVERFLOW = require_int("DB_MAX_OVERFLOW")
 CHAT_CACHE_REDIS_URL = require("CHAT_CACHE_REDIS_URL")
 CHAT_CACHE_TTL_SECONDS = require_int("CHAT_CACHE_TTL_SECONDS")
 CHAT_CACHE_KEY_PREFIX = require("CHAT_CACHE_KEY_PREFIX")
+
+# Token blacklist Redis settings
+TOKEN_BLACKLIST_ENABLED = get_int("TOKEN_BLACKLIST_ENABLED", 1)  # Enabled by default
+TOKEN_BLACKLIST_PREFIX = get_str("TOKEN_BLACKLIST_PREFIX", "token:blacklist:")

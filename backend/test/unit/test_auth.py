@@ -5,8 +5,11 @@ from typing import Any, Optional
 import jwt
 
 from backend.src.application.contracts.repositories import UsersRepositoryLike
-from backend.src.config import Config
-from backend.src.application.features.auth.auth_service import AuthenticationService
+from backend.src.application.features.auth.auth_service import (
+    AuthenticationService,
+    AccountLockedException,
+    RateLimitExceededException,
+)
 from backend.src.application.features.auth.auth_primitives import (
     create_access_token,
     decode_access_token,
@@ -23,20 +26,32 @@ class AuthTests(unittest.TestCase):
         self.assertFalse(verify_password("wrong-password", hashed))
 
     def test_access_token_round_trip(self) -> None:
-        with patch.object(Config, "JWT_SECRET_KEY", "token-secret-value-long-enough-32-bytes"):
-            token = create_access_token(7, "alice", expires_minutes=5)
-            payload = decode_access_token(token)
+        with patch("backend.src.infrastructure.security.token.JWT_SECRET_KEY", "token-secret-value-long-enough-32-bytes"):
+            with patch("backend.src.infrastructure.security.token.JWT_ALGORITHM", "HS256"):
+                with patch("backend.src.infrastructure.security.token.JWT_ISSUER", "test-issuer"):
+                    with patch("backend.src.infrastructure.security.token.JWT_AUDIENCE", "test-audience"):
+                        token = create_access_token(7, "alice", expires_minutes=5)
+                        payload = decode_access_token(token)
 
         self.assertEqual(payload["sub"], "7")
         self.assertEqual(payload["username"], "alice")
+        self.assertEqual(payload["iss"], "test-issuer")
+        self.assertEqual(payload["aud"], "test-audience")
+        self.assertIn("jti", payload)  # JWT ID should be present
 
     def test_expired_token_is_rejected(self) -> None:
-        with patch.object(Config, "JWT_SECRET_KEY", "token-secret-value-long-enough-32-bytes"):
-            token = create_access_token(7, "alice", expires_minutes=-1)
+        with patch("backend.src.infrastructure.security.token.JWT_SECRET_KEY", "token-secret-value-long-enough-32-bytes"):
+            with patch("backend.src.infrastructure.security.token.JWT_ALGORITHM", "HS256"):
+                with patch("backend.src.infrastructure.security.token.JWT_ISSUER", "test-issuer"):
+                    with patch("backend.src.infrastructure.security.token.JWT_AUDIENCE", "test-audience"):
+                        token = create_access_token(7, "alice", expires_minutes=-1)
 
-        with patch.object(Config, "JWT_SECRET_KEY", "token-secret-value-long-enough-32-bytes"):
-            with self.assertRaises(jwt.ExpiredSignatureError):
-                decode_access_token(token)
+        with patch("backend.src.infrastructure.security.token.JWT_SECRET_KEY", "token-secret-value-long-enough-32-bytes"):
+            with patch("backend.src.infrastructure.security.token.JWT_ALGORITHM", "HS256"):
+                with patch("backend.src.infrastructure.security.token.JWT_ISSUER", "test-issuer"):
+                    with patch("backend.src.infrastructure.security.token.JWT_AUDIENCE", "test-audience"):
+                        with self.assertRaises(jwt.ExpiredSignatureError):
+                            decode_access_token(token)
 
     def test_delete_user_delegates_to_repository(self) -> None:
         class UsersRepositoryStub(UsersRepositoryLike):
@@ -59,6 +74,20 @@ class AuthTests(unittest.TestCase):
 
         self.assertTrue(deleted)
         self.assertEqual(users_repository.deleted_user_id, 12)
+
+    def test_token_contains_jti(self) -> None:
+        """Test that tokens have a unique JWT ID for revocation."""
+        with patch("backend.src.infrastructure.security.token.JWT_SECRET_KEY", "token-secret-value-long-enough-32-bytes"):
+            with patch("backend.src.infrastructure.security.token.JWT_ALGORITHM", "HS256"):
+                with patch("backend.src.infrastructure.security.token.JWT_ISSUER", "test-issuer"):
+                    with patch("backend.src.infrastructure.security.token.JWT_AUDIENCE", "test-audience"):
+                        token = create_access_token(7, "alice")
+                        payload = decode_access_token(token)
+        
+        # Each token should have a unique jti
+        self.assertIsNotNone(payload.get("jti"))
+        self.assertIsInstance(payload["jti"], str)
+        self.assertTrue(len(payload["jti"]) > 0)
 
 
 if __name__ == "__main__":

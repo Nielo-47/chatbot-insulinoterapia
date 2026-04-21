@@ -34,15 +34,14 @@ RUN pip install -r requirements.txt
 COPY backend/ ./backend/
 COPY scripts/ ./scripts/
 
-# Create data directory
-RUN mkdir -p /app/data/processed
-
 # Expose backend API port
 EXPOSE 8000
+
+ENV BOOTSTRAP_USERS=${BOOTSTRAP_USERS:-}
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
-# Run the FastAPI application
-CMD ["uvicorn", "backend.src.api.api:app", "--host", "0.0.0.0", "--port", "8000", "--log-level", "info"]
+# Run the FastAPI application with optional user seeding
+CMD ["/bin/bash", "-c", "if [ -n \"$BOOTSTRAP_USERS\" ]; then echo \"Bootstrapping users...\" && IFS=',' read -ra USERS <<< \"$BOOTSTRAP_USERS\" && for u in \"${USERS[@]}\"; do python -m backend.scripts.bootstrap_user --username \"${u%%:*}\" --password \"${u#*:}\"; done; fi && exec uvicorn backend.src.api.api:app --host 0.0.0.0 --port 8000 --log-level info"]
