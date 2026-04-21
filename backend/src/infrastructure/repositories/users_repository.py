@@ -33,21 +33,22 @@ class UsersRepository:
                 return None
             return _to_domain_user(model)
 
-    def get_or_create_user_id(self, username: str, hashed_password: str) -> int:
+    def get_or_create_user_id(self, username: str, hashed_password: str) -> tuple[int, bool]:
+        """Returns (user_id, created_new) where created_new is True only if a new user was created."""
         with get_db_session() as db:
             existing_stmt = select(UserModel.id).where(UserModel.username == username)
             existing_id = db.execute(existing_stmt).scalar_one_or_none()
             if existing_id is not None:
-                return existing_id
+                return (existing_id, False)
 
             user = UserModel(username=username, hashed_password=hashed_password)
             db.add(user)
             try:
                 db.flush()
-                return user.id
+                return (user.id, True)
             except IntegrityError:
                 db.rollback()
-                return db.execute(existing_stmt).scalar_one()
+                return (db.execute(existing_stmt).scalar_one(), False)
 
     def delete_user_by_id(self, user_id: int) -> bool:
         with get_db_session() as db:

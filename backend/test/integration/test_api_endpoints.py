@@ -63,7 +63,7 @@ class ApiEndpointTests(unittest.TestCase):
             pass
 
         self.users = UsersRepository()
-        self.user_id = self.users.get_or_create_user_id("alice", hash_password("password123"))
+        self.user_id, _ = self.users.get_or_create_user_id("alice", hash_password("password123"))
 
     def tearDown(self) -> None:
         self.chatbot_patch.stop()

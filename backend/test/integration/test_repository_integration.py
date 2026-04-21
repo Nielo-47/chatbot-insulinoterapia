@@ -34,7 +34,7 @@ class RepositoryIntegrationTests(unittest.TestCase):
 
     def test_create_user_conversation_and_messages(self) -> None:
         password_hash = hash_password("hashed-password")
-        user_id = self.users.get_or_create_user_id("alice", password_hash)
+        user_id, _ = self.users.get_or_create_user_id("alice", password_hash)
         conversation_id = self.conversations.get_or_create_conversation_id(user_id)
         user = self.users.get_user_by_username("alice")
 
@@ -56,7 +56,7 @@ class RepositoryIntegrationTests(unittest.TestCase):
         )
 
     def test_clear_conversation_removes_only_messages(self) -> None:
-        user_id = self.users.get_or_create_user_id("bob", "hashed-password")
+        user_id, _ = self.users.get_or_create_user_id("bob", "hashed-password")
         conversation_id = self.conversations.get_or_create_conversation_id(user_id)
 
         self.messages.add_message(conversation_id, "user", "primeira")
@@ -73,7 +73,7 @@ class RepositoryIntegrationTests(unittest.TestCase):
         self.assertEqual(user.id, user_id)
 
     def test_delete_user_cascades_conversation_and_messages(self) -> None:
-        user_id = self.users.get_or_create_user_id("carol", "hashed-password")
+        user_id, _ = self.users.get_or_create_user_id("carol", "hashed-password")
         conversation_id = self.conversations.get_or_create_conversation_id(user_id)
 
         self.messages.add_message(conversation_id, "user", "pergunta")
@@ -87,13 +87,15 @@ class RepositoryIntegrationTests(unittest.TestCase):
         self.assertEqual(self.messages.count_messages(conversation_id), 0)
 
     def test_duplicate_username_returns_same_user(self) -> None:
-        first_id = self.users.get_or_create_user_id("dana", hash_password("hash-1"))
-        second_id = self.users.get_or_create_user_id("dana", hash_password("hash-2"))
+        first_id, first_created = self.users.get_or_create_user_id("dana", hash_password("hash-1"))
+        second_id, second_created = self.users.get_or_create_user_id("dana", hash_password("hash-2"))
 
         self.assertEqual(first_id, second_id)
+        self.assertTrue(first_created)
+        self.assertFalse(second_created)
 
     def test_get_user_by_id_returns_persisted_user(self) -> None:
-        user_id = self.users.get_or_create_user_id("eve", hash_password("secret"))
+        user_id, _ = self.users.get_or_create_user_id("eve", hash_password("secret"))
 
         user = self.users.get_user_by_id(user_id)
 

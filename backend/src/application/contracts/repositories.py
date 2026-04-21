@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Protocol
+from typing import Any, Dict, List, Optional, Protocol, Tuple
 
 
 class UsersRepositoryLike(Protocol):
@@ -6,7 +6,7 @@ class UsersRepositoryLike(Protocol):
 
     def get_user_by_username(self, username: str) -> Optional[Any]: ...
 
-    def get_or_create_user_id(self, username: str, hashed_password: str) -> int: ...
+    def get_or_create_user_id(self, username: str, hashed_password: str) -> Tuple[int, bool]: ...
 
     def delete_user_by_id(self, user_id: int) -> bool: ...
 

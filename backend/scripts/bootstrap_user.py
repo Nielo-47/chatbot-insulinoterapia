@@ -28,8 +28,11 @@ def main() -> int:
 
     initialize_database()
     users = UsersRepository()
-    user_id = users.get_or_create_user_id(args.username, hash_password(password))
-    print(f"User ready: {args.username} (id={user_id})")
+    user_id, created_new = users.get_or_create_user_id(args.username, hash_password(password))
+    if created_new:
+        print(f"Created new user: {args.username} (id={user_id})")
+    else:
+        print(f"User already exists: {args.username} (id={user_id})")
     return 0
 
 

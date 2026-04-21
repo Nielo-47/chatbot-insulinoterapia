@@ -60,7 +60,7 @@ class ConversationServiceIntegrationTests(unittest.TestCase):
         cls.engine.dispose()
 
     def test_add_messages_and_cache_warmup(self) -> None:
-        user_id = self.users.get_or_create_user_id("alice", "hashed-password")
+        user_id, _ = self.users.get_or_create_user_id("alice", "hashed-password")
 
         self.service.add_message(user_id, "user", "oi")
         self.service.add_message(user_id, "assistant", "olá")
@@ -81,7 +81,7 @@ class ConversationServiceIntegrationTests(unittest.TestCase):
         self.assertEqual(self.cache.invalidate_calls, 2)
 
     def test_reset_conversation_clears_messages_and_invalidates_cache(self) -> None:
-        user_id = self.users.get_or_create_user_id("bob", "hashed-password")
+        user_id, _ = self.users.get_or_create_user_id("bob", "hashed-password")
 
         self.service.add_message(user_id, "user", "primeira")
         self.service.add_message(user_id, "assistant", "resposta")
@@ -95,7 +95,7 @@ class ConversationServiceIntegrationTests(unittest.TestCase):
         self.assertEqual(self.service.get_conversation(user_id), [])
 
     def test_delete_user_removes_all_data(self) -> None:
-        user_id = self.users.get_or_create_user_id("carol", "hashed-password")
+        user_id, _ = self.users.get_or_create_user_id("carol", "hashed-password")
 
         self.service.add_message(user_id, "user", "pergunta")
         self.service.add_message(user_id, "assistant", "resposta")
