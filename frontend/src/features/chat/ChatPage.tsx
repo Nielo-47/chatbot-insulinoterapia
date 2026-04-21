@@ -182,7 +182,7 @@ export function ChatPage({ username, backendStatus, authStatus, onLogout, onDele
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(220,252,231,0.8),_rgba(255,255,255,1)_45%)]">
       <div className="mx-auto grid min-h-screen max-w-7xl grid-cols-1 gap-5 px-4 py-5 lg:grid-cols-[2.2fr_1fr] lg:px-8 lg:py-8">
-        <main className="flex max-h-[calc(100dvh-2.5rem)] min-h-[26rem] flex-col rounded-3xl border border-slate-200 bg-white/90 p-4 shadow-xl shadow-slate-200/40 backdrop-blur lg:min-h-[34rem] lg:p-6">
+        <main className="flex max-h-[calc(100dvh-2.5rem)] min-h-[20rem] flex-col rounded-3xl border border-slate-200 bg-white/90 p-4 shadow-xl shadow-slate-200/40 backdrop-blur lg:min-h-[28rem] lg:p-6">
           <header className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-4">
             <div>
               <h1 className="font-serif text-2xl font-semibold text-slate-900 lg:text-3xl">
@@ -192,6 +192,7 @@ export function ChatPage({ username, backendStatus, authStatus, onLogout, onDele
                 </span>
               </h1>
               <p className="mt-1 text-sm text-slate-600">Perguntas e respostas com suporte de base de conhecimento e referencias.</p>
+              <p className="mt-1 text-xs text-slate-500">As respostas nao substituem avaliacao medica presencial.</p>
             </div>
           </header>
 
@@ -272,10 +273,6 @@ export function ChatPage({ username, backendStatus, authStatus, onLogout, onDele
                 Sessao com status {authStatus === 'invalid' ? 'invalido' : 'indefinido'}.
               </p>
             )}
-            <p className="mt-2 text-xs text-slate-500">As respostas nao substituem avaliacao medica presencial.</p>
-            <p className="mt-2 text-xs text-slate-500">
-              Compressao de historico ocorre automaticamente quando necessario e nao pode ser acionada manualmente.
-            </p>
           </div>
 
           <SourceDrawer message={activeSourcesMessage} onClose={() => setActiveSourcesMessage(null)} />
