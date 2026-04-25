@@ -9,12 +9,14 @@ from langchain_core.documents import Document
 
 
 class RAG:
-    def __init__(self) -> None:
-        embeddings = Embeddings()
+    def __init__(
+        self, working_dir: str = RAG_WORKING_DIR, embeddings=Embeddings(), top_k: int = RAG_QUERY_TOP_K
+    ) -> None:
+        self.top_k = top_k
         self.retriever = LightRAG(
-            working_dir=RAG_WORKING_DIR,
+            working_dir=working_dir,
             embedding_func=EmbeddingFunc(
-                embedding_dim=EMBEDDING_DIM,
+                embedding_dim=embeddings.dimensions,
                 func=embeddings.embed_query,
             ),
         )
@@ -23,7 +25,7 @@ class RAG:
         raw_data = self.retriever.query_data(
             query=query,
             param=QueryParam(
-                top_k=RAG_QUERY_TOP_K,
+                top_k=self.top_k,
                 enable_rerank=False,
             ),
         )

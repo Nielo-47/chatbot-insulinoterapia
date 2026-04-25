@@ -9,5 +9,5 @@ PyJWT
 langgraph
 slowapi
 langchain-community
-langchain_openai
+langchain-openrouter
 langgraph-checkpoint-postgres

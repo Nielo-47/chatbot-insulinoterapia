@@ -1,5 +1,7 @@
 import logging
 from typing import List
+
+from pydantic import SecretStr
 from langchain_openai import OpenAIEmbeddings
 
 from backend.src.core.config.infrastructure import (
@@ -19,20 +21,31 @@ class Embeddings(OpenAIEmbeddings):
     but gracefully falls back to a secondary client if the primary API fails.
     """
 
-    def __init__(self, **kwargs):
+    def __init__(
+        self,
+        model: str = EMBEDDING_MODEL,
+        fallback_model: str = EMBEDDING_FALLBACK_MODEL,
+        dimensions: int = EMBEDDING_DIM,
+        **kwargs,
+    ):
+        self.dimensions: int = dimensions
+
+        shared_kwargs = {
+            "api_key": OPENROUTER_API_KEY,
+            "base_url": OPENROUTER_BASE_URL,
+            "dimensions": dimensions,
+        }
+
         super().__init__(
-            model=EMBEDDING_MODEL,
-            api_key=OPENROUTER_API_KEY,
-            base_url=OPENROUTER_BASE_URL,
-            dimensions=EMBEDDING_DIM,
+            model=model,
+            dimensions=dimensions,
+            **shared_kwargs,
             **kwargs,
         )
 
         self._fallback_client = OpenAIEmbeddings(
-            model=EMBEDDING_FALLBACK_MODEL,
-            api_key=OPENROUTER_API_KEY,
-            base_url=OPENROUTER_BASE_URL,
-            dimensions=EMBEDDING_DIM,
+            model=fallback_model,
+            **shared_kwargs,
             **kwargs,
         )
 

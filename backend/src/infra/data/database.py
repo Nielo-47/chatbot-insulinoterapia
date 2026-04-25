@@ -25,8 +25,6 @@ class DatabaseProvider:
             bind=self._engine, autocommit=False, autoflush=False, expire_on_commit=False
         )
 
-        self.checkpointer: PostgresSaver = self._create_postgres_checkpointer()
-
     @contextmanager
     def session(self) -> Iterator[Session]:
         """Provide a transactional scope around a series of operations."""
@@ -50,14 +48,11 @@ class DatabaseProvider:
             logger.error("Database connection failed: %s", e)
             return False
 
-    def _create_postgres_checkpointer(self) -> Optional[Any]:
+    def get_checkpointer(self) -> Optional[Any]:
         """Create PostgresSaver checkpointer for LangGraph state persistence."""
         try:
             clean_url = self.db_url.replace("+psycopg", "")
-            checkpointer = PostgresSaver.from_conn_string(clean_url)
-            checkpointer.setup()
-
-            return checkpointer
+            return PostgresSaver.from_conn_string(clean_url)
         except Exception as e:
             logger.warning("Could not create PostgresSaver checkpointer: %s", e)
             return None
