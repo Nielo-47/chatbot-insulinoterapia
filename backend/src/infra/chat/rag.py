@@ -4,7 +4,7 @@ from lightrag import LightRAG, QueryParam
 from lightrag.utils import EmbeddingFunc
 
 from backend.src.core.config.infrastructure import EMBEDDING_DIM, RAG_QUERY_TOP_K, RAG_WORKING_DIR
-from backend.src.infra.embeddings import Embeddings
+from backend.src.infra.chat.embeddings import Embeddings
 from langchain_core.documents import Document
 
 

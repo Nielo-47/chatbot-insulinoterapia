@@ -8,7 +8,7 @@ from langchain_core.globals import set_llm_cache
 from langchain_core.documents import Document
 
 from backend.src.core.config.infrastructure import CHAT_CACHE_REDIS_URL, SEMANTIC_CACHE_THRESHOLD, CACHE_INDEX_NAME
-from backend.src.infra.embeddings import Embeddings
+from backend.src.infra.chat.embeddings import Embeddings
 
 # from redis import Redis
 
@@ -21,22 +21,30 @@ class ChatbotCachedMessage(TypedDict):
 
 
 class SemanticCache:
-    def __init__(self):
+    def __init__(
+        self,
+        redis_url: str = CHAT_CACHE_REDIS_URL,
+        index_name: str = CACHE_INDEX_NAME,
+        score_threshold: float = SEMANTIC_CACHE_THRESHOLD,
+    ):
+        self.redis_url = redis_url
+        self.score_threshold = score_threshold
+
         self.embeddings = Embeddings()
 
         self.store = Redis(
-            redis_url=CHAT_CACHE_REDIS_URL,
+            redis_url=redis_url,
             embedding=self.embeddings,
-            index_name=CACHE_INDEX_NAME,
+            index_name=index_name,
         )
 
     def setup_global_cache(self) -> None:
         """Initialize and set the global LLM cache."""
         try:
             semantic_cache = RedisSemanticCache(
-                redis_url=CHAT_CACHE_REDIS_URL,
+                redis_url=self.redis_url,
                 embedding=self.embeddings,
-                score_threshold=SEMANTIC_CACHE_THRESHOLD,
+                score_threshold=self.score_threshold,
             )
 
             set_llm_cache(semantic_cache)
@@ -46,7 +54,11 @@ class SemanticCache:
     def check_match(self, query: str) -> ChatbotCachedMessage | None:
         """Check for a cached response matching the query."""
         try:
-            match = self.store.similarity_search_limit_score(query, k=1, score_threshold=SEMANTIC_CACHE_THRESHOLD)
+            match = self.store.similarity_search_limit_score(
+                query,
+                k=1,
+                score_threshold=self.score_threshold,
+            )
             if not match:
                 return None
 
