@@ -1,7 +1,7 @@
 import logging
-from typing import List
+from typing import List, Any
 
-from pydantic import SecretStr
+from langchain_core.embeddings import Embeddings as BaseLangchainEmbeddings
 from langchain_openai import OpenAIEmbeddings
 
 from backend.src.core.config.infrastructure import (
@@ -10,15 +10,16 @@ from backend.src.core.config.infrastructure import (
     EMBEDDING_MODEL,
     OPENROUTER_API_KEY,
     OPENROUTER_BASE_URL,
+    RETRIES_PER_MODEL,
 )
 
 logger = logging.getLogger(__name__)
 
 
-class Embeddings(OpenAIEmbeddings):
+class Embeddings(BaseLangchainEmbeddings):
     """
-    A generic embeddings client that behaves like OpenAIEmbeddings
-    but gracefully falls back to a secondary client if the primary API fails.
+    Handles interactions with embedding models, supporting primary and fallback models,
+    and automatic retries.
     """
 
     def __init__(
@@ -26,56 +27,63 @@ class Embeddings(OpenAIEmbeddings):
         model: str = EMBEDDING_MODEL,
         fallback_model: str = EMBEDDING_FALLBACK_MODEL,
         dimensions: int = EMBEDDING_DIM,
-        **kwargs,
+        retries: int = RETRIES_PER_MODEL,
+        **kwargs: Any,
     ):
-        self.dimensions: int = dimensions
+        self.dimensions = dimensions
+        self._retries = retries
 
-        shared_kwargs = {
-            "api_key": OPENROUTER_API_KEY,
-            "base_url": OPENROUTER_BASE_URL,
-            "dimensions": dimensions,
-        }
+        self._clients = [
+            self._create_client(model, dimensions, **kwargs),
+            self._create_client(fallback_model, dimensions, **kwargs),
+        ]
 
-        super().__init__(
-            model=model,
+    def _create_client(self, model_name: str, dimensions: int, **kwargs: Any) -> OpenAIEmbeddings:
+        """Instantiates an OpenAIEmbeddings client for a specific model."""
+        return OpenAIEmbeddings(
+            model=model_name,
             dimensions=dimensions,
-            **shared_kwargs,
+            api_key=OPENROUTER_API_KEY,
+            base_url=OPENROUTER_BASE_URL,
             **kwargs,
         )
 
-        self._fallback_client = OpenAIEmbeddings(
-            model=fallback_model,
-            **shared_kwargs,
-            **kwargs,
-        )
+    async def _execute_with_fallbacks(self, is_query: bool, data: Any) -> List[Any]:
+        """Iterates through available models, returning the first successful response."""
+        for client in self._clients:
+            result = await self._execute_with_retries(client, is_query, data)
+            if result is not None:
+                return result
 
-    def __log_fallback(self, error: Exception, method_name: str) -> None:
-        logger.warning(f"Primary {method_name} failed with error: {error}. Falling back to secondary model.")
+            logger.warning(f"Exhausted all retries for model '{client.model}'. Moving to fallback.")
 
-    def embed_documents(self, texts: List[str]) -> List[List[float]]:
-        try:
-            return super().embed_documents(texts)
-        except Exception as e:
-            self.__log_fallback(e, "embed_documents")
-            return self._fallback_client.embed_documents(texts)
+        logger.error("All models failed to generate embeddings.")
+        raise RuntimeError("Retry attempts exhausted on all models.")
 
-    def embed_query(self, text: str) -> List[float]:
-        try:
-            return super().embed_query(text)
-        except Exception as e:
-            self.__log_fallback(e, "embed_query")
-            return self._fallback_client.embed_query(text)
+    async def _execute_with_retries(self, client: OpenAIEmbeddings, is_query: bool, data: Any) -> List[Any] | None:
+        """Attempts to generate embeddings with a specific model, retrying on failure."""
+        for attempt in range(1, self._retries + 1):
+            try:
+                if is_query:
+                    return await client.aembed_query(data)
+
+                return await client.aembed_documents(data)
+
+            except Exception as e:
+                logger.warning(f"Model '{client.model}' failed (Attempt {attempt}/{self._retries}). Error: {e}")
+
+        return None
 
     async def aembed_documents(self, texts: List[str]) -> List[List[float]]:
-        try:
-            return await super().aembed_documents(texts)
-        except Exception as e:
-            self.__log_fallback(e, "aembed_documents")
-            return await self._fallback_client.aembed_documents(texts)
+        """Generates embeddings for a list of documents."""
+        return await self._execute_with_fallbacks(is_query=False, data=texts)
 
     async def aembed_query(self, text: str) -> List[float]:
-        try:
-            return await super().aembed_query(text)
-        except Exception as e:
-            self.__log_fallback(e, "aembed_query")
-            return await self._fallback_client.aembed_query(text)
+        """Generates an embedding for a single query string."""
+        return await self._execute_with_fallbacks(is_query=True, data=text)
+
+    def embed_documents(self, texts: List[str]) -> List[List[float]]:
+        raise NotImplementedError("This class is async-only. Please use `aembed_documents`.")
+
+    def embed_query(self, text: str) -> List[float]:
+        raise NotImplementedError("This class is async-only. Please use `aembed_query`.")

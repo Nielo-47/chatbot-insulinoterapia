@@ -9,10 +9,9 @@ from backend.src.core.config.conversation import (
     RESPONSE_FALLBACK_MODEL,
     RESPONSE_MAX_TOKENS,
     RESPONSE_MODEL,
-    RESPONSE_RETRIES_PER_MODEL,
     RESPONSE_TEMPERATURE,
 )
-from backend.src.core.config.infrastructure import OPENROUTER_API_KEY, OPENROUTER_BASE_URL
+from backend.src.core.config.infrastructure import OPENROUTER_API_KEY, OPENROUTER_BASE_URL, RETRIES_PER_MODEL
 
 logger = logging.getLogger(__name__)
 T = TypeVar("T", bound=BaseModel)
@@ -30,7 +29,7 @@ class LLM:
         fallback_model: str = RESPONSE_FALLBACK_MODEL,
         temperature: float = RESPONSE_TEMPERATURE,
         max_tokens: int = RESPONSE_MAX_TOKENS,
-        retries: int = RESPONSE_RETRIES_PER_MODEL,
+        retries: int = RETRIES_PER_MODEL,
     ):
         self._temperature = temperature
         self._max_tokens = max_tokens
