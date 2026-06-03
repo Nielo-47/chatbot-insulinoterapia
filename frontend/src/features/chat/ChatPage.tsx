@@ -7,6 +7,7 @@ import type { ChatMessage } from '../../types/chat'
 import { Composer } from './components/Composer'
 import { MessageBubble } from './components/MessageBubble'
 import { SourceDrawer } from './components/SourceDrawer'
+import { env } from '../../lib/env'
 
 const initialMessage: ChatMessage = {
   id: 'welcome',
@@ -31,9 +32,10 @@ interface ChatPageProps {
   authStatus: AuthStatus
   onLogout: (reason?: 'manual' | 'expired' | 'deleted') => Promise<void>
   onDeleteAccount: () => Promise<void>
+  guestMode?: boolean
 }
 
-export function ChatPage({ username, backendStatus, authStatus, onLogout, onDeleteAccount }: ChatPageProps) {
+export function ChatPage({ username, backendStatus, authStatus, onLogout, onDeleteAccount, guestMode = false }: ChatPageProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([initialMessage])
   const [activeSourcesMessage, setActiveSourcesMessage] = useState<ChatMessage | null>(null)
   const [isSending, setIsSending] = useState(false)
@@ -60,6 +62,10 @@ export function ChatPage({ username, backendStatus, authStatus, onLogout, onDele
       } catch (error) {
         if (error instanceof ApiError && error.status === 401) {
           await onLogout('expired')
+          return
+        }
+
+        if (error instanceof ApiError && (error.status === 404 || error.status === 503)) {
           return
         }
 
@@ -188,7 +194,7 @@ export function ChatPage({ username, backendStatus, authStatus, onLogout, onDele
               <h1 className="font-serif text-2xl font-semibold text-slate-900 lg:text-3xl">
                 Chatbot de Insulinoterapia
                 <span className="ml-2 inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-amber-700">
-                  Teste Fechado
+                    {env.authEnabled ? 'Teste Fechado' : 'Teste Aberto'}
                 </span>
               </h1>
               <p className="mt-1 text-sm text-slate-600">Perguntas e respostas com suporte de base de conhecimento e referencias.</p>
@@ -227,15 +233,12 @@ export function ChatPage({ username, backendStatus, authStatus, onLogout, onDele
         </main>
 
         <aside className="space-y-4">
-          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-            <h2 className="mb-2 inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.06em] text-slate-700">
-              <BotMessageSquare className="h-4 w-4" />
-              Conta
-            </h2>
-            <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">
-              <span className="font-medium">{username}</span>
-            </div>
-            <div className="mt-3 space-y-2">
+          {guestMode ? (
+            <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+              <h2 className="mb-2 inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.06em] text-slate-700">
+                <BotMessageSquare className="h-4 w-4" />
+                Conversa
+              </h2>
               <button
                 type="button"
                 onClick={() => void handleClearConversation()}
@@ -245,35 +248,61 @@ export function ChatPage({ username, backendStatus, authStatus, onLogout, onDele
                 <RefreshCcw className="h-4 w-4" />
                 Limpar conversa
               </button>
-              <button
-                type="button"
-                onClick={() => void handleLogout()}
-                disabled={isLoggingOut}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-70"
-              >
-                <LogOut className="h-4 w-4" />
-                {isLoggingOut ? 'Saindo...' : 'Sair'}
-              </button>
-              <button
-                type="button"
-                onClick={() => void handleDeleteAccount()}
-                disabled={isDeletingAccount}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-rose-300 bg-white px-3 py-2 text-sm font-medium text-rose-700 transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-70"
-              >
-                {isDeletingAccount ? 'Excluindo...' : 'Excluir conta'}
-              </button>
+              {backendStatus === 'offline' && (
+                <p className="mt-3 rounded-xl border border-rose-200 bg-rose-50 p-2 text-xs text-rose-700">
+                  O backend esta indisponivel no momento.
+                </p>
+              )}
             </div>
-            {backendStatus === 'offline' && (
-              <p className="mt-3 rounded-xl border border-rose-200 bg-rose-50 p-2 text-xs text-rose-700">
-                O backend esta indisponivel no momento.
-              </p>
-            )}
-            {(authStatus === 'invalid' || authStatus === 'unknown') && (
-              <p className="mt-2 rounded-xl border border-amber-200 bg-amber-50 p-2 text-xs text-amber-800">
-                Sessao com status {authStatus === 'invalid' ? 'invalido' : 'indefinido'}.
-              </p>
-            )}
-          </div>
+          ) : (
+            <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+              <h2 className="mb-2 inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.06em] text-slate-700">
+                <BotMessageSquare className="h-4 w-4" />
+                Conta
+              </h2>
+              <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">
+                <span className="font-medium">{username}</span>
+              </div>
+              <div className="mt-3 space-y-2">
+                <button
+                  type="button"
+                  onClick={() => void handleClearConversation()}
+                  disabled={backendStatus === 'offline'}
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-70"
+                >
+                  <RefreshCcw className="h-4 w-4" />
+                  Limpar conversa
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void handleLogout()}
+                  disabled={isLoggingOut}
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-70"
+                >
+                  <LogOut className="h-4 w-4" />
+                  {isLoggingOut ? 'Saindo...' : 'Sair'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void handleDeleteAccount()}
+                  disabled={isDeletingAccount}
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-rose-300 bg-white px-3 py-2 text-sm font-medium text-rose-700 transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-70"
+                >
+                  {isDeletingAccount ? 'Excluindo...' : 'Excluir conta'}
+                </button>
+              </div>
+              {backendStatus === 'offline' && (
+                <p className="mt-3 rounded-xl border border-rose-200 bg-rose-50 p-2 text-xs text-rose-700">
+                  O backend esta indisponivel no momento.
+                </p>
+              )}
+              {(authStatus === 'invalid' || authStatus === 'unknown') && (
+                <p className="mt-2 rounded-xl border border-amber-200 bg-amber-50 p-2 text-xs text-amber-800">
+                  Sessao com status {authStatus === 'invalid' ? 'invalido' : 'indefinido'}.
+                </p>
+              )}
+            </div>
+          )}
 
           <SourceDrawer message={activeSourcesMessage} onClose={() => setActiveSourcesMessage(null)} />
         </aside>

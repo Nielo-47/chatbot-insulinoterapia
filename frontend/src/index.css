@@ -6,6 +6,7 @@
 
 :root {
   font-family: 'IBM Plex Sans', 'Segoe UI', sans-serif;
+  font-size: 18px;
   color: #0f172a;
   background-color: #f8fafc;
   text-rendering: optimizeLegibility;

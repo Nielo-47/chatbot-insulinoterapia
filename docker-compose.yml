@@ -47,7 +47,9 @@ services:
       - EMBEDDING_API_KEY=${OPENROUTER_API_KEY}
       - PYTHONPATH=/app
       - BOOTSTRAP_USERS=${BOOTSTRAP_USERS:-}
+      - RAW_DATA_MANIFEST_PATH=data/processed/raw_data_manifest.json
     volumes:
+      - ./data/raw:/app/data/raw:ro
       - ./data/processed:/app/data/processed
     ports:
       - "${BACKEND_PORT:-8000}:8000"
@@ -71,6 +73,7 @@ services:
       args:
         - VITE_API_URL=${VITE_API_URL:-/api}
         - VITE_REQUEST_TIMEOUT_MS=${VITE_REQUEST_TIMEOUT_MS:-60000}
+        - AUTH_ENABLED=${AUTH_ENABLED:-true}
     restart: unless-stopped
     env_file: .env
     ports:

@@ -2,11 +2,11 @@
 
 import logging
 import os
+import importlib
 import uuid
 from contextlib import asynccontextmanager
 from typing import List
 
-import nest_asyncio
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
@@ -26,18 +26,20 @@ from backend.src.api.schemas import (
     TokenResponse,
 )
 from backend.src.api.dependencies import (
-    build_auth_service,
     build_chatbot_service,
-    get_auth_service,
     get_chatbot_service,
 )
-from backend.src.application.features.auth import AuthenticationService
 from backend.src.application.features.auth.auth_service import AccountLockedException, RateLimitExceededException
 from backend.src.application.features.chat.chatbot_service import ChatbotService
 from backend.src.infrastructure.data.cache import init_semantic_cache
-from backend.src.config.security import JWT_SECRET_KEY
+from backend.src.config.security import AUTH_ENABLED, JWT_SECRET_KEY
 from backend.src.config.env import require
 from backend.src.infrastructure.data import initialize_database
+
+try:
+    nest_asyncio = importlib.import_module("nest_asyncio")
+except ImportError:  # pragma: no cover - optional runtime dependency
+    nest_asyncio = None
 
 
 # Rate limiter using client IP
@@ -51,7 +53,8 @@ def _parse_frontend_origins() -> List[str]:
 
 # Initialize
 try:
-    nest_asyncio.apply()
+    if nest_asyncio is not None:
+        nest_asyncio.apply()
 except ValueError as e:
     logging.getLogger(__name__).warning(
         "nest_asyncio could not patch the event loop (likely uvloop): %s. Continuing without nest_asyncio.",
@@ -65,6 +68,8 @@ logger = logging.getLogger(__name__)
 
 auth_scheme = HTTPBearer(auto_error=False)
 
+_GUEST_USERNAME = "Visitante"
+
 
 def _unauthorized(detail: str = "Nao autenticado") -> HTTPException:
     return HTTPException(
@@ -74,10 +79,24 @@ def _unauthorized(detail: str = "Nao autenticado") -> HTTPException:
     )
 
 
+def _guest_user_from_request(request: Request) -> AuthenticatedUser:
+    session_id = request.headers.get("X-Guest-Session-Id", "guest")
+    guest_uuid = uuid.uuid5(uuid.NAMESPACE_URL, session_id)
+    guest_id = (guest_uuid.int % 2_147_483_646) + 1
+    return AuthenticatedUser(id=guest_id, username=_GUEST_USERNAME)
+
+
 def get_current_user(
+    request: Request,
     credentials: HTTPAuthorizationCredentials | None = Depends(auth_scheme),
-    auth_service: AuthenticationService = Depends(get_auth_service),
 ) -> AuthenticatedUser:
+    if not AUTH_ENABLED:
+        return _guest_user_from_request(request)
+
+    auth_service = getattr(request.app.state, "auth_service", None)
+    if auth_service is None:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Autenticacao nao inicializada")
+
     if credentials is None or credentials.scheme.lower() != "bearer":
         raise _unauthorized()
 
@@ -98,6 +117,9 @@ def _validate_jwt_secret() -> None:
     In development (DEV=true) a warning is logged instead of raising, so
     local environments can start without a production-grade secret.
     """
+    if not AUTH_ENABLED:
+        return
+
     secret = JWT_SECRET_KEY
     is_dev = require("DEV").lower() in ("1", "true", "yes")
     weak = secret == _DEFAULT_JWT_SECRET or len(secret) < _MIN_JWT_SECRET_LENGTH
@@ -125,7 +147,10 @@ async def lifespan(app: FastAPI):
     init_semantic_cache()
     logger.info("Semantic cache initialized")
     app.state.chatbot = await build_chatbot_service()
-    app.state.auth_service = build_auth_service()
+    if AUTH_ENABLED:
+        from backend.src.api.dependencies import build_auth_service
+
+        app.state.auth_service = build_auth_service()
     logger.info("Chatbot initialized successfully")
     yield
     logger.info("Shutting down chatbot...")
@@ -140,7 +165,7 @@ app = FastAPI(
 
 # Add rate limiter
 app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore[arg-type]
 
 
 def _raise_api_error(exc: Exception, user_message: str) -> None:
@@ -165,7 +190,14 @@ app.add_middleware(
 
 @app.post("/auth/login", response_model=TokenResponse)
 @limiter.limit("5/minute")  # Rate limit: 5 login attempts per minute per IP
-def login(request: Request, login_request: LoginRequest, auth_service: AuthenticationService = Depends(get_auth_service)):
+def login(request: Request, login_request: LoginRequest):
+    if not AUTH_ENABLED:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Autenticacao desabilitada")
+
+    auth_service = getattr(request.app.state, "auth_service", None)
+    if auth_service is None:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Autenticacao nao inicializada")
+
     # Get client IP for rate limiting
     client_ip = request.client.host if request.client else None
     
@@ -202,9 +234,15 @@ def read_current_user(current_user: AuthenticatedUser = Depends(get_current_user
 def logout(
     request: Request,
     current_user: AuthenticatedUser = Depends(get_current_user),
-    auth_service: AuthenticationService = Depends(get_auth_service),
 ):
     """Logout the current user by blacklisting their token."""
+    if not AUTH_ENABLED:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Autenticacao desabilitada")
+
+    auth_service = getattr(request.app.state, "auth_service", None)
+    if auth_service is None:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Autenticacao nao inicializada")
+
     # Get the token from the Authorization header
     auth_header = request.headers.get("Authorization", "")
     if auth_header.lower().startswith("bearer "):
@@ -216,9 +254,16 @@ def logout(
 
 @app.delete("/auth/me")
 def delete_current_user(
+    request: Request,
     current_user: AuthenticatedUser = Depends(get_current_user),
-    auth_service: AuthenticationService = Depends(get_auth_service),
 ):
+    if not AUTH_ENABLED:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Autenticacao desabilitada")
+
+    auth_service = getattr(request.app.state, "auth_service", None)
+    if auth_service is None:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Autenticacao nao inicializada")
+
     deleted = auth_service.delete_user(current_user.id)
     if not deleted:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuario nao encontrado")

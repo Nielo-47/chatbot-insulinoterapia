@@ -1,11 +1,18 @@
 from .env import require, require_int, get_int, get_str
 
+AUTH_ENABLED = get_str("AUTH_ENABLED", "true").lower() in ("1", "true", "yes")
+
 AUTH_PASSWORD_ITERATIONS = get_int("AUTH_PASSWORD_ITERATIONS", 240000)  # OWASP recommended
 AUTH_PASSWORD_SALT_BYTES = get_int("AUTH_PASSWORD_SALT_BYTES", 16)
 
-JWT_SECRET_KEY = require("JWT_SECRET_KEY")
-JWT_ALGORITHM = require("JWT_ALGORITHM")
-JWT_ACCESS_TOKEN_EXPIRE_MINUTES = require_int("JWT_ACCESS_TOKEN_EXPIRE_MINUTES")
+if AUTH_ENABLED:
+	JWT_SECRET_KEY = require("JWT_SECRET_KEY")
+	JWT_ALGORITHM = require("JWT_ALGORITHM")
+	JWT_ACCESS_TOKEN_EXPIRE_MINUTES = require_int("JWT_ACCESS_TOKEN_EXPIRE_MINUTES")
+else:
+	JWT_SECRET_KEY = get_str("JWT_SECRET_KEY", "guest-mode-disabled")
+	JWT_ALGORITHM = get_str("JWT_ALGORITHM", "HS256")
+	JWT_ACCESS_TOKEN_EXPIRE_MINUTES = get_int("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", 60)
 
 # Rate limiting configuration
 LOGIN_RATE_LIMIT = get_str("LOGIN_RATE_LIMIT", "5/minute")  # per IP

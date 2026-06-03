@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 
 import { ApiError, clearAuthSession, deleteAccount, getCurrentUser, login as loginRequest, checkHealth } from '../lib/api'
 import { authStorage } from '../lib/auth'
+import { env } from '../lib/env'
 import { ChatPage } from '../features/chat/ChatPage'
 import { LoginPage } from '../features/auth/LoginPage'
 import type { AuthStatus, BackendStatus } from '../types/app'
@@ -21,6 +22,10 @@ function App() {
 
   useEffect(() => {
     void (async () => {
+      if (!env.authEnabled) {
+        authStorage.clearToken()
+      }
+
       const token = authStorage.getToken()
       let backendOnline = false
 
@@ -30,6 +35,12 @@ function App() {
         setBackendStatus('online')
       } catch {
         setBackendStatus('offline')
+      }
+
+      if (!env.authEnabled) {
+        setAuthStatus('authenticated')
+        setIsBootstrapping(false)
+        return
       }
 
       if (!token) {
@@ -99,6 +110,19 @@ function App() {
   }
 
   if (!currentUser) {
+    if (!env.authEnabled) {
+      return (
+        <ChatPage
+          username="Visitante"
+          backendStatus={backendStatus}
+          authStatus="authenticated"
+          onLogout={handleLogout}
+          onDeleteAccount={handleDeleteAccount}
+          guestMode
+        />
+      )
+    }
+
     return (
       <LoginPage
         onLogin={handleLogin}
@@ -117,6 +141,7 @@ function App() {
       authStatus={authStatus}
       onLogout={handleLogout}
       onDeleteAccount={handleDeleteAccount}
+      guestMode={!env.authEnabled}
     />
   )
 }

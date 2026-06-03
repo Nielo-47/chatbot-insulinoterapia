@@ -13,6 +13,7 @@ from backend.src.config.conversation import (
     SUMMARIZER_MAX_TOKENS,
     SUMMARIZER_TEMPERATURE,
 )
+from backend.src.config.security import AUTH_ENABLED
 from backend.src.config.prompts import SUMMARY_PROMPT, SYSTEM_PROMPT
 
 
@@ -33,6 +34,8 @@ class ConversationService:
     def _resolve_conversation_id(self, user_id: int, create_if_missing: bool) -> Optional[int]:
         if user_id is None:
             return None
+        if not AUTH_ENABLED:
+            return user_id
         if create_if_missing:
             return self.conversations_repository.get_or_create_conversation_id(user_id)
         return self.conversations_repository.get_conversation_id_by_user(user_id)
@@ -77,7 +80,8 @@ class ConversationService:
             content=clean_content,
             sources=sources,
         )
-        self.conversations_repository.touch_conversation(conversation_id=conversation_id)
+        if AUTH_ENABLED:
+            self.conversations_repository.touch_conversation(conversation_id=conversation_id)
 
     def count_messages(self, user_id: int) -> int:
         if user_id is None:
@@ -98,7 +102,8 @@ class ConversationService:
             return False
 
         self.messages_repository.clear_conversation(conversation_id=conversation_id)
-        self.conversations_repository.touch_conversation(conversation_id=conversation_id)
+        if AUTH_ENABLED:
+            self.conversations_repository.touch_conversation(conversation_id=conversation_id)
         return True
 
     def delete_user(self, user_id: int) -> bool:
@@ -125,7 +130,8 @@ class ConversationService:
             role="assistant",
             content=clean_summary,
         )
-        self.conversations_repository.touch_conversation(conversation_id=conversation_id)
+        if AUTH_ENABLED:
+            self.conversations_repository.touch_conversation(conversation_id=conversation_id)
 
     def store_summary(self, user_id: int, summary: str) -> None:
         """Store summary in DB without clearing messages - preserves conversation history."""
@@ -140,6 +146,9 @@ class ConversationService:
         if conversation_id is None:
             return
 
+        if not AUTH_ENABLED:
+            return
+
         self.conversations_repository.update_summary(conversation_id, clean_summary)
         logging.getLogger(__name__).info("User %s summary stored (messages preserved)", user_id)
 
@@ -150,6 +159,9 @@ class ConversationService:
 
         conversation_id = self._resolve_conversation_id(user_id=user_id, create_if_missing=False)
         if conversation_id is None:
+            return None
+
+        if not AUTH_ENABLED:
             return None
 
         return self.conversations_repository.get_summary(conversation_id)

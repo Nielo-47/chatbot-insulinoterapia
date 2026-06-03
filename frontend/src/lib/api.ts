@@ -66,7 +66,11 @@ async function request<T>(
   const headers = new Headers(init.headers)
   headers.set('Content-Type', 'application/json')
 
-  if (!options?.skipAuth && token) {
+  if (!env.authEnabled) {
+    headers.set('X-Guest-Session-Id', authStorage.getGuestSessionId())
+  }
+
+  if (env.authEnabled && !options?.skipAuth && token) {
     headers.set('Authorization', `Bearer ${token}`)
   }
 
