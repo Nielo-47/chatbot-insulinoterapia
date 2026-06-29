@@ -7,12 +7,15 @@ import uuid
 from contextlib import asynccontextmanager
 from typing import List
 
+import json
+
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from backend.src.api.schemas import (
@@ -328,6 +331,53 @@ async def query_chatbot(
 
     except Exception as e:
         logger.error(f"Error processing query: {type(e).__name__}: {e}")
+        _raise_api_error(e, "Erro ao processar consulta")
+
+
+@app.post("/query/stream")
+async def query_chatbot_stream(
+    request: QueryRequest,
+    current_user: AuthenticatedUser = Depends(get_current_user),
+    chatbot: ChatbotService = Depends(get_chatbot_service),
+):
+    """Query the chatbot with streaming response via SSE."""
+    try:
+        session_id = request.session_id or str(uuid.uuid4())
+
+        logger.info(f"Streaming query for user {current_user.id} / session {session_id}: {request.query[:50]}...")
+
+        async def event_generator():
+            async for event in chatbot.chat_stream(
+                request.query,
+                user_id=current_user.id,
+                session_id=session_id,
+            ):
+                event_type = event.get("type", "")
+                if event_type == "stage":
+                    yield f"event: stage\ndata: {json.dumps({'stage': event['stage']})}\n\n"
+                elif event_type == "token":
+                    yield f"event: token\ndata: {json.dumps({'token': event['token']})}\n\n"
+                elif event_type == "done":
+                    yield f"event: done\ndata: {json.dumps({
+                        'response': event['response'],
+                        'sources': event['sources'],
+                        'summarized': event['summarized'],
+                        'session_id': event['session_id'],
+                    })}\n\n"
+                    return
+
+        return StreamingResponse(
+            event_generator(),
+            media_type="text/event-stream",
+            headers={
+                "Cache-Control": "no-cache",
+                "Connection": "keep-alive",
+                "X-Accel-Buffering": "no",
+            },
+        )
+
+    except Exception as e:
+        logger.error(f"Error processing streaming query: {type(e).__name__}: {e}")
         _raise_api_error(e, "Erro ao processar consulta")
 
 

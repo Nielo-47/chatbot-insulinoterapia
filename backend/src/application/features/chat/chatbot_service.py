@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, AsyncGenerator, Dict, List, Optional
 
 from backend.src.application.features.chat.conversation_service import ConversationService
 from backend.src.application.features.chat.query_processor import QueryProcessor, QueryMode
@@ -39,3 +39,20 @@ class ChatbotService:
             session_id=session_id,
             **query_params,
         )
+
+    async def chat_stream(
+        self,
+        query: str,
+        user_id: int,
+        mode: QueryMode = "hybrid",
+        session_id: Optional[str] = None,
+        **query_params,
+    ) -> AsyncGenerator[Dict[str, Any], None]:
+        async for event in self._query.query_stream(
+            query=query,
+            user_id=user_id,
+            mode=mode,
+            session_id=session_id,
+            **query_params,
+        ):
+            yield event

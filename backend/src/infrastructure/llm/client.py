@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from typing import Dict, List, Optional
+from typing import AsyncGenerator, Dict, List, Optional
 
 from openai import APITimeoutError, APIConnectionError, APIStatusError, AsyncOpenAI, RateLimitError
 from openai.types.chat import (
@@ -54,11 +54,7 @@ class LLMClient:
     ) -> str:
         client = AsyncOpenAI(api_key=self._api_key, base_url=self._base_url, timeout=LLM_TIMEOUT_SECONDS)
 
-        extra_headers = {}
-        if OPENROUTER_HTTP_REFERER:
-            extra_headers["HTTP-Referer"] = OPENROUTER_HTTP_REFERER
-        if OPENROUTER_SITE_TITLE:
-            extra_headers["X-Title"] = OPENROUTER_SITE_TITLE
+        extra_headers = self._build_extra_headers()
 
         response = await client.chat.completions.create(
             model=model,
@@ -73,6 +69,44 @@ class LLMClient:
 
         res_content = response.choices[0].message.content or ""
         return str(res_content).strip()
+
+    async def _call_model_stream(
+        self,
+        *,
+        model: str,
+        messages: List[ChatCompletionMessageParam],
+        temperature: float,
+        max_tokens: int,
+    ) -> AsyncGenerator[str, None]:
+        client = AsyncOpenAI(api_key=self._api_key, base_url=self._base_url, timeout=LLM_TIMEOUT_SECONDS)
+
+        extra_headers = self._build_extra_headers()
+
+        stream = await client.chat.completions.create(
+            model=model,
+            messages=messages,
+            temperature=temperature,
+            max_tokens=max_tokens,
+            extra_headers=extra_headers if extra_headers else None,
+            extra_body={
+                "repetition_penalty": 1.05,
+            },
+            stream=True,
+        )
+
+        async for chunk in stream:
+            delta = chunk.choices[0].delta.content or ""
+            if delta:
+                yield delta
+
+    @staticmethod
+    def _build_extra_headers() -> dict:
+        extra_headers = {}
+        if OPENROUTER_HTTP_REFERER:
+            extra_headers["HTTP-Referer"] = OPENROUTER_HTTP_REFERER
+        if OPENROUTER_SITE_TITLE:
+            extra_headers["X-Title"] = OPENROUTER_SITE_TITLE
+        return extra_headers
 
     async def _complete_with_model_retries(
         self,
@@ -119,31 +153,7 @@ class LLMClient:
         temperature: float = DEFAULT_TEMPERATURE,
         max_tokens: int = DEFAULT_MAX_TOKENS,
     ) -> str:
-        messages: List[ChatCompletionMessageParam] = []
-        if system_prompt:
-            system_message: ChatCompletionSystemMessageParam = {"role": "system", "content": system_prompt}
-            messages.append(system_message)
-
-        if history_messages:
-            for msg in history_messages:
-                content = str(msg.get("content", "")).strip()
-                if content:
-                    if msg.get("role") == "assistant":
-                        assistant_message: ChatCompletionAssistantMessageParam = {
-                            "role": "assistant",
-                            "content": content,
-                        }
-                        messages.append(assistant_message)
-                    elif msg.get("role") == "system":
-                        system_message = {"role": "system", "content": content}
-                        messages.append(system_message)
-                    else:
-                        user_message: ChatCompletionUserMessageParam = {"role": "user", "content": content}
-                        messages.append(user_message)
-
-        user_content = str(prompt).strip() if prompt else "Olá"
-        user_message: ChatCompletionUserMessageParam = {"role": "user", "content": user_content}
-        messages.append(user_message)
+        messages = self._build_messages(prompt, system_prompt, history_messages)
 
         try:
             primary_response = await self._complete_with_model_retries(
@@ -174,3 +184,115 @@ class LLMClient:
             logger.exception("Erro na chamada ao OpenRouter: %s", e)
 
         return "Tive um problema técnico. Por favor, tente perguntar de outra forma."
+
+    async def _complete_with_model_retries_stream(
+        self,
+        *,
+        model: str,
+        messages: List[ChatCompletionMessageParam],
+        temperature: float,
+        max_tokens: int,
+        retry_attempts: int,
+    ) -> AsyncGenerator[str, None]:
+        for attempt in range(retry_attempts + 1):
+            try:
+                logger.debug(
+                    "Streaming call OpenRouter model=%s attempt=%d/%d",
+                    model,
+                    attempt + 1,
+                    retry_attempts + 1,
+                )
+                async for token in self._call_model_stream(
+                    model=model,
+                    messages=messages,
+                    temperature=temperature,
+                    max_tokens=max_tokens,
+                ):
+                    yield token
+                return
+            except Exception as error:
+                logger.warning(
+                    "OpenRouter model %s stream failed on attempt %d/%d: %s: %s",
+                    model,
+                    attempt + 1,
+                    retry_attempts + 1,
+                    type(error).__name__,
+                    error,
+                )
+                if attempt < retry_attempts and self._is_retryable_error(error):
+                    await asyncio.sleep(2**attempt)
+                    continue
+                return
+
+    async def complete_stream(
+        self,
+        prompt: str,
+        system_prompt: Optional[str] = None,
+        history_messages: Optional[List[Dict[str, str]]] = None,
+        temperature: float = DEFAULT_TEMPERATURE,
+        max_tokens: int = DEFAULT_MAX_TOKENS,
+    ) -> AsyncGenerator[str, None]:
+        messages: List[ChatCompletionMessageParam] = self._build_messages(prompt, system_prompt, history_messages)
+
+        tokens_yielded = 0
+        try:
+            async for token in self._complete_with_model_retries_stream(
+                model=LLM_MODEL,
+                messages=messages,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                retry_attempts=LLM_PRIMARY_RETRIES,
+            ):
+                yield token
+                tokens_yielded += 1
+
+            if tokens_yielded > 0:
+                return
+
+            logger.warning("Primary model %s stream yielded no tokens; trying fallback %s", LLM_MODEL, LLM_FALLBACK_MODEL)
+
+            async for token in self._complete_with_model_retries_stream(
+                model=LLM_FALLBACK_MODEL,
+                messages=messages,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                retry_attempts=0,
+            ):
+                yield token
+
+        except Exception as e:
+            logger.exception("Erro na chamada stream ao OpenRouter: %s", e)
+
+    def _build_messages(
+        self,
+        prompt: str,
+        system_prompt: Optional[str] = None,
+        history_messages: Optional[List[Dict[str, str]]] = None,
+    ) -> List[ChatCompletionMessageParam]:
+        messages: List[ChatCompletionMessageParam] = []
+        if system_prompt:
+            system_message: ChatCompletionSystemMessageParam = {"role": "system", "content": system_prompt}
+            messages.append(system_message)
+
+        if history_messages:
+            for msg in history_messages:
+                content = str(msg.get("content", "")).strip()
+                if content:
+                    if msg.get("role") == "assistant":
+                        assistant_message: ChatCompletionAssistantMessageParam = {
+                            "role": "assistant",
+                            "content": content,
+                        }
+                        messages.append(assistant_message)
+                    elif msg.get("role") == "system":
+                        system_message = {"role": "system", "content": content}
+                        messages.append(system_message)
+                    else:
+                        user_message: ChatCompletionUserMessageParam = {"role": "user", "content": content}
+                        messages.append(user_message)
+
+        user_content = str(prompt).strip() if prompt else "Olá"
+        user_message: ChatCompletionUserMessageParam = {"role": "user", "content": user_content}
+        messages.append(user_message)
+
+        return messages

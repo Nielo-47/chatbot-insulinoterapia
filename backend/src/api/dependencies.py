@@ -27,7 +27,7 @@ async def build_chatbot_service() -> ChatbotService:
         messages_repository=MessagesRepository(),
         summary_call_llm=llm_client.complete,
     )
-    query_processor = QueryProcessor(rag_runtime, conversation_service, llm_client.complete)
+    query_processor = QueryProcessor(rag_runtime, conversation_service, llm_client.complete, call_llm_stream=llm_client.complete_stream)
 
     return ChatbotService(conversation_service=conversation_service, query_processor=query_processor)
 

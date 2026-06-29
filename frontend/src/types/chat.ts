@@ -33,3 +33,32 @@ export interface ConversationHistoryMessage {
   content: string
   sources: ChatSource[]
 }
+
+export type StreamStage =
+  | 'retrieving'
+  | 'generating'
+  | 'critiquing'
+  | 'refining'
+  | 'persisting'
+  | 'summarizing'
+  | 'done'
+
+export interface StreamStageEvent {
+  stage: StreamStage
+}
+
+export interface StreamTokenEvent {
+  token: string
+}
+
+export interface StreamDoneEvent {
+  response: string
+  sources: ChatSource[]
+  summarized: boolean
+  session_id: string
+}
+
+export type StreamEvent =
+  | { type: 'stage'; data: StreamStageEvent }
+  | { type: 'token'; data: StreamTokenEvent }
+  | { type: 'done'; data: StreamDoneEvent }

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { BotMessageSquare, LogOut, RefreshCcw } from 'lucide-react'
 
-import { ApiError, clearConversation, getConversationHistory, sendQuery } from '../../lib/api'
+import { ApiError, clearConversation, getConversationHistory, sendQueryStream } from '../../lib/api'
 import type { AuthStatus, BackendStatus } from '../../types/app'
 import type { ChatMessage } from '../../types/chat'
 import { Composer } from './components/Composer'
@@ -39,6 +39,7 @@ export function ChatPage({ username, backendStatus, authStatus, onLogout, onDele
   const [messages, setMessages] = useState<ChatMessage[]>([initialMessage])
   const [activeSourcesMessage, setActiveSourcesMessage] = useState<ChatMessage | null>(null)
   const [isSending, setIsSending] = useState(false)
+  const [streamingStage, setStreamingStage] = useState<string | null>(null)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const [isDeletingAccount, setIsDeletingAccount] = useState(false)
   const [localError, setLocalError] = useState<string | null>(null)
@@ -104,21 +105,32 @@ export function ChatPage({ username, backendStatus, authStatus, onLogout, onDele
 
     setMessages((current) => [...current, userMessage])
     setIsSending(true)
+    setStreamingStage('starting')
     setLocalError(null)
 
-    try {
-      const result = await sendQuery({ query: value })
-      const assistantMessage: ChatMessage = {
-        role: 'assistant',
-        content: result.response,
-        createdAt: new Date().toISOString(),
-        sources: normalizeSources(result.sources),
-        summarized: result.summarized,
-      }
+    // Only create the assistant message after critique/refinement is complete
+    let hasDisplayedMessage = false
 
-      setMessages((current) => [...current, assistantMessage])
-      if (result.summarized) {
-        console.log('[DEBUG] Conversation history was compressed by the backend')
+    try {
+      const eventStream = await sendQueryStream({ query: value })
+
+      for await (const event of eventStream) {
+        if (event.type === 'stage') {
+          setStreamingStage(event.data.stage)
+        } else if (event.type === 'done') {
+          const finalMessage: ChatMessage = {
+            role: 'assistant',
+            content: event.data.response,
+            createdAt: new Date().toISOString(),
+            sources: normalizeSources(event.data.sources),
+            summarized: event.data.summarized,
+          }
+          setMessages((current) => [...current, finalMessage])
+          hasDisplayedMessage = true
+          if (event.data.summarized) {
+            console.log('[DEBUG] Conversation history was compressed by the backend')
+          }
+        }
       }
     } catch (error) {
       if (error instanceof ApiError && error.status === 401) {
@@ -126,15 +138,18 @@ export function ChatPage({ username, backendStatus, authStatus, onLogout, onDele
         return
       }
 
-      const errorMessage: ChatMessage = {
-        role: 'assistant',
-        content: error instanceof Error ? error.message : 'Erro inesperado na consulta.',
-        createdAt: new Date().toISOString(),
-        isError: true,
+      if (!hasDisplayedMessage) {
+        const errorMessage: ChatMessage = {
+          role: 'assistant',
+          content: error instanceof Error ? error.message : 'Erro inesperado na consulta.',
+          createdAt: new Date().toISOString(),
+          isError: true,
+        }
+        setMessages((current) => [...current, errorMessage])
       }
-      setMessages((current) => [...current, errorMessage])
     } finally {
       setIsSending(false)
+      setStreamingStage(null)
     }
   }
 
@@ -221,7 +236,14 @@ export function ChatPage({ username, backendStatus, authStatus, onLogout, onDele
 
             {isSending && (
               <article className="mr-auto max-w-md rounded-2xl border border-cyan-200 bg-cyan-50 p-4 text-sm text-cyan-800">
-                Processando resposta...
+                {streamingStage === 'loading_history' && 'Carregando historico...'}
+                {streamingStage === 'retrieving' && 'Consultando base de conhecimento...'}
+                {streamingStage === 'generating' && 'Gerando resposta...'}
+                {streamingStage === 'critiquing' && 'Analisando resposta...'}
+                {streamingStage === 'refining' && 'Refinando resposta...'}
+                {streamingStage === 'persisting' && 'Salvando conversa...'}
+                {streamingStage === 'summarizing' && 'Resumindo conversa...'}
+                {streamingStage === 'starting' && 'Processando...'}
               </article>
             )}
             <div ref={messagesEndRef} aria-hidden="true" />

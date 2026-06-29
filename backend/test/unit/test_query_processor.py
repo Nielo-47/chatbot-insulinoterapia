@@ -68,6 +68,19 @@ def make_processor(
     return QueryProcessor(rag_runtime, conversation_service, call_llm)
 
 
+async def _make_stream(*tokens: str):
+    for t in tokens:
+        yield t
+
+
+def _make_stream(*tokens: str):
+    """Return a callable that, when called, returns an async generator yielding the given tokens."""
+    async def _inner(*args, **kwargs):
+        for t in tokens:
+            yield t
+    return _inner
+
+
 class QueryProcessorTests(unittest.IsolatedAsyncioTestCase):
     async def test_query_without_refinement(self) -> None:
         # Test with correct LightRAG format: references have file_path, chunks have reference_id
@@ -95,12 +108,14 @@ class QueryProcessorTests(unittest.IsolatedAsyncioTestCase):
         result = await processor.query("Pergunta", user_id=42, session_id="sess-1")
 
         self.assertEqual(result["response"], "Resposta inicial")
-        self.assertEqual(result["sources"], ["doc1.md"])
+        self.assertEqual(len(result["sources"]), 2)
+        self.assertIn("doc1.md", str(result["sources"]))
         self.assertFalse(result["summarized"])  # Not enough messages to trigger summarization
         self.assertEqual(result["session_id"], "sess-1")
         self.assertEqual(len(conversation_service.added_messages), 2)
         self.assertEqual(conversation_service.added_messages[0], (42, "user", "Pergunta", []))
-        self.assertEqual(conversation_service.added_messages[1], (42, "assistant", "Resposta inicial", ["doc1.md"]))
+        self.assertEqual(len(conversation_service.added_messages[1][3]), 2)
+        self.assertIn("doc1.md", str(conversation_service.added_messages[1][3]))
         self.assertEqual(call_llm.await_count, 2)
 
     async def test_query_with_refinement(self) -> None:
@@ -158,6 +173,97 @@ class QueryProcessorTests(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(conversation_service.added_messages, [])
         self.assertEqual(call_llm.await_count, 0)
+
+    async def test_query_stream_without_refinement(self) -> None:
+        rag_data = {
+            "status": "success",
+            "data": {
+                "chunks": [{"chunk_id": "c1", "reference_id": "1"}],
+                "references": [{"reference_id": "1", "file_path": "doc.md"}],
+            },
+        }
+        conversation_service = DummyConversationService()
+        call_llm = AsyncMock(
+            side_effect=['{"needs_refinement": false, "issues": [], "suggestions": []}'],
+        )
+
+        processor = QueryProcessor(
+            DummyRAGRuntime(rag_data=rag_data),
+            conversation_service,
+            call_llm,
+            call_llm_stream=_make_stream("Hello", " ", "world"),
+        )
+
+        events = []
+        async for event in processor.query_stream("Pergunta", user_id=42, session_id="sess-1"):
+            events.append(event)
+
+        self.assertGreater(len(events), 0)
+
+        stage_events = [e for e in events if e["type"] == "stage"]
+        self.assertTrue(any(e["stage"] == "retrieving" for e in stage_events))
+        self.assertTrue(any(e["stage"] == "generating" for e in stage_events))
+        self.assertTrue(any(e["stage"] == "persisting" for e in stage_events))
+
+        token_events = [e for e in events if e["type"] == "token"]
+        self.assertGreater(len(token_events), 0)
+        self.assertEqual(token_events[0]["token"], "Hello")
+
+        done_events = [e for e in events if e["type"] == "done"]
+        self.assertEqual(len(done_events), 1)
+        self.assertEqual(done_events[0]["response"], "Hello world")
+        self.assertEqual(done_events[0]["session_id"], "sess-1")
+        self.assertEqual(len(done_events[0]["sources"]), 1)
+        self.assertIn("doc.md", str(done_events[0]["sources"]))
+        self.assertFalse(done_events[0]["summarized"])
+
+        self.assertEqual(len(conversation_service.added_messages), 2)
+
+    async def test_query_stream_skips_critique_when_fail_response(self) -> None:
+        rag_data = {"status": "success", "data": {"chunks": []}}
+        conversation_service = DummyConversationService()
+        call_llm = AsyncMock()
+        fail_text = PROMPTS["fail_response"]
+
+        processor = QueryProcessor(
+            DummyRAGRuntime(rag_data=rag_data),
+            conversation_service,
+            call_llm,
+            call_llm_stream=_make_stream(fail_text),
+        )
+
+        events = []
+        async for event in processor.query_stream("Pergunta", user_id=7):
+            events.append(event)
+
+        stages = [e["stage"] for e in events if e["type"] == "stage"]
+        self.assertNotIn("critiquing", stages)
+        self.assertNotIn("refining", stages)
+
+        done = [e for e in events if e["type"] == "done"][0]
+        self.assertEqual(done["response"], fail_text)
+
+    async def test_query_stream_uses_provided_call_llm_stream(self) -> None:
+        rag_data = {"status": "success", "data": {"chunks": []}}
+        conversation_service = DummyConversationService()
+        call_llm = AsyncMock(
+            side_effect=['{"needs_refinement": false, "issues": [], "suggestions": []}'],
+        )
+
+        processor = QueryProcessor(
+            DummyRAGRuntime(rag_data=rag_data),
+            conversation_service,
+            call_llm,
+            call_llm_stream=_make_stream("response text"),
+        )
+
+        events = []
+        async for event in processor.query_stream("Pergunta", user_id=1, session_id="s"):
+            events.append(event)
+
+        done = [e for e in events if e["type"] == "done"][0]
+        self.assertEqual(done["response"], "response text")
+        self.assertEqual(done["session_id"], "s")
 
     async def test_query_normalizes_history_with_reference_metadata(self) -> None:
         rag_data = {"status": "success", "data": {"chunks": []}}

@@ -1,6 +1,6 @@
 import logging
 import uuid
-from typing import Any, Callable, Coroutine, Dict, List, Optional
+from typing import Any, AsyncGenerator, Callable, Coroutine, Dict, List, Optional
 
 from langchain_core.runnables import RunnableConfig
 from backend.src.application.contracts.chat import ConversationServiceContract, QueryMode, RAGRuntimeContract
@@ -38,10 +38,12 @@ class QueryProcessor:
         rag_runtime: RAGRuntimeContract,
         conversation_service: ConversationServiceContract,
         call_llm: Callable[..., Coroutine[Any, Any, str]],
+        call_llm_stream: Optional[Callable[..., AsyncGenerator[str, None]]] = None,
     ):
         self._rag_runtime = rag_runtime
         self._conversation_service = conversation_service
         self._call_llm = call_llm
+        self._call_llm_stream = call_llm_stream or self._noop_stream
         self._critique_svc = CritiqueService(call_llm)
         self._summarizer = SummarizationService(conversation_service, call_llm)
         self._checkpointer = create_postgres_checkpointer()
@@ -238,6 +240,128 @@ class QueryProcessor:
             "sources": data.get("sources", []),
             "summarized": data.get("was_summarized", False),
             "session_id": data.get("session_id", session_label),
+        }
+
+    # ------------------------------------------------------------------ #
+    # Streaming public API                                                #
+    # ------------------------------------------------------------------ #
+
+    @staticmethod
+    async def _noop_stream(*args, **kwargs) -> AsyncGenerator[str, None]:
+        if False:
+            yield  # pragma: no cover
+
+    async def query_stream(
+        self,
+        query: str,
+        user_id: int,
+        mode: QueryMode = "hybrid",
+        session_id: Optional[str] = None,
+        **query_params,
+    ) -> AsyncGenerator[Dict[str, Any], None]:
+        if user_id is None:
+            raise ValueError("user_id e obrigatorio")
+
+        logger.info("Streaming query (mode=%s): %.100s", mode, query)
+        session_label = session_id or str(uuid.uuid4())
+
+        # -- load history --
+        yield {"type": "stage", "stage": "loading_history"}
+        history = _normalize_history(self._conversation_service.get_conversation(user_id))
+        stored_summary = self._conversation_service.get_summary(user_id)
+        if stored_summary:
+            history.insert(0, {"role": "system", "content": f"[Summary of previous conversation]: {stored_summary}"})
+        rag_history = list(history)
+
+        # -- retrieve RAG --
+        yield {"type": "stage", "stage": "retrieving"}
+        try:
+            params = query_params
+            result = await self._rag_runtime.query_data(
+                query=query,
+                mode=mode,
+                conversation_history=rag_history,
+                system_prompt=params.get("system_prompt", SYSTEM_PROMPT),
+                max_total_tokens=params.get("max_total_tokens", 12_000),
+                top_k=params.get("top_k", 10),
+            )
+        except Exception:
+            logger.exception("RAG retrieval failed in stream")
+            raise
+
+        if isinstance(result, dict) and "rag_data" in result:
+            rag_data = result["rag_data"]
+            sources = result.get("sources", [])
+        else:
+            rag_data = result
+            sources = []
+
+        # -- generate initial (streamed) --
+        yield {"type": "stage", "stage": "generating"}
+        full_response_parts: List[str] = []
+        system_prompt = params.get("system_prompt", SYSTEM_PROMPT.format(context=rag_data))
+        async for token in self._call_llm_stream(
+            prompt=query,
+            system_prompt=system_prompt,
+            history_messages=history,
+        ):
+            full_response_parts.append(token)
+            yield {"type": "token", "token": token}
+
+        initial_response = "".join(full_response_parts)
+        logger.debug("Initial response generated via stream (%d chars)", len(initial_response))
+
+        # -- route: skip critique if fail response --
+        if initial_response == PROMPTS["fail_response"]:
+            logger.info("No relevant context — skipping critique")
+            final_response = initial_response
+        else:
+            # -- critique --
+            yield {"type": "stage", "stage": "critiquing"}
+            extended_history = [
+                *history,
+                {"role": "user", "content": query},
+                {"role": "assistant", "content": initial_response},
+            ]
+            critique = await self._critique_svc.critique_response(
+                original_query=query,
+                response=initial_response,
+                history_messages=extended_history,
+            )
+            if critique.get("issues"):
+                logger.warning("Critique issues: %s", ", ".join(critique["issues"]))
+
+            if critique.get("needs_refinement"):
+                # -- refine --
+                yield {"type": "stage", "stage": "refining"}
+                refinement_query = self._critique_svc.build_refinement_query(query, initial_response, critique)
+                refined = await self._call_llm(refinement_query, history_messages=history)
+                final_response = refined
+            else:
+                final_response = initial_response
+
+        # -- persist --
+        yield {"type": "stage", "stage": "persisting"}
+        self._conversation_service.add_message(user_id, "user", query)
+        self._conversation_service.add_message(
+            user_id, "assistant", final_response, sources=sources,
+        )
+
+        # -- summarize if needed --
+        was_summarized = False
+        if len(history) + 2 >= SUMMARIZE_MAX_MESSAGES:
+            yield {"type": "stage", "stage": "summarizing"}
+            summarization_result = await self._summarizer.summarize_and_trim(user_id, history)
+            if summarization_result:
+                was_summarized = summarization_result.get("was_summarized", False)
+
+        # -- done --
+        yield {
+            "type": "done",
+            "response": final_response,
+            "sources": sources,
+            "summarized": was_summarized,
+            "session_id": session_label,
         }
 
 

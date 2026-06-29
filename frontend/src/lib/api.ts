@@ -2,7 +2,7 @@ import { z } from 'zod'
 
 import { env } from './env'
 import { authStorage } from './auth'
-import type { ConversationHistoryMessage, QueryPayload, QueryResult } from '../types/chat'
+import type { ConversationHistoryMessage, QueryPayload, QueryResult, StreamEvent } from '../types/chat'
 
 export class ApiError extends Error {
   status: number
@@ -156,6 +156,96 @@ export async function getConversationHistory(): Promise<ConversationHistoryMessa
 
 export async function sendQuery(payload: QueryPayload): Promise<QueryResult> {
   return request('/query', { method: 'POST', body: JSON.stringify(payload) }, queryResultSchema)
+}
+
+function buildStreamHeaders(): Headers {
+  const headers = new Headers()
+  headers.set('Content-Type', 'application/json')
+  const token = authStorage.getToken()
+
+  if (!env.authEnabled) {
+    headers.set('X-Guest-Session-Id', authStorage.getGuestSessionId())
+  }
+
+  if (env.authEnabled && token) {
+    headers.set('Authorization', `Bearer ${token}`)
+  }
+
+  return headers
+}
+
+async function* parseSSEStream(response: Response): AsyncGenerator<StreamEvent> {
+  const reader = response.body?.getReader()
+  if (!reader) {
+    throw new Error('Response body is not readable')
+  }
+
+  const decoder = new TextDecoder()
+  let buffer = ''
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+
+      buffer += decoder.decode(value, { stream: true })
+
+      // Process complete SSE messages from buffer
+      const lines = buffer.split('\n')
+      buffer = lines.pop() || '' // Keep incomplete line in buffer
+
+      let currentEvent = ''
+      for (const line of lines) {
+        if (line.startsWith('event: ')) {
+          currentEvent = line.slice(7).trim()
+        } else if (line.startsWith('data: ')) {
+          const dataStr = line.slice(6)
+          try {
+            const data = JSON.parse(dataStr)
+            if (currentEvent === 'stage') {
+              yield { type: 'stage', data }
+            } else if (currentEvent === 'token') {
+              yield { type: 'token', data }
+            } else if (currentEvent === 'done') {
+              yield { type: 'done', data }
+            }
+          } catch {
+            // Skip malformed JSON
+          }
+          currentEvent = ''
+        }
+      }
+    }
+  } finally {
+    reader.releaseLock()
+  }
+}
+
+export async function sendQueryStream(
+  payload: QueryPayload,
+  signal?: AbortSignal,
+): Promise<AsyncGenerator<StreamEvent>> {
+  const response = await fetch(`${env.apiBaseUrl}/query/stream`, {
+    method: 'POST',
+    headers: buildStreamHeaders(),
+    body: JSON.stringify(payload),
+    signal,
+  })
+
+  if (!response.ok) {
+    let detail = `Request failed with status ${response.status}`
+    try {
+      const errorBody = (await response.json()) as { detail?: string }
+      if (errorBody?.detail) {
+        detail = errorBody.detail
+      }
+    } catch {
+      // Keep the status-only message
+    }
+    throw new ApiError(detail, response.status)
+  }
+
+  return parseSSEStream(response)
 }
 
 export async function clearConversation(): Promise<void> {
