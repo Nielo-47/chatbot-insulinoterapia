@@ -7,6 +7,14 @@ JWT_SECRET_KEY = require("JWT_SECRET_KEY")
 JWT_ALGORITHM = require("JWT_ALGORITHM")
 JWT_ACCESS_TOKEN_EXPIRE_MINUTES = require_int("JWT_ACCESS_TOKEN_EXPIRE_MINUTES")
 
+# Trusted reverse proxies for real client IP resolution. Client-IP headers
+# (X-Real-IP, X-Forwarded-For) are honored ONLY when the request's direct peer
+# matches one of these entries (IP or CIDR); otherwise the peer address is used.
+# Empty means never trust forwarded headers.
+TRUSTED_PROXY_IPS = [
+    item.strip() for item in get_str("TRUSTED_PROXY_IPS", "").split(",") if item.strip()
+]
+
 # Rate limiting configuration
 LOGIN_RATE_LIMIT = get_str("LOGIN_RATE_LIMIT", "5/minute")  # per IP
 LOGIN_RATE_LIMIT_BLOCK_DURATION_SECONDS = get_int("LOGIN_RATE_LIMIT_BLOCK_DURATION", 900)  # 15 minutes

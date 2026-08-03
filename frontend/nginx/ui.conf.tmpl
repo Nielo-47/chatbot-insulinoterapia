@@ -35,8 +35,11 @@ server {
         proxy_pass http://backend:8000/;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
+        # Overwrite (never append) the forwarded headers with the true peer so
+        # clients cannot spoof a first hop; the backend honors them only from
+        # trusted proxies (see TRUSTED_PROXY_IPS).
         proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-For $remote_addr;
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 

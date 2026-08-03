@@ -12,7 +12,7 @@ All issues from the original security report have been fixed. Residual notes:
 - The **LangGraph checkpointer** (`create_postgres_checkpointer`, `CHECKPOINTER_ENABLED`) stores thread state in Postgres keyed by `user_{user_id}`; it is NOT purged on user deletion (FK cascade doesn't cover it). It is disabled by default; if enabled, add thread cleanup on delete.
 
 ## Solved (for reference)
-- Real client IP via `X-Forwarded-For` + Redis-backed slowapi limiter (`api.py`, `_client_ip`).
+- Real client IP via **trusted-proxy resolution** + Redis-backed slowapi limiter (`api.py`, `_client_ip`): forwarded headers (`X-Real-IP`, `X-Forwarded-For`) are honored ONLY when the request's direct peer is in `TRUSTED_PROXY_IPS` (comma-separated IPs/CIDRs, `config/security.py`; compose default `172.16.0.0/12`); otherwise the peer address is used. The ui nginx **overwrites** both headers with `$remote_addr` (`ui.conf.tmpl`) so a client cannot spoof its IP through the proxy. The starlette TestClient peer is the literal string `testclient` — `test_api_endpoints.py` sets `TRUSTED_PROXY_IPS=testclient` so its per-IP `X-Forwarded-For` isolation still works.
 - Uniform generic 401 on login (no 423/429 enumeration); lockout keyed on (username, IP).
 - Fail-closed Redis behavior (rate limit, lockout, query throttle, token blacklist).
 - Per-user `/query` rate limit (default 30/min, `QUERY_RATE_LIMIT`/`QUERY_RATE_WINDOW_SECONDS`).
@@ -24,7 +24,7 @@ All issues from the original security report have been fixed. Residual notes:
 - **API docs disabled by default** — `/docs`, `/redoc`, `/openapi.json` only served when `DOCS_ENABLED=true` (opt-in for dev); `DOCS_ENABLED` in `config/infrastructure.py` via `get_bool`, read in `api.py` `FastAPI(...)` kwargs and the root endpoint.
 - **`DELETE /auth/me` purges cached user data** — endpoint calls `chatbot.purge_user_data(user_id)` (→ `ConversationService.purge_user_data` → `MessagesRepository.invalidate_cache(conversation_id)`, removes the `chat:conv:{id}:messages` Redis key) BEFORE `auth_service.delete_user` deletes the DB row, so cached PII cannot outlive the account.
 - **CORS scoped** — `api.py` CORSMiddleware: `allow_methods=["GET","POST","DELETE","OPTIONS"]`, `allow_headers=["Content-Type","Authorization"]` (no `*`), origins still from `FRONTEND_ORIGINS` allowlist.
-- **No password in process args** — `scripts/bootstrap_user.py` reads `BOOTSTRAP_PASSWORD` env var or interactive `getpass` (no `--password` CLI flag); `--password` now errors as unrecognized.
+- **No password in process args** — `scripts/bootstrap_user.py` reads `BOOTSTRAP_PASSWORD` env var or interactive `getpass` (no `--password` CLI flag; `--password` now errors as unrecognized). `dockerfile.backend` seeds `BOOTSTRAP_USERS` (`user:pass,...`) by exporting each password via `BOOTSTRAP_PASSWORD` to `bootstrap_user --username`, never on the CLI. Bootstrap passwords must be >= 8 chars with letters AND digits.
 
 ## Test commands
 - Unit: `backend/.venv/bin/python -m pytest backend/test/unit` (needs `.env` loaded: use python-dotenv, not `source .env` — values contain shell special chars). Current: 42 passed / 1 pre-existing failure.

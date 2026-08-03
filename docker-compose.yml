@@ -45,6 +45,10 @@ services:
       - EMBEDDING_API_KEY=${OPENROUTER_API_KEY}
       - PYTHONPATH=/app
       - BOOTSTRAP_USERS=${BOOTSTRAP_USERS:-}
+      # The ui nginx is the only reverse proxy; its direct peer is on the
+      # docker private network (default 172.16.0.0/12), so client-IP headers
+      # are trusted only from that range.
+      - TRUSTED_PROXY_IPS=${TRUSTED_PROXY_IPS:-172.16.0.0/12}
     volumes:
       - ./data/processed:/app/data/processed
     depends_on:

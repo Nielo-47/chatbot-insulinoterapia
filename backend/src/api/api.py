@@ -1,5 +1,6 @@
 """FastAPI Backend for Diabetes Chatbot - Exposes RAG functionality via REST API."""
 
+import ipaddress
 import logging
 import uuid
 from contextlib import asynccontextmanager
@@ -40,6 +41,7 @@ from backend.src.config.security import (
     AUTH_COOKIE_SAMESITE,
     AUTH_COOKIE_PATH,
     AUTH_COOKIE_DOMAIN,
+    TRUSTED_PROXY_IPS,
 )
 from backend.src.config.infrastructure import CHAT_CACHE_REDIS_URL, DOCS_ENABLED
 from backend.src.config.env import require
@@ -47,14 +49,43 @@ from backend.src.infrastructure.data import initialize_database
 from backend.src.infrastructure.security import rate_limit
 
 
-# Rate limiter using real client IP (first hop of X-Forwarded-For, set by nginx)
+def _normalize_ip(ip: str) -> str:
+    """Strip the IPv4-mapped IPv6 prefix so both forms compare equal."""
+    return ip[7:] if ip.lower().startswith("::ffff:") else ip
+
+
+def _is_trusted_proxy(peer: str) -> bool:
+    """Return True if the direct peer is a configured reverse proxy (IP/CIDR)."""
+    peer = _normalize_ip(peer.strip())
+    for entry in TRUSTED_PROXY_IPS:
+        normalized = _normalize_ip(entry.strip())
+        if normalized == peer:
+            return True
+        try:
+            if ipaddress.ip_address(peer) in ipaddress.ip_network(normalized, strict=False):
+                return True
+        except ValueError:
+            continue
+    return False
+
+
+# Rate limiter keyed on the real client IP. Forwarded headers (X-Real-IP,
+# X-Forwarded-For) are honored only when the request's direct peer is a trusted
+# reverse proxy (TRUSTED_PROXY_IPS); nginx overwrites them with $remote_addr,
+# so an end client cannot spoof its identity through the proxy. Otherwise the
+# direct peer address is used and any client-supplied headers are ignored.
 def _client_ip(request: Request) -> str:
-    forwarded = request.headers.get("X-Forwarded-For", "")
-    if forwarded:
-        first_hop = forwarded.split(",")[0].strip()
-        if first_hop:
-            return first_hop
-    return request.client.host if request.client else "unknown"
+    peer = request.client.host if request.client else "unknown"
+    if _is_trusted_proxy(peer):
+        real_ip = request.headers.get("X-Real-IP", "").strip()
+        if real_ip:
+            return real_ip
+        forwarded = request.headers.get("X-Forwarded-For", "")
+        if forwarded:
+            first_hop = forwarded.split(",")[0].strip()
+            if first_hop:
+                return first_hop
+    return peer
 
 
 limiter = Limiter(key_func=_client_ip, storage_uri=CHAT_CACHE_REDIS_URL)

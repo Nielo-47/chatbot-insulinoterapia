@@ -16,6 +16,14 @@ from backend.src.infrastructure.data import initialize_database
 from backend.src.infrastructure.repositories.users_repository import UsersRepository
 
 
+def _validate_bootstrap_password(password: str) -> None:
+    """Reject trivially weak bootstrap passwords (min length + charset mix)."""
+    if len(password) < 8:
+        raise SystemExit("Password must be at least 8 characters long")
+    if not (any(ch.isalpha() for ch in password) and any(ch.isdigit() for ch in password)):
+        raise SystemExit("Password must contain both letters and digits")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Create or reuse a backend user")
     parser.add_argument("--username", required=True)
@@ -27,6 +35,7 @@ def main() -> int:
     password = os.getenv("BOOTSTRAP_PASSWORD") or getpass.getpass("Password: ")
     if not password:
         raise SystemExit("Password is required (set BOOTSTRAP_PASSWORD or enter it interactively)")
+    _validate_bootstrap_password(password)
 
     initialize_database()
     users = UsersRepository()

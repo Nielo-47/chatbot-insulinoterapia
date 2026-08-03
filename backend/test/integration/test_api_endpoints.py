@@ -1,7 +1,14 @@
+import os
 import unittest
 from unittest.mock import patch
 
 from fastapi.testclient import TestClient
+
+# The starlette TestClient reports its direct peer as the literal string
+# "testclient". Treat it as a trusted proxy so the X-Forwarded-For header used
+# by _login() is honored for per-IP rate-limit isolation, mirroring the nginx
+# reverse proxy in production. Must be set before the api module is imported.
+os.environ["TRUSTED_PROXY_IPS"] = os.environ.get("TRUSTED_PROXY_IPS") or "testclient"
 
 from backend.src.api import api
 from backend.src.application.features.auth.auth_primitives import hash_password
