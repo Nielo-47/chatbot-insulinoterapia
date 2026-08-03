@@ -92,8 +92,18 @@ class ConversationCache:
 
 
 def init_semantic_cache() -> None:
-    """Initialize Redis semantic cache for LLM responses."""
-    from backend.src.config.infrastructure import CHAT_CACHE_REDIS_URL
+    """Initialize the Redis semantic cache for LLM responses.
+
+    Disabled by default: the cache is GLOBAL (keyed by prompt hash, not user),
+    so a cached response containing PII could be served to another user. Only
+    enable it (SEMANTIC_CACHE_ENABLED=true) if responses can never contain
+    user-specific data.
+    """
+    from backend.src.config.infrastructure import SEMANTIC_CACHE_ENABLED
+
+    if not SEMANTIC_CACHE_ENABLED:
+        logger.info("Semantic cache disabled (SEMANTIC_CACHE_ENABLED=false)")
+        return
 
     from backend.src.config.env import require, require_float
 
@@ -111,5 +121,6 @@ def init_semantic_cache() -> None:
             distance_threshold=score_threshold,
         )
         set_llm_cache(cache)
+        logger.info("Semantic cache initialized")
     except Exception as e:
         logger.warning("Could not initialize semantic cache: %s", e)

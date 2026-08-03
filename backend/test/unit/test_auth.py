@@ -82,6 +82,48 @@ class AuthTests(unittest.TestCase):
         self.assertTrue(deleted)
         self.assertEqual(users_repository.deleted_user_id, 12)
 
+    def test_confirm_password_accepts_correct_password(self) -> None:
+        class UsersRepositoryStub(UsersRepositoryLike):
+            def get_user_by_id(self, user_id: int) -> Optional[Any]:
+                return _make_user()
+
+        service = AuthenticationService(
+            users_repository=UsersRepositoryStub(),
+            verify_password=verify_password,
+            create_access_token=create_access_token,
+            decode_access_token=decode_access_token,
+        )
+
+        self.assertTrue(service.confirm_password(7, "secret-password"))
+
+    def test_confirm_password_rejects_wrong_password(self) -> None:
+        class UsersRepositoryStub(UsersRepositoryLike):
+            def get_user_by_id(self, user_id: int) -> Optional[Any]:
+                return _make_user()
+
+        service = AuthenticationService(
+            users_repository=UsersRepositoryStub(),
+            verify_password=verify_password,
+            create_access_token=create_access_token,
+            decode_access_token=decode_access_token,
+        )
+
+        self.assertFalse(service.confirm_password(7, "wrong-password"))
+
+    def test_confirm_password_returns_false_for_missing_user(self) -> None:
+        class UsersRepositoryStub(UsersRepositoryLike):
+            def get_user_by_id(self, user_id: int) -> Optional[Any]:
+                return None
+
+        service = AuthenticationService(
+            users_repository=UsersRepositoryStub(),
+            verify_password=verify_password,
+            create_access_token=create_access_token,
+            decode_access_token=decode_access_token,
+        )
+
+        self.assertFalse(service.confirm_password(7, "secret-password"))
+
     def test_token_contains_jti(self) -> None:
         """Test that tokens have a unique JWT ID for revocation."""
         with patch("backend.src.infrastructure.security.token.JWT_SECRET_KEY", "token-secret-value-long-enough-32-bytes"):

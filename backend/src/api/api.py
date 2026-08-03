@@ -2,6 +2,7 @@
 
 import ipaddress
 import logging
+import os
 import uuid
 from contextlib import asynccontextmanager
 from typing import List
@@ -14,6 +15,7 @@ from fastapi import Depends, FastAPI, HTTPException, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 
 from backend.src.api.schemas import (
+    AccountDeleteRequest,
     AuthenticatedUser,
     ConversationHistoryResponse,
     ConversationMessage,
@@ -35,12 +37,12 @@ from backend.src.infrastructure.data.cache import init_semantic_cache
 from backend.src.config.security import (
     JWT_SECRET_KEY,
     JWT_ACCESS_TOKEN_EXPIRE_MINUTES,
-    AUTH_COOKIE_NAME,
     AUTH_COOKIE_HTTPONLY,
     AUTH_COOKIE_SECURE,
     AUTH_COOKIE_SAMESITE,
     AUTH_COOKIE_PATH,
     AUTH_COOKIE_DOMAIN,
+    get_auth_cookie_name,
     TRUSTED_PROXY_IPS,
 )
 from backend.src.config.infrastructure import CHAT_CACHE_REDIS_URL, DOCS_ENABLED
@@ -131,7 +133,7 @@ def _request_token(request: Request) -> str | None:
     The cookie is the primary transport (keeps the token out of JS-accessible
     storage); the Authorization header remains supported for API clients/tests.
     """
-    cookie_token = request.cookies.get(AUTH_COOKIE_NAME)
+    cookie_token = request.cookies.get(get_auth_cookie_name())
     if cookie_token:
         return cookie_token
     return _bearer_token(request)
@@ -139,7 +141,7 @@ def _request_token(request: Request) -> str | None:
 
 def _set_auth_cookie(response: Response, token: str) -> None:
     response.set_cookie(
-        key=AUTH_COOKIE_NAME,
+        key=get_auth_cookie_name(),
         value=token,
         max_age=JWT_ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         httponly=AUTH_COOKIE_HTTPONLY,
@@ -152,7 +154,7 @@ def _set_auth_cookie(response: Response, token: str) -> None:
 
 def _clear_auth_cookie(response: Response) -> None:
     response.delete_cookie(
-        key=AUTH_COOKIE_NAME,
+        key=get_auth_cookie_name(),
         path=AUTH_COOKIE_PATH,
         domain=AUTH_COOKIE_DOMAIN or None,
         secure=AUTH_COOKIE_SECURE,
@@ -178,6 +180,7 @@ def get_current_user(
 
 _DEFAULT_JWT_SECRET = "change-me"
 _MIN_JWT_SECRET_LENGTH = 32
+_RECOMMENDED_JWT_SECRET_LENGTH = 64
 
 
 def _validate_jwt_secret() -> None:
@@ -191,17 +194,32 @@ def _validate_jwt_secret() -> None:
         raise RuntimeError(
             f"JWT_SECRET_KEY must be set to a strong secret (at least {_MIN_JWT_SECRET_LENGTH} characters)."
         )
+    # L2: lengths below the OWASP-recommended 64 chars for HS256 still start,
+    # but the operator is warned to rotate to a longer random secret.
+    if len(secret) < _RECOMMENDED_JWT_SECRET_LENGTH:
+        logger.warning(
+            "JWT_SECRET_KEY is %d characters long; OWASP recommends at least %d "
+            "random characters for HS256 (e.g. `openssl rand -hex 32`).",
+            len(secret),
+            _RECOMMENDED_JWT_SECRET_LENGTH,
+        )
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Manage chatbot lifecycle."""
     _validate_jwt_secret()
+    if os.environ.get("AUTH_ENABLED") is not None:
+        # Dead/misleading config (L3): authentication is always enforced and
+        # AUTH_ENABLED is not read anywhere in the application.
+        logger.warning(
+            "AUTH_ENABLED is set in the environment but this application does not use it; "
+            "authentication is always enforced and the variable is ignored."
+        )
     logger.info("Initializing chatbot...")
     initialize_database()
     logger.info("Database initialized successfully")
     init_semantic_cache()
-    logger.info("Semantic cache initialized")
     app.state.chatbot = await build_chatbot_service()
     app.state.auth_service = build_auth_service()
     logger.info("Chatbot initialized successfully")
@@ -228,9 +246,14 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 def _raise_api_error(exc: Exception, user_message: str) -> None:
     if isinstance(exc, HTTPException):
+        # Intentional control flow (e.g. the 429 query throttle); re-raise as-is.
         raise exc
+    # Exception detail is logged server-side and never reflected in the response
+    # body, so internal state/schema details cannot leak to clients (L1). The
+    # client always receives the generic, user-safe message.
+    logger.error("API error (%s): %s", type(exc).__name__, exc)
     if isinstance(exc, ValueError):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=user_message) from exc
     if isinstance(exc, RuntimeError):
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=user_message) from exc
     raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=user_message) from exc
@@ -306,10 +329,16 @@ def logout(
 @app.delete("/auth/me")
 def delete_current_user(
     response: Response,
+    delete_request: AccountDeleteRequest,
     current_user: AuthenticatedUser = Depends(get_current_user),
     auth_service: AuthenticationService = Depends(get_auth_service),
     chatbot: ChatbotService = Depends(get_chatbot_service),
 ):
+    # L2: a destructive action requires password re-confirmation so a stolen
+    # (or otherwise compromised) session alone cannot delete the account.
+    if not auth_service.confirm_password(current_user.id, delete_request.password):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Senha incorreta")
+
     # Purge cached PII (Redis conversation message cache) for this user's
     # conversation BEFORE the DB row is removed, so stale user data cannot
     # outlive the account. The semantic cache is global (keyed by prompt hash),
@@ -330,7 +359,7 @@ def get_user_conversations(
     """Get conversation history for the authenticated user."""
     try:
         messages = chatbot.get_history(current_user.id)
-        logger.info(f"Retrieved {len(messages)} messages for user {current_user.id}")
+        logger.info("Retrieved %d messages for user %s", len(messages), current_user.id)
         return ConversationHistoryResponse(
             messages=[
                 ConversationMessage(
@@ -342,7 +371,8 @@ def get_user_conversations(
             ]
         )
     except Exception as e:
-        logger.error(f"Error retrieving conversation history: {type(e).__name__}: {e}")
+        logger.error("Error retrieving conversation history for user %s: %s", current_user.id, type(e).__name__)
+        logger.debug("Conversation history error detail for user %s: %s", current_user.id, e)
         _raise_api_error(e, "Erro ao recuperar historico da conversa")
 
 
@@ -360,6 +390,7 @@ async def query_chatbot(
     chatbot: ChatbotService = Depends(get_chatbot_service),
 ):
     """Query the chatbot with a question."""
+    session_id = request.session_id or str(uuid.uuid4())
     try:
         is_allowed, _ = rate_limit.check_query_rate_limit(current_user.id)
         if not is_allowed:
@@ -369,25 +400,37 @@ async def query_chatbot(
                 detail=f"Limite de consultas excedido. Tente novamente em {remaining} segundos.",
             )
 
-        session_id = request.session_id or str(uuid.uuid4())
-
-        logger.info(f"Processing query for user {current_user.id} / session {session_id}: {request.query[:50]}...")
+        logger.info(
+            "Processing query for user %s / session %s (query length %d)",
+            current_user.id,
+            session_id,
+            len(request.query),
+        )
 
         # Query the chatbot
         result = await chatbot.chat(request.query, user_id=current_user.id, session_id=session_id)
         result["session_id"] = result.get("session_id", session_id)
 
         logger.info(
-            f"Query completed for user {current_user.id} / session {session_id}: "
-            f"response={len(result.get('response', ''))} chars, "
-            f"sources={len(result.get('sources', []))}, "
-            f"summarized={result.get('summarized', False)}"
+            "Query completed for user %s / session %s: "
+            "response=%d chars, sources=%d, summarized=%s",
+            current_user.id,
+            session_id,
+            len(result.get("response", "")),
+            len(result.get("sources", [])),
+            result.get("summarized", False),
         )
 
         return QueryResponse(**result)
 
     except Exception as e:
-        logger.error(f"Error processing query: {type(e).__name__}: {e}")
+        logger.error(
+            "Error processing query for user %s / session %s: %s",
+            current_user.id,
+            session_id,
+            type(e).__name__,
+        )
+        logger.debug("Query error detail for user %s / session %s: %s", current_user.id, session_id, e)
         _raise_api_error(e, "Erro ao processar consulta")
 
 
@@ -400,20 +443,25 @@ async def clear_user_conversations(
     try:
         cleared = chatbot.end_session(current_user.id)
         if cleared:
-            logger.info(f"Cleared conversation for user {current_user.id}")
+            logger.info("Cleared conversation for user %s", current_user.id)
             return {"message": "Conversa limpa com sucesso"}
         return {"message": "No conversation found"}
     except Exception as e:
-        logger.error(f"Error clearing conversation: {type(e).__name__}: {e}")
+        logger.error("Error clearing conversation for user %s: %s", current_user.id, type(e).__name__)
+        logger.debug("Clear conversation error detail for user %s: %s", current_user.id, e)
         _raise_api_error(e, "Erro ao limpar conversa")
 
 
 @app.get("/")
 async def root():
-    """Root endpoint."""
+    """Root endpoint.
+
+    Kept unauthenticated (harmless banner), but deliberately omits the version
+    so the API surface is not fingerprinted (L2). /health must stay
+    unauthenticated too because the container healthcheck probes it.
+    """
     return {
         "message": "Diabetes Chatbot API",
-        "version": "1.0.0",
         "docs": "/docs" if DOCS_ENABLED else None,
     }
 

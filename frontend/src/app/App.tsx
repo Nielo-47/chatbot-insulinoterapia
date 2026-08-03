@@ -85,8 +85,8 @@ function App() {
     setAuthStatus(reason === 'expired' ? 'invalid' : 'signed_out')
   }
 
-  const handleDeleteAccount = async () => {
-    await deleteAccount()
+  const handleDeleteAccount = async (password: string) => {
+    await deleteAccount(password)
     await handleLogout('deleted')
   }
 

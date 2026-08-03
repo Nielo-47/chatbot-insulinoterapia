@@ -30,7 +30,7 @@ interface ChatPageProps {
   backendStatus: BackendStatus
   authStatus: AuthStatus
   onLogout: (reason?: 'manual' | 'expired' | 'deleted') => Promise<void>
-  onDeleteAccount: () => Promise<void>
+  onDeleteAccount: (password: string) => Promise<void>
 }
 
 export function ChatPage({ username, backendStatus, authStatus, onLogout, onDeleteAccount }: ChatPageProps) {
@@ -164,9 +164,19 @@ export function ChatPage({ username, backendStatus, authStatus, onLogout, onDele
       return
     }
 
+    // Password re-confirmation is required by the backend before deletion.
+    const password = window.prompt('Digite sua senha para confirmar a exclusao da conta.')
+    if (password === null) {
+      return
+    }
+    if (password.trim() === '') {
+      setLocalError('A senha e obrigatoria para excluir a conta.')
+      return
+    }
+
     setIsDeletingAccount(true)
     try {
-      await onDeleteAccount()
+      await onDeleteAccount(password)
     } catch (error) {
       if (error instanceof ApiError && error.status === 401) {
         await onLogout('expired')

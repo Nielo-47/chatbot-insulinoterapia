@@ -1,17 +1,46 @@
 # Backend Dockerfile for Chatbot API
-FROM python:3.12-slim
+#
+# Multi-stage build: a builder stage compiles/collects all Python wheels
+# (the full build toolchain, git, etc. live only there), and a slim runtime
+# stage installs those wheels, runs as a non-root user, and carries only the
+# runtime system libraries needed for document processing.
 
-# Prevent interactive prompts
+# --------------------------------------------------------------------------- #
+# Builder stage: build toolchain + wheel collection
+# --------------------------------------------------------------------------- #
+FROM python:3.12-slim AS builder
+
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Set working directory
-WORKDIR /app
-
-# Install system dependencies required for document processing
+# Build-time toolchain only (removed from the final image).
 RUN apt-get update && apt-get install -y \
     build-essential \
-    curl \
     git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Upgrade pip in the builder so the collected wheels are built/installed by a
+# current, non-vulnerable pip.
+RUN pip install --upgrade pip
+
+# Collect every dependency (including transitive deps and extras) as wheels so
+# the runtime stage can install them with --no-index (no network, no builds).
+WORKDIR /tmp
+COPY backend/requirements.txt ./requirements.txt
+RUN pip wheel --wheel-dir /wheels -r requirements.txt
+
+# --------------------------------------------------------------------------- #
+# Runtime stage: slim image, non-root user
+# --------------------------------------------------------------------------- #
+FROM python:3.12-slim
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Runtime-only system dependencies required for document processing at runtime
+# (poppler for PDFs, tesseract for OCR, libmagic1/libgl*/libx*/libsm6 for
+# image processing, curl for healthchecks). build-essential/git are NOT
+# installed here.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
     poppler-utils \
     tesseract-ocr \
     libmagic1 \
@@ -21,23 +50,36 @@ RUN apt-get update && apt-get install -y \
     libsm6 \
     && rm -rf /var/lib/apt/lists/*
 
-# Upgrade pip
-RUN pip install --upgrade pip
+# Upgrade pip with a patched release (the slim base image ships an old pip
+# with known CVEs), then install the pre-built wheels offline.
+COPY --from=builder /wheels /wheels
+COPY --from=builder /tmp/requirements.txt /tmp/requirements.txt
+RUN pip install --upgrade pip \
+    && pip install --no-cache-dir --no-index --find-links=/wheels -r /tmp/requirements.txt \
+    && rm -rf /wheels /tmp/requirements.txt /root/.cache/pip
 
-# Copy requirements file
-COPY backend/requirements.txt .
+# Non-root application user. UID/GID default to 1000 to match the host user
+# that owns ./data/processed (mounted read/write for the RAG store); override
+# with --build-arg APP_UID=... / APP_GID=... for other hosts.
+ARG APP_UID=1000
+ARG APP_GID=1000
+RUN groupadd --gid ${APP_GID} appgroup \
+    && useradd --uid ${APP_UID} --gid ${APP_GID} --create-home --shell /usr/sbin/nologin appuser
 
-# Install Python dependencies
-RUN pip install -r requirements.txt
+# Set working directory
+WORKDIR /app
 
-# Copy application code
-COPY backend/ ./backend/
-COPY scripts/ ./scripts/
+# Copy application code (owned by appuser)
+COPY --chown=appuser:appgroup backend/ ./backend/
+COPY --chown=appuser:appgroup scripts/ ./scripts/
 
 # Expose backend API port
 EXPOSE 8000
 
 ENV BOOTSTRAP_USERS=${BOOTSTRAP_USERS:-}
+
+# Drop privileges: the process runs as an unprivileged user, not root.
+USER appuser
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \

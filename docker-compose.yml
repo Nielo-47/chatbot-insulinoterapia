@@ -15,18 +15,25 @@ services:
   postgres:
     image: postgres:16-alpine
     restart: always
+    # POSTGRES_DB/USER/PASSWORD are optional: when missing, the wrapper derives
+    # them from DATABASE_URL so `docker compose up` works with only DATABASE_URL
+    # set (L4). Explicit POSTGRES_* variables always take precedence.
+    entrypoint: ["/bin/sh", "/postgres-entrypoint.sh"]
+    command: ["postgres"]
     environment:
-      - POSTGRES_DB=${POSTGRES_DB:?POSTGRES_DB must be set (e.g. diabetes_chatbot)}
-      - POSTGRES_USER=${POSTGRES_USER:?POSTGRES_USER must be set (e.g. diabetes_chatbot)}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set to a strong password}
+      - DATABASE_URL=${DATABASE_URL:?DATABASE_URL must be set (postgresql+psycopg://<user>:<password>@postgres:5432/<db>)}
+      - POSTGRES_DB=${POSTGRES_DB:-}
+      - POSTGRES_USER=${POSTGRES_USER:-}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-}
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:?} -d ${POSTGRES_DB:?}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
       interval: 10s
       timeout: 5s
       retries: 10
       start_period: 10s
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./scripts/postgres-entrypoint.sh:/postgres-entrypoint.sh:ro
 
   # Backend API - FastAPI service exposing chatbot functionality
   backend:

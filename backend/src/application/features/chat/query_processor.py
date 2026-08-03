@@ -5,7 +5,7 @@ from typing import Any, Callable, Coroutine, Dict, List, Optional
 from langchain_core.runnables import RunnableConfig
 from backend.src.application.contracts.chat import ConversationServiceContract, QueryMode, RAGRuntimeContract
 from backend.src.config.conversation import SUMMARIZE_MAX_MESSAGES
-from backend.src.config.prompts import SYSTEM_PROMPT
+from backend.src.config.prompts import SYSTEM_PROMPT, USER_QUERY_PROMPT
 from backend.src.application.features.chat.critique import CritiqueService
 from backend.src.application.features.chat.summarizer import SummarizationService
 from backend.src.infrastructure.data.db_client import create_postgres_checkpointer
@@ -129,7 +129,7 @@ class QueryProcessor:
     async def _node_generate_initial(self, state: QueryGraphState) -> Dict[str, Any]:
         params = state.query_params
         response = await self._call_llm(
-            prompt=state.query,
+            prompt=USER_QUERY_PROMPT.format(query=state.query),
             system_prompt=params.get("system_prompt", SYSTEM_PROMPT.format(context=state.rag_data)),
             history_messages=state.conversation_history,
         )
@@ -149,7 +149,7 @@ class QueryProcessor:
             history_messages=extended_history,
         )
         if critique.get("issues"):
-            logger.warning("Critique issues: %s", ", ".join(critique["issues"]))
+            logger.warning("Critique flagged %d issue(s)", len(critique["issues"]))
 
         return {"critique": critique, "conversation_history": extended_history}
 
@@ -213,7 +213,7 @@ class QueryProcessor:
         if user_id is None:
             raise ValueError("user_id e obrigatorio")
 
-        logger.info("Processing query (mode=%s): %.100s", mode, query)
+        logger.info("Processing query (mode=%s)", mode)
         session_label = session_id or str(uuid.uuid4())
         config: RunnableConfig = {"configurable": {"thread_id": f"user_{user_id}"}}
 

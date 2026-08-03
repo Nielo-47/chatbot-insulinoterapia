@@ -38,3 +38,18 @@ AUTH_COOKIE_SECURE = get_bool("AUTH_COOKIE_SECURE", True)  # HTTPS only; set fal
 AUTH_COOKIE_SAMESITE = get_str("AUTH_COOKIE_SAMESITE", "lax")  # Lax blocks CSRF on cross-site POST/DELETE
 AUTH_COOKIE_PATH = get_str("AUTH_COOKIE_PATH", "/")
 AUTH_COOKIE_DOMAIN = get_str("AUTH_COOKIE_DOMAIN", "")
+
+
+def get_auth_cookie_name() -> str:
+    """Effective session cookie name (L2).
+
+    Applies the ``__Host-`` prefix whenever the cookie can satisfy the browser
+    requirements for it (Secure, Path=/ and no Domain attribute): the prefix
+    binds the cookie to the origin host, which defeats scheme-downgrade and
+    domain-wide attacks. Falls back to the plain name when the cookie is not
+    Secure or carries a Domain/path (e.g. plain-HTTP local dev), because
+    browsers reject ``__Host-`` cookies that do not meet the requirements.
+    """
+    if AUTH_COOKIE_SECURE and not AUTH_COOKIE_DOMAIN and AUTH_COOKIE_PATH == "/":
+        return f"__Host-{AUTH_COOKIE_NAME}"
+    return AUTH_COOKIE_NAME

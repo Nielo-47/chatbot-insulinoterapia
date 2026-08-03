@@ -102,3 +102,36 @@ def create_postgres_checkpointer() -> Optional[Any]:
     except Exception as e:
         logger.warning("Could not create PostgresSaver checkpointer: %s", e)
         return None
+
+
+def purge_user_checkpoint_threads(user_id: int) -> bool:
+    """Delete LangGraph checkpointer state for a user's thread (user_{user_id}).
+
+    Called during account deletion: the PostgresSaver tables (checkpoints,
+    checkpoint_blobs, checkpoint_writes) are not covered by the user FK
+    cascade, so without this the persisted thread state would outlive the
+    account. Best-effort: returns False (logged) if the purge fails.
+    """
+    from backend.src.config.conversation import CHECKPOINTER_ENABLED
+
+    if not CHECKPOINTER_ENABLED:
+        return True
+
+    try:
+        import psycopg
+    except ImportError:
+        return True
+
+    thread_id = f"user_{user_id}"
+    try:
+        db_url = DATABASE_URL.replace("+psycopg", "")
+        with psycopg.connect(db_url) as conn:
+            with conn.cursor() as cur:
+                for table in ("checkpoints", "checkpoint_blobs", "checkpoint_writes"):
+                    cur.execute(f"DELETE FROM {table} WHERE thread_id = %s", (thread_id,))
+            conn.commit()
+        logger.info("Purged checkpointer thread %r", thread_id)
+        return True
+    except Exception as e:
+        logger.warning("Could not purge checkpointer thread %r: %s", thread_id, e)
+        return False

@@ -127,8 +127,13 @@ export async function getCurrentUser(): Promise<{ id: number; username: string }
   return request('/auth/me', { method: 'GET' }, currentUserSchema)
 }
 
-export async function deleteAccount(): Promise<void> {
-  await request('/auth/me', { method: 'DELETE' }, z.object({ message: z.string() }))
+export async function deleteAccount(password: string): Promise<void> {
+  // The backend requires password re-confirmation before deleting the account.
+  await request(
+    '/auth/me',
+    { method: 'DELETE', body: JSON.stringify({ password }) },
+    z.object({ message: z.string() }),
+  )
 }
 
 export async function clearAuthSession(): Promise<void> {

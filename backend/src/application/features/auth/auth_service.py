@@ -94,6 +94,16 @@ class AuthenticationService:
             rate_limit.unlock_account(user.username)
         return self.users_repository.delete_user_by_id(user_id)
 
+    def confirm_password(self, user_id: int, password: str) -> bool:
+        """Verify the account password before a destructive action.
+
+        When the user does not exist a dummy verification still runs so the
+        response timing does not reveal whether the account exists.
+        """
+        user = self.users_repository.get_user_by_id(user_id)
+        stored_hash = user.hashed_password if user else _DUMMY_HASH
+        return user is not None and self._verify_password(password, stored_hash)
+
     def logout_token(self, token: str) -> bool:
         """Blacklist a token (for logout)."""
         try:

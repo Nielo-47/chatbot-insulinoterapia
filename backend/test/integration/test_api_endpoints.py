@@ -127,7 +127,9 @@ class ApiEndpointTests(unittest.TestCase):
 
         self.assertEqual(response.status_code, 200)
         set_cookie = response.headers.get("set-cookie", "")
-        self.assertIn("access_token=", set_cookie)
+        # The __Host- prefix is applied because the cookie is Secure, Path=/ and
+        # has no Domain attribute.
+        self.assertIn("__Host-access_token=", set_cookie)
         self.assertIn("httponly", set_cookie.lower())
         self.assertIn("secure", set_cookie.lower())
         self.assertIn("samesite=lax", set_cookie.lower())
@@ -258,18 +260,48 @@ class ApiEndpointTests(unittest.TestCase):
 
     def test_delete_me_endpoint_deletes_current_user(self) -> None:
         token = self._login("7")["access_token"]
-        response = self.client.delete("/auth/me", headers={"Authorization": f"Bearer {token}"})
+        response = self.client.request(
+            "DELETE",
+            "/auth/me",
+            json={"password": "password123"},
+            headers={"Authorization": f"Bearer {token}"},
+        )
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()["message"], "User deleted successfully")
+        self.assertEqual(response.json()["message"], "Usuario excluido com sucesso")
         self.assertIsNone(self.users.get_user_by_id(self.user_id))
 
     def test_delete_me_purges_cached_user_data(self) -> None:
         token = self._login("13")["access_token"]
-        response = self.client.delete("/auth/me", headers={"Authorization": f"Bearer {token}"})
+        response = self.client.request(
+            "DELETE",
+            "/auth/me",
+            json={"password": "password123"},
+            headers={"Authorization": f"Bearer {token}"},
+        )
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(self.chatbot.purge_calls, [self.user_id])
+
+    def test_delete_me_requires_password_confirmation(self) -> None:
+        token = self._login("14")["access_token"]
+
+        response = self.client.delete("/auth/me", headers={"Authorization": f"Bearer {token}"})
+
+        self.assertEqual(response.status_code, 422)
+        self.assertIsNotNone(self.users.get_user_by_id(self.user_id))
+
+    def test_delete_me_rejects_wrong_password(self) -> None:
+        token = self._login("15")["access_token"]
+        response = self.client.request(
+            "DELETE",
+            "/auth/me",
+            json={"password": "wrong-password"},
+            headers={"Authorization": f"Bearer {token}"},
+        )
+
+        self.assertEqual(response.status_code, 403)
+        self.assertIsNotNone(self.users.get_user_by_id(self.user_id))
 
     def test_docs_and_openapi_disabled_by_default(self) -> None:
         self.assertEqual(self.client.get("/docs").status_code, 404)
