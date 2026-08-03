@@ -1,6 +1,6 @@
 import os
 
-from .env import require, require_int, get_int, get_str
+from .env import require, require_int, get_int, get_str, get_bool
 
 OPENROUTER_API_KEY = require("OPENROUTER_API_KEY")
 OPENROUTER_BASE_URL = require("OPENROUTER_BASE_URL")
@@ -18,3 +18,7 @@ CHAT_CACHE_KEY_PREFIX = require("CHAT_CACHE_KEY_PREFIX")
 # Token blacklist Redis settings
 TOKEN_BLACKLIST_ENABLED = get_int("TOKEN_BLACKLIST_ENABLED", 1)  # Enabled by default
 TOKEN_BLACKLIST_PREFIX = get_str("TOKEN_BLACKLIST_PREFIX", "token:blacklist:")
+
+# API docs exposure. Disabled by default (fail closed) to avoid leaking the API
+# schema for reconnaissance; opt in explicitly for development.
+DOCS_ENABLED = get_bool("DOCS_ENABLED", False)

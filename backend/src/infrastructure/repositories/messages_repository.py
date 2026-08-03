@@ -99,3 +99,6 @@ class MessagesRepository:
             db.execute(stmt)
         self.cache.invalidate(conversation_id)
         return int(total)
+
+    def invalidate_cache(self, conversation_id: int) -> None:
+        self.cache.invalidate(conversation_id)

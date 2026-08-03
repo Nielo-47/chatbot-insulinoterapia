@@ -107,6 +107,21 @@ class ConversationService:
 
         return self.users_repository.delete_user_by_id(user_id)
 
+    def purge_user_data(self, user_id: int) -> None:
+        """Drop cached user data (Redis conversation message cache) before account deletion.
+
+        The FK cascade removes DB rows, but the Redis cache keyed by
+        conversation_id is not tied to the user row, so it must be invalidated
+        explicitly or stale PII would remain after account deletion.
+        """
+        if user_id is None:
+            return
+
+        conversation_id = self._resolve_conversation_id(user_id=user_id, create_if_missing=False)
+        if conversation_id is not None:
+            self.messages_repository.invalidate_cache(conversation_id)
+        self.sessions_summarized.discard(user_id)
+
     def replace_with_summary(self, user_id: int, summary: str) -> None:
         if user_id is None:
             return

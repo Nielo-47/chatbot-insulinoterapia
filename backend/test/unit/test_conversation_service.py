@@ -43,6 +43,7 @@ class InMemoryConversationsRepository(ConversationsRepositoryLike):
 class InMemoryMessagesRepository(MessagesRepositoryLike):
     def __init__(self) -> None:
         self._messages: Dict[int, List[Dict[str, str]]] = {}
+        self.invalidated: List[int] = []
 
     def add_message(self, conversation_id: int, role: str, content: str, sources: Optional[List[str]] = None) -> None:
         self._messages.setdefault(conversation_id, []).append({"role": role, "content": content})
@@ -58,6 +59,9 @@ class InMemoryMessagesRepository(MessagesRepositoryLike):
         cleared = len(self._messages.get(conversation_id, []))
         self._messages[conversation_id] = []
         return cleared
+
+    def invalidate_cache(self, conversation_id: int) -> None:
+        self.invalidated.append(conversation_id)
 
 
 class InMemoryConversationCache:
@@ -117,6 +121,21 @@ class ConversationServiceTests(unittest.TestCase):
 
         # reset_conversation should also touch conversation metadata.
         self.assertGreaterEqual(len(self.conversations_repo.touched_ids), 3)
+
+    def test_purge_user_data_invalidates_cached_conversation(self) -> None:
+        user_id = 3
+        self.service.add_message(user_id, "user", "dado pessoal")
+
+        self.service.purge_user_data(user_id)
+
+        conversation_id = self.conversations_repo.get_conversation_id_by_user(user_id)
+        self.assertIsNotNone(conversation_id)
+        self.assertEqual(self.messages_repo.invalidated, [conversation_id])
+
+    def test_purge_user_data_is_noop_without_conversation(self) -> None:
+        self.service.purge_user_data(999)
+
+        self.assertEqual(self.messages_repo.invalidated, [])
 
 
 if __name__ == "__main__":

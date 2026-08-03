@@ -19,12 +19,14 @@ from backend.src.infrastructure.repositories.users_repository import UsersReposi
 def main() -> int:
     parser = argparse.ArgumentParser(description="Create or reuse a backend user")
     parser.add_argument("--username", required=True)
-    parser.add_argument("--password", help="If omitted, the password is requested interactively")
+    # NOTE: the password is deliberately NOT accepted as a CLI argument because
+    # it would be visible via `ps`/process listing and shell history. It is read
+    # from the BOOTSTRAP_PASSWORD environment variable or requested interactively.
     args = parser.parse_args()
 
-    password = args.password or getpass.getpass("Password: ")
+    password = os.getenv("BOOTSTRAP_PASSWORD") or getpass.getpass("Password: ")
     if not password:
-        raise SystemExit("Password is required")
+        raise SystemExit("Password is required (set BOOTSTRAP_PASSWORD or enter it interactively)")
 
     initialize_database()
     users = UsersRepository()

@@ -24,6 +24,10 @@ class ChatbotService:
     def summarize_session(self, user_id: int, max_messages: Optional[int] = None) -> str:
         return self._conversation.summarize_session(user_id, max_messages=max_messages)
 
+    def purge_user_data(self, user_id: int) -> None:
+        """Purge cached user data (e.g. Redis message cache) ahead of account deletion."""
+        return self._conversation.purge_user_data(user_id)
+
     async def chat(
         self,
         query: str,

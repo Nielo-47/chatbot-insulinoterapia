@@ -41,7 +41,7 @@ from backend.src.config.security import (
     AUTH_COOKIE_PATH,
     AUTH_COOKIE_DOMAIN,
 )
-from backend.src.config.infrastructure import CHAT_CACHE_REDIS_URL
+from backend.src.config.infrastructure import CHAT_CACHE_REDIS_URL, DOCS_ENABLED
 from backend.src.config.env import require
 from backend.src.infrastructure.data import initialize_database
 from backend.src.infrastructure.security import rate_limit
@@ -178,11 +178,16 @@ async def lifespan(app: FastAPI):
     logger.info("Shutting down chatbot...")
 
 
+# OpenAPI schema endpoints (/docs, /redoc, /openapi.json) are disabled unless
+# DOCS_ENABLED=true so the API surface is not exposed for reconnaissance.
 app = FastAPI(
     title="Diabetes Chatbot API",
     description="Backend API for diabetes chatbot with RAG functionality",
     version="1.0.0",
     lifespan=lifespan,
+    docs_url="/docs" if DOCS_ENABLED else None,
+    redoc_url="/redoc" if DOCS_ENABLED else None,
+    openapi_url="/openapi.json" if DOCS_ENABLED else None,
 )
 
 # Add rate limiter
@@ -201,12 +206,14 @@ def _raise_api_error(exc: Exception, user_message: str) -> None:
 
 
 # Configure CORS for communication with UI container
+# SameSite=Lax + the origin allowlist already block cross-site requests, so
+# methods/headers are scoped to what the frontend actually uses (never "*").
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_parse_frontend_origins(),
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization"],
 )
 
 
@@ -270,7 +277,13 @@ def delete_current_user(
     response: Response,
     current_user: AuthenticatedUser = Depends(get_current_user),
     auth_service: AuthenticationService = Depends(get_auth_service),
+    chatbot: ChatbotService = Depends(get_chatbot_service),
 ):
+    # Purge cached PII (Redis conversation message cache) for this user's
+    # conversation BEFORE the DB row is removed, so stale user data cannot
+    # outlive the account. The semantic cache is global (keyed by prompt hash),
+    # not user-scoped, and is therefore not part of per-user purging.
+    chatbot.purge_user_data(current_user.id)
     deleted = auth_service.delete_user(current_user.id)
     if not deleted:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuario nao encontrado")
@@ -367,7 +380,11 @@ async def clear_user_conversations(
 @app.get("/")
 async def root():
     """Root endpoint."""
-    return {"message": "Diabetes Chatbot API", "version": "1.0.0", "docs": "/docs"}
+    return {
+        "message": "Diabetes Chatbot API",
+        "version": "1.0.0",
+        "docs": "/docs" if DOCS_ENABLED else None,
+    }
 
 
 if __name__ == "__main__":

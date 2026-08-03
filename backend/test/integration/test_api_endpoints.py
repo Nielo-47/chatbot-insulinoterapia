@@ -18,6 +18,7 @@ class DummyChatbot:
     def __init__(self) -> None:
         self.queries = []
         self.reset_calls = []
+        self.purge_calls = []
 
     async def chat(self, query: str, user_id: int, session_id: str | None = None):
         self.queries.append((query, user_id, session_id))
@@ -37,6 +38,9 @@ class DummyChatbot:
     def end_session(self, user_id: int):
         self.reset_calls.append(user_id)
         return True
+
+    def purge_user_data(self, user_id: int):
+        self.purge_calls.append(user_id)
 
 
 class ApiEndpointTests(unittest.TestCase):
@@ -252,6 +256,18 @@ class ApiEndpointTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["message"], "User deleted successfully")
         self.assertIsNone(self.users.get_user_by_id(self.user_id))
+
+    def test_delete_me_purges_cached_user_data(self) -> None:
+        token = self._login("13")["access_token"]
+        response = self.client.delete("/auth/me", headers={"Authorization": f"Bearer {token}"})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.chatbot.purge_calls, [self.user_id])
+
+    def test_docs_and_openapi_disabled_by_default(self) -> None:
+        self.assertEqual(self.client.get("/docs").status_code, 404)
+        self.assertEqual(self.client.get("/redoc").status_code, 404)
+        self.assertEqual(self.client.get("/openapi.json").status_code, 404)
 
     def test_health_returns_503_when_chatbot_missing(self) -> None:
         api.app.state.chatbot = None
