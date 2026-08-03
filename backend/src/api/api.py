@@ -9,9 +9,8 @@ import nest_asyncio
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from dotenv import load_dotenv
-from fastapi import Depends, FastAPI, HTTPException, Request, status
+from fastapi import Depends, FastAPI, HTTPException, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from backend.src.api.schemas import (
     AuthenticatedUser,
@@ -32,7 +31,16 @@ from backend.src.api.dependencies import (
 from backend.src.application.features.auth import AuthenticationService
 from backend.src.application.features.chat.chatbot_service import ChatbotService
 from backend.src.infrastructure.data.cache import init_semantic_cache
-from backend.src.config.security import JWT_SECRET_KEY
+from backend.src.config.security import (
+    JWT_SECRET_KEY,
+    JWT_ACCESS_TOKEN_EXPIRE_MINUTES,
+    AUTH_COOKIE_NAME,
+    AUTH_COOKIE_HTTPONLY,
+    AUTH_COOKIE_SECURE,
+    AUTH_COOKIE_SAMESITE,
+    AUTH_COOKIE_PATH,
+    AUTH_COOKIE_DOMAIN,
+)
 from backend.src.config.infrastructure import CHAT_CACHE_REDIS_URL
 from backend.src.config.env import require
 from backend.src.infrastructure.data import initialize_database
@@ -71,9 +79,6 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
-auth_scheme = HTTPBearer(auto_error=False)
-
-
 def _unauthorized(detail: str = "Nao autenticado") -> HTTPException:
     return HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -82,14 +87,58 @@ def _unauthorized(detail: str = "Nao autenticado") -> HTTPException:
     )
 
 
+def _bearer_token(request: Request) -> str | None:
+    auth_header = request.headers.get("Authorization", "")
+    if auth_header.lower().startswith("bearer "):
+        return auth_header[7:]
+    return None
+
+
+def _request_token(request: Request) -> str | None:
+    """Read the JWT from the httpOnly session cookie first, then the Authorization header.
+
+    The cookie is the primary transport (keeps the token out of JS-accessible
+    storage); the Authorization header remains supported for API clients/tests.
+    """
+    cookie_token = request.cookies.get(AUTH_COOKIE_NAME)
+    if cookie_token:
+        return cookie_token
+    return _bearer_token(request)
+
+
+def _set_auth_cookie(response: Response, token: str) -> None:
+    response.set_cookie(
+        key=AUTH_COOKIE_NAME,
+        value=token,
+        max_age=JWT_ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+        httponly=AUTH_COOKIE_HTTPONLY,
+        secure=AUTH_COOKIE_SECURE,
+        samesite=AUTH_COOKIE_SAMESITE,
+        path=AUTH_COOKIE_PATH,
+        domain=AUTH_COOKIE_DOMAIN or None,
+    )
+
+
+def _clear_auth_cookie(response: Response) -> None:
+    response.delete_cookie(
+        key=AUTH_COOKIE_NAME,
+        path=AUTH_COOKIE_PATH,
+        domain=AUTH_COOKIE_DOMAIN or None,
+        secure=AUTH_COOKIE_SECURE,
+        httponly=AUTH_COOKIE_HTTPONLY,
+        samesite=AUTH_COOKIE_SAMESITE,
+    )
+
+
 def get_current_user(
-    credentials: HTTPAuthorizationCredentials | None = Depends(auth_scheme),
+    request: Request,
     auth_service: AuthenticationService = Depends(get_auth_service),
 ) -> AuthenticatedUser:
-    if credentials is None or credentials.scheme.lower() != "bearer":
+    token = _request_token(request)
+    if token is None:
         raise _unauthorized()
 
-    principal = auth_service.resolve_principal_from_token(credentials.credentials)
+    principal = auth_service.resolve_principal_from_token(token)
     if principal is None:
         raise _unauthorized("Token de acesso invalido ou expirado")
 
@@ -163,7 +212,12 @@ app.add_middleware(
 
 @app.post("/auth/login", response_model=TokenResponse)
 @limiter.limit("5/minute")  # Rate limit: 5 login attempts per minute per IP
-def login(request: Request, login_request: LoginRequest, auth_service: AuthenticationService = Depends(get_auth_service)):
+def login(
+    request: Request,
+    login_request: LoginRequest,
+    response: Response,
+    auth_service: AuthenticationService = Depends(get_auth_service),
+):
     # Get real client IP for rate limiting / lockout tracking
     client_ip = _client_ip(request)
 
@@ -179,6 +233,12 @@ def login(request: Request, login_request: LoginRequest, auth_service: Authentic
         raise _unauthorized("Credenciais invalidas")
 
     access_token = auth_service.issue_access_token(principal)
+    # The JWT is delivered only via an httpOnly, Secure, SameSite=Lax cookie.
+    # It is still returned in the body so non-browser clients (API tests,
+    # curl) can use the Bearer scheme, but the browser frontend never reads
+    # it into localStorage. SameSite=Lax + the CORS origin allowlist block
+    # cross-site state-changing requests (CSRF).
+    _set_auth_cookie(response, access_token)
     return TokenResponse(access_token=access_token)
 
 
@@ -190,27 +250,31 @@ def read_current_user(current_user: AuthenticatedUser = Depends(get_current_user
 @app.post("/auth/logout")
 def logout(
     request: Request,
-    current_user: AuthenticatedUser = Depends(get_current_user),
+    response: Response,
     auth_service: AuthenticationService = Depends(get_auth_service),
 ):
-    """Logout the current user by blacklisting their token."""
-    # Get the token from the Authorization header
-    auth_header = request.headers.get("Authorization", "")
-    if auth_header.lower().startswith("bearer "):
-        token = auth_header[7:]  # Remove "Bearer " prefix
+    """Logout by blacklisting the current token and clearing the session cookie.
+
+    Does not require a valid token so an expired/invalid session can still be
+    cleared client-side.
+    """
+    token = _request_token(request)
+    if token:
         auth_service.logout_token(token)
-    
+    _clear_auth_cookie(response)
     return {"message": "Desconectado com sucesso"}
 
 
 @app.delete("/auth/me")
 def delete_current_user(
+    response: Response,
     current_user: AuthenticatedUser = Depends(get_current_user),
     auth_service: AuthenticationService = Depends(get_auth_service),
 ):
     deleted = auth_service.delete_user(current_user.id)
     if not deleted:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuario nao encontrado")
+    _clear_auth_cookie(response)
     return {"message": "Usuario excluido com sucesso"}
 
 

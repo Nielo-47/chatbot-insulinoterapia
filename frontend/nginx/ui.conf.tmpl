@@ -1,0 +1,46 @@
+# Rendered at container start by /docker-entrypoint.d/10-security-config.sh.
+# Placeholders (${SSL_CERTIFICATE_LINE}, ${SSL_CERTIFICATE_KEY_LINE},
+# ${HSTS_BLOCK}) are substituted with envsubst; $nginx variables are untouched.
+
+server {
+    listen 80;
+    server_name _;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    http2 on;
+    server_name _;
+
+    ${SSL_CERTIFICATE_LINE}
+    ${SSL_CERTIFICATE_KEY_LINE}
+
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+    ssl_prefer_server_ciphers on;
+
+    root /usr/share/nginx/html;
+    index index.html;
+
+    # Security headers
+    ${HSTS_BLOCK}
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-Frame-Options "DENY" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;
+    add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'" always;
+
+    location /api/ {
+        proxy_pass http://backend:8000/;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}

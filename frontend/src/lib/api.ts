@@ -1,7 +1,6 @@
 import { z } from 'zod'
 
 import { env } from './env'
-import { authStorage } from './auth'
 import type { ConversationHistoryMessage, QueryPayload, QueryResult } from '../types/chat'
 
 export class ApiError extends Error {
@@ -54,27 +53,18 @@ const conversationHistorySchema = z.object({
   ),
 })
 
-async function request<T>(
-  path: string,
-  init: RequestInit,
-  schema: z.ZodSchema<T>,
-  options?: { skipAuth?: boolean },
-): Promise<T> {
+async function request<T>(path: string, init: RequestInit, schema: z.ZodSchema<T>): Promise<T> {
   const controller = new AbortController()
   const timeout = window.setTimeout(() => controller.abort(), env.requestTimeoutMs)
-  const token = authStorage.getToken()
   const headers = new Headers(init.headers)
   headers.set('Content-Type', 'application/json')
-
-  if (!options?.skipAuth && token) {
-    headers.set('Authorization', `Bearer ${token}`)
-  }
 
   try {
     const response = await fetch(`${env.apiBaseUrl}${path}`, {
       ...init,
       headers,
       signal: controller.signal,
+      credentials: 'include',
     })
 
     if (!response.ok) {
@@ -115,22 +105,22 @@ export async function checkHealth(): Promise<void> {
   await request('/health', { method: 'GET' }, healthResultSchema)
 }
 
-export async function login(username: string, password: string): Promise<{ accessToken: string; tokenType: 'bearer' }> {
-  const result = await request(
+export async function login(username: string, password: string): Promise<void> {
+  // The backend sets the session in an httpOnly cookie; we never store the
+  // token in JS-accessible storage (localStorage/sessionStorage).
+  await request(
     '/auth/login',
     {
       method: 'POST',
       body: JSON.stringify({ username, password }),
     },
     loginResultSchema,
-    { skipAuth: true },
   )
+}
 
-  authStorage.setToken(result.access_token)
-  return {
-    accessToken: result.access_token,
-    tokenType: result.token_type,
-  }
+export async function logout(): Promise<void> {
+  // Server-side logout: blacklists the token and clears the httpOnly cookie.
+  await request('/auth/logout', { method: 'POST' }, z.object({ message: z.string() }))
 }
 
 export async function getCurrentUser(): Promise<{ id: number; username: string }> {
@@ -142,7 +132,12 @@ export async function deleteAccount(): Promise<void> {
 }
 
 export async function clearAuthSession(): Promise<void> {
-  authStorage.clearToken()
+  try {
+    await logout()
+  } catch {
+    // Best-effort: if the backend is offline the cookie simply stays (it is
+    // expired/invalid and will be replaced on the next login).
+  }
 }
 
 export async function getConversationHistory(): Promise<ConversationHistoryMessage[]> {

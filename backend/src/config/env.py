@@ -38,3 +38,15 @@ def get_int(key: str, default: int) -> int:
 def get_str(key: str, default: str) -> str:
     """Get a string environment variable with a default value."""
     return os.getenv(key, default)
+
+
+def get_bool(key: str, default: bool) -> bool:
+    """Get a boolean environment variable with a default value.
+
+    Accepted truthy values: "1", "true", "yes", "on" (case-insensitive).
+    Any other value is treated as False.
+    """
+    value = os.getenv(key)
+    if value is None or value == "":
+        return default
+    return value.strip().lower() in {"1", "true", "yes", "on"}

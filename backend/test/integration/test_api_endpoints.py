@@ -58,7 +58,7 @@ class ApiEndpointTests(unittest.TestCase):
         self.chatbot_patch.start().return_value = self.chatbot
         self.secret_patch.start()
 
-        self.client = TestClient(api.app)
+        self.client = TestClient(api.app, base_url="https://testserver")
         with self.client:
             pass
 
@@ -106,6 +106,39 @@ class ApiEndpointTests(unittest.TestCase):
 
         self.assertEqual(payload["token_type"], "bearer")
         self.assertTrue(payload["access_token"])
+
+    def test_login_endpoint_sets_http_only_session_cookie(self) -> None:
+        response = self.client.post(
+            "/auth/login",
+            json={"username": "alice", "password": "password123"},
+            headers={"X-Forwarded-For": "198.51.100.8"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        set_cookie = response.headers.get("set-cookie", "")
+        self.assertIn("access_token=", set_cookie)
+        self.assertIn("httponly", set_cookie.lower())
+        self.assertIn("secure", set_cookie.lower())
+        self.assertIn("samesite=lax", set_cookie.lower())
+
+    def test_session_cookie_authenticates_requests(self) -> None:
+        self._login("9")
+        response = self.client.get("/auth/me")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["username"], "alice")
+
+    def test_logout_clears_session_cookie(self) -> None:
+        self._login("12")
+        response = self.client.post("/auth/logout")
+
+        self.assertEqual(response.status_code, 200)
+        set_cookie = response.headers.get("set-cookie", "")
+        self.assertIn("access_token=", set_cookie)
+        self.assertIn("Max-Age=0", set_cookie)
+
+        me = self.client.get("/auth/me")
+        self.assertEqual(me.status_code, 401)
 
     def test_login_endpoint_rejects_bad_credentials(self) -> None:
         response = self.client.post(

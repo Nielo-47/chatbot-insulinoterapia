@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 
 import { ApiError, clearAuthSession, deleteAccount, getCurrentUser, login as loginRequest, checkHealth } from '../lib/api'
-import { authStorage } from '../lib/auth'
 import { ChatPage } from '../features/chat/ChatPage'
 import { LoginPage } from '../features/auth/LoginPage'
 import type { AuthStatus, BackendStatus } from '../types/app'
@@ -21,7 +20,6 @@ function App() {
 
   useEffect(() => {
     void (async () => {
-      const token = authStorage.getToken()
       let backendOnline = false
 
       try {
@@ -32,20 +30,18 @@ function App() {
         setBackendStatus('offline')
       }
 
-      if (!token) {
-        setAuthStatus('signed_out')
+      if (!backendOnline) {
+        setAuthStatus('unknown')
         setIsBootstrapping(false)
         return
       }
 
+      // The session lives in an httpOnly cookie, so there is no client-side
+      // token to inspect: probe /auth/me to learn the auth state.
       try {
-        if (backendOnline) {
-          const user = await getCurrentUser()
-          setCurrentUser(user)
-          setAuthStatus('authenticated')
-        } else {
-          setAuthStatus('unknown')
-        }
+        const user = await getCurrentUser()
+        setCurrentUser(user)
+        setAuthStatus('authenticated')
       } catch (error) {
         if (error instanceof ApiError && error.status === 401) {
           setAuthStatus('invalid')
