@@ -16,17 +16,15 @@ services:
     image: postgres:16-alpine
     restart: always
     environment:
-      - POSTGRES_DB=${POSTGRES_DB:-chatbot}
-      - POSTGRES_USER=${POSTGRES_USER:-chatbot}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-chatbot}
+      - POSTGRES_DB=${POSTGRES_DB:?POSTGRES_DB must be set (e.g. diabetes_chatbot)}
+      - POSTGRES_USER=${POSTGRES_USER:?POSTGRES_USER must be set (e.g. diabetes_chatbot)}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set to a strong password}
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-chatbot} -d ${POSTGRES_DB:-chatbot}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:?} -d ${POSTGRES_DB:?}"]
       interval: 10s
       timeout: 5s
       retries: 10
       start_period: 10s
-    ports:
-      - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
@@ -38,19 +36,17 @@ services:
     restart: unless-stopped
     env_file: .env
     environment:
-      - DATABASE_URL=${DATABASE_URL:-postgresql+psycopg://chatbot:chatbot@postgres:5432/chatbot}
+      - DATABASE_URL=${DATABASE_URL:?DATABASE_URL must be set (postgresql+psycopg://<user>:<strong_password>@postgres:5432/<db>)}
       - CHAT_CACHE_REDIS_URL=${CHAT_CACHE_REDIS_URL:-redis://redis:6379/1}
       - CHAT_CACHE_TTL_SECONDS=${CHAT_CACHE_TTL_SECONDS:-300}
       - DEV=${DEV:-false}
-      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:?JWT_SECRET_KEY must be set to a strong secret (>= 32 chars)}
       - EMBEDDING_BINDING_HOST=${OPENROUTER_BASE_URL:-https://openrouter.ai/api/v1}
       - EMBEDDING_API_KEY=${OPENROUTER_API_KEY}
       - PYTHONPATH=/app
       - BOOTSTRAP_USERS=${BOOTSTRAP_USERS:-}
     volumes:
       - ./data/processed:/app/data/processed
-    ports:
-      - "${BACKEND_PORT:-8000}:8000"
     depends_on:
       redis:
         condition: service_healthy

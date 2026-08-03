@@ -15,6 +15,10 @@ LOGIN_RATE_LIMIT_BLOCK_DURATION_SECONDS = get_int("LOGIN_RATE_LIMIT_BLOCK_DURATI
 MAX_LOGIN_ATTEMPTS = get_int("MAX_LOGIN_ATTEMPTS", 5)  # Lock after 5 failed attempts
 LOCKOUT_DURATION_SECONDS = get_int("LOCKOUT_DURATION_SECONDS", 900)  # 15 minutes lockout
 
+# Query rate limiting configuration
+QUERY_RATE_LIMIT = get_int("QUERY_RATE_LIMIT", 30)  # max queries per window per user
+QUERY_RATE_WINDOW_SECONDS = get_int("QUERY_RATE_WINDOW_SECONDS", 60)  # 1 minute window
+
 # JWT claims
 JWT_ISSUER = get_str("JWT_ISSUER", "diabetes-chatbot")
 JWT_AUDIENCE = get_str("JWT_AUDIENCE", "diabetes-chatbot-api")

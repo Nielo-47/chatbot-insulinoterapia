@@ -8,6 +8,7 @@ POSTGRES_PASSWORD="${POSTGRES_PASSWORD:-chatbot}"
 POSTGRES_PORT="${POSTGRES_PORT:-5432}"
 POSTGRES_TEST_DB="${POSTGRES_TEST_DB:-chatbot_test}"
 TEST_DATABASE_URL="${TEST_DATABASE_URL:-postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:${POSTGRES_PORT}/${POSTGRES_TEST_DB}}"
+TEST_POSTGRES_CONTAINER="diabetes-chatbot-test-postgres"
 
 if [[ ! -x "$VENV_PYTHON" ]]; then
   echo "Python venv not found at $VENV_PYTHON"
@@ -18,16 +19,28 @@ fi
 
 cd "$ROOT_DIR"
 
-echo "Starting PostgreSQL container for integration tests..."
-docker compose up -d postgres >/dev/null
+cleanup() {
+  docker rm -f "$TEST_POSTGRES_CONTAINER" >/dev/null 2>&1 || true
+}
+trap cleanup EXIT
+
+echo "Starting temporary PostgreSQL container for integration tests..."
+docker rm -f "$TEST_POSTGRES_CONTAINER" >/dev/null 2>&1 || true
+# The production compose file intentionally does not expose postgres to the
+# host; for tests only, spin up a dedicated container bound to loopback.
+docker run -d --name "$TEST_POSTGRES_CONTAINER" \
+  -p "127.0.0.1:${POSTGRES_PORT}:5432" \
+  -e POSTGRES_USER="$POSTGRES_USER" \
+  -e POSTGRES_PASSWORD="$POSTGRES_PASSWORD" \
+  postgres:16-alpine >/dev/null
 
 echo "Waiting for PostgreSQL to be ready..."
-until docker compose exec -T postgres pg_isready -U "$POSTGRES_USER" -d "${POSTGRES_DB:-chatbot}" >/dev/null 2>&1; do
+until docker exec "$TEST_POSTGRES_CONTAINER" pg_isready -U "$POSTGRES_USER" -d postgres >/dev/null 2>&1; do
   sleep 1
 done
 
 echo "Ensuring dedicated test database exists (${POSTGRES_TEST_DB})..."
-docker compose exec -T postgres psql -U "$POSTGRES_USER" -d postgres -c "CREATE DATABASE ${POSTGRES_TEST_DB};" >/dev/null 2>&1 || true
+docker exec "$TEST_POSTGRES_CONTAINER" psql -U "$POSTGRES_USER" -d postgres -c "CREATE DATABASE ${POSTGRES_TEST_DB};" >/dev/null 2>&1 || true
 
 echo "Running backend integration tests..."
 TEST_DATABASE_URL="$TEST_DATABASE_URL" \

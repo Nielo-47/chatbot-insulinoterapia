@@ -65,6 +65,20 @@ class ApiEndpointTests(unittest.TestCase):
         self.users = UsersRepository()
         self.user_id, _ = self.users.get_or_create_user_id("alice", hash_password("password123"))
 
+    def _login(self, ip_suffix: str) -> dict:
+        """Login as the seeded alice user from an isolated client IP.
+
+        Each test uses its own X-Forwarded-For IP so the Redis-backed login
+        rate limiter does not throttle across test methods.
+        """
+        response = self.client.post(
+            "/auth/login",
+            json={"username": "alice", "password": "password123"},
+            headers={"X-Forwarded-For": f"198.51.100.{ip_suffix}"},
+        )
+        self.assertEqual(response.status_code, 200)
+        return response.json()
+
     def tearDown(self) -> None:
         self.chatbot_patch.stop()
         self.init_patch.stop()
@@ -88,17 +102,34 @@ class ApiEndpointTests(unittest.TestCase):
         self.assertEqual(response.json()["status"], "healthy")
 
     def test_login_endpoint_returns_bearer_token(self) -> None:
-        response = self.client.post("/auth/login", json={"username": "alice", "password": "password123"})
+        payload = self._login("1")
 
-        self.assertEqual(response.status_code, 200)
-        payload = response.json()
         self.assertEqual(payload["token_type"], "bearer")
         self.assertTrue(payload["access_token"])
 
     def test_login_endpoint_rejects_bad_credentials(self) -> None:
-        response = self.client.post("/auth/login", json={"username": "alice", "password": "wrong"})
+        response = self.client.post(
+            "/auth/login",
+            json={"username": "alice", "password": "wrong"},
+            headers={"X-Forwarded-For": "198.51.100.10"},
+        )
 
         self.assertEqual(response.status_code, 401)
+
+    def test_login_endpoint_returns_uniform_401_when_locked(self) -> None:
+        """A locked account must still return the generic 401, not 423/429."""
+        with patch(
+            "backend.src.infrastructure.security.rate_limit.check_account_lockout",
+            return_value=(True, 300),
+        ):
+            response = self.client.post(
+                "/auth/login",
+                json={"username": "alice", "password": "password123"},
+                headers={"X-Forwarded-For": "198.51.100.11"},
+            )
+
+        self.assertEqual(response.status_code, 401)
+        self.assertNotIn("locked", response.text.lower())
 
     def test_query_endpoint_requires_authentication(self) -> None:
         response = self.client.post("/query", json={"query": "Como aplicar insulina?"})
@@ -106,9 +137,7 @@ class ApiEndpointTests(unittest.TestCase):
         self.assertEqual(response.status_code, 401)
 
     def test_authenticated_query_endpoint_returns_payload(self) -> None:
-        token = self.client.post("/auth/login", json={"username": "alice", "password": "password123"}).json()[
-            "access_token"
-        ]
+        token = self._login("2")["access_token"]
         response = self.client.post(
             "/query",
             json={"query": "Como aplicar insulina?"},
@@ -126,9 +155,7 @@ class ApiEndpointTests(unittest.TestCase):
         self.assertEqual(self.chatbot.queries[0][2], payload["session_id"])
 
     def test_query_endpoint_uses_provided_session_id(self) -> None:
-        token = self.client.post("/auth/login", json={"username": "alice", "password": "password123"}).json()[
-            "access_token"
-        ]
+        token = self._login("3")["access_token"]
         response = self.client.post(
             "/query",
             json={"query": "Olá", "session_id": "session-123"},
@@ -145,9 +172,7 @@ class ApiEndpointTests(unittest.TestCase):
         self.assertEqual(response.status_code, 401)
 
     def test_clear_session_endpoint_clears_current_user(self) -> None:
-        token = self.client.post("/auth/login", json={"username": "alice", "password": "password123"}).json()[
-            "access_token"
-        ]
+        token = self._login("4")["access_token"]
         response = self.client.delete(
             "/user/conversations",
             headers={"Authorization": f"Bearer {token}"},
@@ -163,9 +188,7 @@ class ApiEndpointTests(unittest.TestCase):
         self.assertEqual(response.status_code, 401)
 
     def test_get_conversations_returns_message_list(self) -> None:
-        token = self.client.post("/auth/login", json={"username": "alice", "password": "password123"}).json()[
-            "access_token"
-        ]
+        token = self._login("5")["access_token"]
         response = self.client.get("/user/conversations", headers={"Authorization": f"Bearer {token}"})
 
         self.assertEqual(response.status_code, 200)
@@ -182,9 +205,7 @@ class ApiEndpointTests(unittest.TestCase):
         self.assertEqual(messages[1]["sources"], ["source-1"])
 
     def test_me_endpoint_returns_current_user(self) -> None:
-        token = self.client.post("/auth/login", json={"username": "alice", "password": "password123"}).json()[
-            "access_token"
-        ]
+        token = self._login("6")["access_token"]
         response = self.client.get("/auth/me", headers={"Authorization": f"Bearer {token}"})
 
         self.assertEqual(response.status_code, 200)
@@ -192,9 +213,7 @@ class ApiEndpointTests(unittest.TestCase):
         self.assertEqual(response.json()["id"], self.user_id)
 
     def test_delete_me_endpoint_deletes_current_user(self) -> None:
-        token = self.client.post("/auth/login", json={"username": "alice", "password": "password123"}).json()[
-            "access_token"
-        ]
+        token = self._login("7")["access_token"]
         response = self.client.delete("/auth/me", headers={"Authorization": f"Bearer {token}"})
 
         self.assertEqual(response.status_code, 200)

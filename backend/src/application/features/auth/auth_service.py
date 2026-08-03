@@ -5,19 +5,8 @@ from backend.src.application.contracts.repositories import UsersRepositoryLike
 from backend.src.domain.models import AuthenticatedPrincipal
 from backend.src.infrastructure.security import rate_limit
 
-
-class AccountLockedException(Exception):
-    """Raised when account is locked due to too many failed login attempts."""
-    def __init__(self, remaining_seconds: int):
-        self.remaining_seconds = remaining_seconds
-        super().__init__(f"Account is locked. Try again in {remaining_seconds} seconds.")
-
-
-class RateLimitExceededException(Exception):
-    """Raised when IP rate limit is exceeded."""
-    def __init__(self, remaining_seconds: int):
-        self.remaining_seconds = remaining_seconds
-        super().__init__(f"Too many requests. Try again in {remaining_seconds} seconds.")
+# Dummy hash used to equalize timing for non-existent users
+_DUMMY_HASH = "$dummy$1$dummy$dummy"
 
 
 class AuthenticationService:
@@ -39,38 +28,38 @@ class AuthenticationService:
         password: str,
         client_ip: Optional[str] = None,
     ) -> Optional[AuthenticatedPrincipal]:
-        # Check rate limiting first (by IP)
+        # Lockout identity is keyed on (normalized username, ip) so a single
+        # source cannot permanently lock an account, while distributed attacks
+        # are still tracked per pair.
+        identity = rate_limit.build_lockout_identity(username, client_ip)
+
+        # IP rate limiting first (fail closed: deny when Redis is down)
         if client_ip is not None:
             is_allowed, _ = rate_limit.check_rate_limit(client_ip)
             if not is_allowed:
-                remaining = rate_limit.get_rate_limit_remaining_seconds(client_ip)
-                raise RateLimitExceededException(remaining)
+                return None
+
+        # Account lockout check before any credential work (fail closed)
+        is_locked, _ = rate_limit.check_account_lockout(identity)
+        if is_locked:
+            return None
 
         user = self.users_repository.get_user_by_username(username)
-        
+
         # Even if user doesn't exist, perform password check to prevent timing attacks
-        # Use a dummy hash for non-existent users
-        stored_hash = user.hashed_password if user else "$dummy$1$dummy$dummy"
-        
+        stored_hash = user.hashed_password if user else _DUMMY_HASH
+
         if not self._verify_password(password, stored_hash):
-            # Record failed login if user exists
-            if user is not None:
-                is_locked, remaining = rate_limit.check_account_lockout(user.id)
-                if is_locked:
-                    raise AccountLockedException(remaining)
-                
-                attempts = rate_limit.record_failed_login(user.id)
-                if attempts >= 5:
-                    raise AccountLockedException(rate_limit.LOCKOUT_DURATION_SECONDS)
-            
+            # Record failed login for every failure (existing or not) so lockout
+            # behavior does not reveal whether the account exists.
+            rate_limit.record_failed_login(identity)
             return None
 
         # Successful login
         if user is not None:
-            # Clear failed attempts
-            rate_limit.clear_failed_login_attempts(user.id)
-            
-            # Reset rate limit on successful login
+            rate_limit.clear_failed_login_attempts(identity)
+
+            # Reset IP rate limit on successful login
             if client_ip is not None:
                 rate_limit.reset_rate_limit(client_ip)
 
@@ -100,7 +89,9 @@ class AuthenticationService:
 
     def delete_user(self, user_id: int) -> bool:
         # Unlock account when user is deleted
-        rate_limit.unlock_account(user_id)
+        user = self.users_repository.get_user_by_id(user_id)
+        if user is not None:
+            rate_limit.unlock_account(user.username)
         return self.users_repository.delete_user_by_id(user_id)
 
     def logout_token(self, token: str) -> bool:

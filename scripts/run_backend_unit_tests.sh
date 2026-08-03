@@ -15,6 +15,7 @@ cd "$ROOT_DIR"
 
 echo "Running backend unit tests..."
 "$VENV_PYTHON" -m unittest backend.test.unit.test_auth -v
+"$VENV_PYTHON" -m unittest backend.test.unit.test_rate_limit -v
 "$VENV_PYTHON" -m unittest backend.test.unit.test_conversation_service -v
 "$VENV_PYTHON" -m unittest backend.test.unit.test_query_processor -v
 

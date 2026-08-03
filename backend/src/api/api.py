@@ -1,14 +1,12 @@
 """FastAPI Backend for Diabetes Chatbot - Exposes RAG functionality via REST API."""
 
 import logging
-import os
 import uuid
 from contextlib import asynccontextmanager
 from typing import List
 
 import nest_asyncio
 from slowapi import Limiter, _rate_limit_exceeded_handler
-from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, HTTPException, Request, status
@@ -32,16 +30,26 @@ from backend.src.api.dependencies import (
     get_chatbot_service,
 )
 from backend.src.application.features.auth import AuthenticationService
-from backend.src.application.features.auth.auth_service import AccountLockedException, RateLimitExceededException
 from backend.src.application.features.chat.chatbot_service import ChatbotService
 from backend.src.infrastructure.data.cache import init_semantic_cache
 from backend.src.config.security import JWT_SECRET_KEY
+from backend.src.config.infrastructure import CHAT_CACHE_REDIS_URL
 from backend.src.config.env import require
 from backend.src.infrastructure.data import initialize_database
+from backend.src.infrastructure.security import rate_limit
 
 
-# Rate limiter using client IP
-limiter = Limiter(key_func=get_remote_address)
+# Rate limiter using real client IP (first hop of X-Forwarded-For, set by nginx)
+def _client_ip(request: Request) -> str:
+    forwarded = request.headers.get("X-Forwarded-For", "")
+    if forwarded:
+        first_hop = forwarded.split(",")[0].strip()
+        if first_hop:
+            return first_hop
+    return request.client.host if request.client else "unknown"
+
+
+limiter = Limiter(key_func=_client_ip, storage_uri=CHAT_CACHE_REDIS_URL)
 
 
 def _parse_frontend_origins() -> List[str]:
@@ -95,24 +103,14 @@ _MIN_JWT_SECRET_LENGTH = 32
 def _validate_jwt_secret() -> None:
     """Fail fast if JWT_SECRET_KEY is weak or left as the default value.
 
-    In development (DEV=true) a warning is logged instead of raising, so
-    local environments can start without a production-grade secret.
+    A weak or default secret is never acceptable, including in development.
     """
     secret = JWT_SECRET_KEY
-    is_dev = require("DEV").lower() in ("1", "true", "yes")
     weak = secret == _DEFAULT_JWT_SECRET or len(secret) < _MIN_JWT_SECRET_LENGTH
     if weak:
-        if is_dev:
-            logger.warning(
-                "JWT_SECRET_KEY is using a weak/default value. "
-                "Set a strong secret (≥%d chars) before deploying to production.",
-                _MIN_JWT_SECRET_LENGTH,
-            )
-        else:
-            raise RuntimeError(
-                f"JWT_SECRET_KEY must be set to a strong secret (at least {_MIN_JWT_SECRET_LENGTH} characters). "
-                "Set DEV=true to bypass this check in local development."
-            )
+        raise RuntimeError(
+            f"JWT_SECRET_KEY must be set to a strong secret (at least {_MIN_JWT_SECRET_LENGTH} characters)."
+        )
 
 
 @asynccontextmanager
@@ -166,31 +164,22 @@ app.add_middleware(
 @app.post("/auth/login", response_model=TokenResponse)
 @limiter.limit("5/minute")  # Rate limit: 5 login attempts per minute per IP
 def login(request: Request, login_request: LoginRequest, auth_service: AuthenticationService = Depends(get_auth_service)):
-    # Get client IP for rate limiting
-    client_ip = request.client.host if request.client else None
-    
-    try:
-        principal = auth_service.authenticate_credentials(
-            login_request.username, 
-            login_request.password,
-            client_ip=client_ip,
-        )
-        if principal is None:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Nome de usuario ou senha invalidos")
+    # Get real client IP for rate limiting / lockout tracking
+    client_ip = _client_ip(request)
 
-        access_token = auth_service.issue_access_token(principal)
-        return TokenResponse(access_token=access_token)
-    
-    except AccountLockedException as e:
-        raise HTTPException(
-            status_code=status.HTTP_423_LOCKED,
-            detail=f"Account is locked. Try again in {e.remaining_seconds} seconds.",
-        )
-    except RateLimitExceededException as e:
-        raise HTTPException(
-            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-            detail=f"Too many login attempts. Try again in {e.remaining_seconds} seconds.",
-        )
+    principal = auth_service.authenticate_credentials(
+        login_request.username,
+        login_request.password,
+        client_ip=client_ip,
+    )
+    if principal is None:
+        # Uniform generic response for every login failure (bad credentials,
+        # locked account, rate limited) to avoid account enumeration and
+        # status-code-based fingerprinting.
+        raise _unauthorized("Credenciais invalidas")
+
+    access_token = auth_service.issue_access_token(principal)
+    return TokenResponse(access_token=access_token)
 
 
 @app.get("/auth/me", response_model=AuthenticatedUser)
@@ -264,6 +253,14 @@ async def query_chatbot(
 ):
     """Query the chatbot with a question."""
     try:
+        is_allowed, _ = rate_limit.check_query_rate_limit(current_user.id)
+        if not is_allowed:
+            remaining = rate_limit.get_query_rate_limit_remaining_seconds(current_user.id)
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail=f"Limite de consultas excedido. Tente novamente em {remaining} segundos.",
+            )
+
         session_id = request.session_id or str(uuid.uuid4())
 
         logger.info(f"Processing query for user {current_user.id} / session {session_id}: {request.query[:50]}...")

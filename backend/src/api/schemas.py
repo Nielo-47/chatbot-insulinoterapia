@@ -10,8 +10,8 @@ class SourceItem(BaseModel):
 
 
 class LoginRequest(BaseModel):
-    username: str
-    password: str
+    username: str = Field(max_length=64)
+    password: str = Field(max_length=128)
 
 
 class TokenResponse(BaseModel):
@@ -25,8 +25,8 @@ class AuthenticatedUser(BaseModel):
 
 
 class QueryRequest(BaseModel):
-    query: str
-    session_id: Optional[str] = None
+    query: str = Field(max_length=2000)
+    session_id: Optional[str] = Field(default=None, max_length=64)
 
 
 class QueryResponse(BaseModel):
