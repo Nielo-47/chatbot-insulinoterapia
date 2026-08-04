@@ -111,9 +111,6 @@ export function ChatPage({ username, backendStatus, authStatus, onLogout, onDele
       }
 
       setMessages((current) => [...current, assistantMessage])
-      if (result.summarized) {
-        console.log('[DEBUG] Conversation history was compressed by the backend')
-      }
     } catch (error) {
       if (error instanceof ApiError && error.status === 401) {
         await onLogout('expired')

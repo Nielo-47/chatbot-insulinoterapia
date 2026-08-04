@@ -3,6 +3,21 @@ import { z } from 'zod'
 import { env } from './env'
 import type { ConversationHistoryMessage, QueryPayload, QueryResult } from '../types/chat'
 
+const MAX_ERROR_LENGTH = 200
+
+function sanitizeError(message: string): string {
+  // Strip non-printable characters: keep only printable ASCII, space, tab, newline, carriage return
+  const cleaned = message
+    .split('')
+    .filter((ch) => {
+      const code = ch.charCodeAt(0)
+      return code === 0x09 || code === 0x0a || code === 0x0d || (code >= 0x20 && code <= 0x7e)
+    })
+    .join('')
+  // Truncate to max length
+  return cleaned.length > MAX_ERROR_LENGTH ? cleaned.slice(0, MAX_ERROR_LENGTH) + '…' : cleaned
+}
+
 export class ApiError extends Error {
   status: number
 
@@ -77,7 +92,7 @@ async function request<T>(path: string, init: RequestInit, schema: z.ZodSchema<T
       } catch {
         // Keep the status-only message when the response is not JSON.
       }
-      throw new ApiError(detail, response.status)
+      throw new ApiError(sanitizeError(detail), response.status)
     }
 
     const json = await response.json()

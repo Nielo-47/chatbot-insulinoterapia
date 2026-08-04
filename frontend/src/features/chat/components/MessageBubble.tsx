@@ -4,6 +4,15 @@ import remarkGfm from 'remark-gfm'
 
 import type { ChatMessage } from '../../../types/chat'
 
+function isSafeUrl(href: string): boolean {
+  try {
+    const url = new URL(href, window.location.origin)
+    return ['http:', 'https:', 'mailto:'].includes(url.protocol)
+  } catch {
+    return false
+  }
+}
+
 interface MessageBubbleProps {
   message: ChatMessage
   onShowSources: (message: ChatMessage) => void
@@ -35,9 +44,18 @@ export function MessageBubble({ message, onShowSources }: MessageBubbleProps) {
         <ReactMarkdown
           remarkPlugins={[remarkGfm]}
           components={{
-            a: ({ node: _node, ...props }) => (
-              <a {...props} target="_blank" rel="noreferrer" className="font-medium text-cyan-700 underline decoration-cyan-400 underline-offset-2 hover:text-cyan-800" />
-            ),
+            a: ({ href, ...props }) => {
+              const safe = href ? isSafeUrl(href) : false
+              return (
+                <a
+                  {...props}
+                  href={safe ? href : undefined}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="font-medium text-cyan-700 underline decoration-cyan-400 underline-offset-2 hover:text-cyan-800"
+                />
+              )
+            },
             code: ({ className, ...props }) => (
               <code {...props} className={clsx('rounded bg-slate-200 px-1 py-0.5 font-mono text-[0.85em]', className)} />
             ),

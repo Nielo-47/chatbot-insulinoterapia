@@ -24,6 +24,8 @@ RUN chmod +x /docker-entrypoint.d/10-security-config.sh
 EXPOSE 80 443
 
 # /etc/nginx/certs (optional) is mounted by docker-compose for real certificates.
+# Healthcheck uses --insecure because it connects to localhost with either
+# self-signed or real certs. This is container-internal traffic only.
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
     CMD curl -fsS -o /dev/null --insecure https://127.0.0.1/ || exit 1
 
