@@ -1,12 +1,19 @@
+import os
 import uuid
 from typing import Any, Callable, Optional
 
 from backend.src.application.contracts.repositories import UsersRepositoryLike
 from backend.src.domain.models import AuthenticatedPrincipal
 from backend.src.infrastructure.security import rate_limit
+from backend.src.infrastructure.security.password import hash_password
 
-# Dummy hash used to equalize timing for non-existent users
-_DUMMY_HASH = "$dummy$1$dummy$dummy"
+# Dummy hash used to equalize timing for non-existent users. It is a real
+# PBKDF2-SHA256 hash (same algorithm/iteration count as real users) so that
+# verify_password() runs the full verification work and the response timing
+# is indistinguishable whether or not the account exists. A syntactically
+# invalid value (e.g. a different algorithm) would short-circuit in
+# verify_password() and reintroduce a timing-based account enumeration vector.
+_DUMMY_HASH = hash_password(os.urandom(16).hex())
 
 
 class AuthenticationService:

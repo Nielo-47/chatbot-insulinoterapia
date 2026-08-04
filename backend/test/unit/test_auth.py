@@ -6,7 +6,7 @@ from typing import Any, Optional
 import jwt
 
 from backend.src.application.contracts.repositories import UsersRepositoryLike
-from backend.src.application.features.auth.auth_service import AuthenticationService
+from backend.src.application.features.auth.auth_service import AuthenticationService, _DUMMY_HASH
 from backend.src.application.features.auth.auth_primitives import (
     create_access_token,
     decode_access_token,
@@ -28,6 +28,18 @@ class AuthTests(unittest.TestCase):
 
         self.assertTrue(verify_password("secret-password", hashed))
         self.assertFalse(verify_password("wrong-password", hashed))
+
+    def test_dummy_hash_is_real_pbkdf2_so_timing_is_equalized(self) -> None:
+        """The dummy hash must use the same algorithm/iterations as real users.
+
+        If it were a different algorithm, verify_password() would short-circuit
+        at the algorithm check and unknown-user logins would complete almost
+        instantly, reintroducing timing-based account enumeration.
+        """
+        self.assertTrue(_DUMMY_HASH.startswith("pbkdf2_sha256$"))
+        # A matching password must not verify against the throwaway hash, and
+        # verification must complete the full PBKDF2 path (not short-circuit).
+        self.assertFalse(verify_password("any-password", _DUMMY_HASH))
 
     def test_access_token_round_trip(self) -> None:
         with patch("backend.src.infrastructure.security.token.JWT_SECRET_KEY", "token-secret-value-long-enough-32-bytes"):

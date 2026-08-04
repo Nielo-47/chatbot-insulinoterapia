@@ -17,9 +17,9 @@ from backend.src.infrastructure.repositories.users_repository import UsersReposi
 
 
 def _validate_bootstrap_password(password: str) -> None:
-    """Reject trivially weak bootstrap passwords (min length + charset mix)."""
-    if len(password) < 8:
-        raise SystemExit("Password must be at least 8 characters long")
+    """Reject weak bootstrap passwords (min length + charset mix + blocklist)."""
+    if len(password) < 12:
+        raise SystemExit("Password must be at least 12 characters long")
     if not (any(ch.isalpha() for ch in password) and any(ch.isdigit() for ch in password)):
         raise SystemExit("Password must contain both letters and digits")
 

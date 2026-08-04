@@ -8,8 +8,6 @@ from contextlib import asynccontextmanager
 from typing import List
 
 import nest_asyncio
-from slowapi import Limiter, _rate_limit_exceeded_handler
-from slowapi.errors import RateLimitExceeded
 from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, HTTPException, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -45,7 +43,7 @@ from backend.src.config.security import (
     get_auth_cookie_name,
     TRUSTED_PROXY_IPS,
 )
-from backend.src.config.infrastructure import CHAT_CACHE_REDIS_URL, DOCS_ENABLED
+from backend.src.config.infrastructure import DOCS_ENABLED
 from backend.src.config.env import require
 from backend.src.infrastructure.data import initialize_database
 from backend.src.infrastructure.security import rate_limit
@@ -71,7 +69,9 @@ def _is_trusted_proxy(peer: str) -> bool:
     return False
 
 
-# Rate limiter keyed on the real client IP. Forwarded headers (X-Real-IP,
+# Rate limiting / lockout is enforced inside AuthenticationService.authenticate_credentials
+# via Redis-backed rate_limit.check_rate_limit / check_account_lockout (fail closed when
+# Redis is unavailable), keyed on the real client IP. Forwarded headers (X-Real-IP,
 # X-Forwarded-For) are honored only when the request's direct peer is a trusted
 # reverse proxy (TRUSTED_PROXY_IPS); nginx overwrites them with $remote_addr,
 # so an end client cannot spoof its identity through the proxy. Otherwise the
@@ -88,9 +88,6 @@ def _client_ip(request: Request) -> str:
             if first_hop:
                 return first_hop
     return peer
-
-
-limiter = Limiter(key_func=_client_ip, storage_uri=CHAT_CACHE_REDIS_URL)
 
 
 def _parse_frontend_origins() -> List[str]:
@@ -239,10 +236,6 @@ app = FastAPI(
     openapi_url="/openapi.json" if DOCS_ENABLED else None,
 )
 
-# Add rate limiter
-app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
-
 
 def _raise_api_error(exc: Exception, user_message: str) -> None:
     if isinstance(exc, HTTPException):
@@ -272,7 +265,6 @@ app.add_middleware(
 
 
 @app.post("/auth/login", response_model=TokenResponse)
-@limiter.limit("5/minute")  # Rate limit: 5 login attempts per minute per IP
 def login(
     request: Request,
     login_request: LoginRequest,
