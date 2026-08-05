@@ -13,7 +13,7 @@ class AuthenticatedPrincipal:
 class User:
     id: int
     username: str
-    hashed_password: str
+    authentik_sub: Optional[str] = None
     created_at: Optional[datetime] = None
 
 

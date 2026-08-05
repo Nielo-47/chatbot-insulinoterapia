@@ -10,8 +10,7 @@ from backend.src.infrastructure.rag.factory import RAGFactory
 from backend.src.infrastructure.repositories.conversations_repository import ConversationsRepository
 from backend.src.infrastructure.repositories.messages_repository import MessagesRepository
 from backend.src.infrastructure.repositories.users_repository import UsersRepository
-from backend.src.infrastructure.security.password import verify_password
-from backend.src.infrastructure.security.token import create_access_token, decode_access_token
+from backend.src.infrastructure.security.authentik import AuthentikAdminClient
 
 
 async def build_chatbot_service() -> ChatbotService:
@@ -35,9 +34,7 @@ async def build_chatbot_service() -> ChatbotService:
 def build_auth_service() -> AuthenticationService:
     return build_authentication_service(
         users_repository=UsersRepository(),
-        verify_password=verify_password,
-        create_access_token=create_access_token,
-        decode_access_token=decode_access_token,
+        authentik_admin_client=AuthentikAdminClient(),
     )
 
 

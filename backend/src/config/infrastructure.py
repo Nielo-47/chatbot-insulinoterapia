@@ -15,10 +15,6 @@ CHAT_CACHE_REDIS_URL = require("CHAT_CACHE_REDIS_URL")
 CHAT_CACHE_TTL_SECONDS = require_int("CHAT_CACHE_TTL_SECONDS")
 CHAT_CACHE_KEY_PREFIX = require("CHAT_CACHE_KEY_PREFIX")
 
-# Token blacklist Redis settings
-TOKEN_BLACKLIST_ENABLED = get_int("TOKEN_BLACKLIST_ENABLED", 1)  # Enabled by default
-TOKEN_BLACKLIST_PREFIX = get_str("TOKEN_BLACKLIST_PREFIX", "token:blacklist:")
-
 # API docs exposure. Disabled by default (fail closed) to avoid leaking the API
 # schema for reconnaissance; opt in explicitly for development.
 DOCS_ENABLED = get_bool("DOCS_ENABLED", False)

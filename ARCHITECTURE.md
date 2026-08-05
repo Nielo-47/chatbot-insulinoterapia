@@ -159,6 +159,15 @@ npm run dev
 ## Security Notes
 
 - CORS uses explicit origins through FRONTEND_ORIGINS.
-- API uses JWT Bearer authentication for chat and user conversation endpoints.
-- Authentication endpoints are available at `/auth/login` and `/auth/me`.
+- Authentication is fully delegated to Authentik (forward-auth). The nginx edge
+  runs an Authentik auth subrequest for the UI and all `/api/` endpoints (except
+  `/api/health`); on success it injects `X-authentik-uid` / `X-authentik-username`
+  headers, which the backend consumes only when the direct peer is a configured
+  trusted proxy (TRUSTED_PROXY_IPS). Login, sessions, MFA, password policy, rate
+  limiting and lockout are all handled by Authentik; the backend stores no
+  credentials (the `users` table has no password column).
+- The frontend never stores tokens: `/auth/me` probes the session, and login/
+  logout are plain redirects to Authentik flows.
+- Account deletion revokes the user in Authentik via the Admin API (AUTHENTIK_ADMIN_API_TOKEN)
+  before purging local data; it fails closed (502) when Authentik cannot be reached.
 - Conversation history is persisted in PostgreSQL and cached in Redis.

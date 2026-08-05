@@ -102,6 +102,20 @@ class DatabaseSchemaTests(unittest.TestCase):
 
         self.assertIn("sources_json", columns)
 
+    def test_users_table_has_authentik_sub_column(self) -> None:
+        inspector = inspect(self.engine)
+        columns = {column["name"] for column in inspector.get_columns("users", schema=self.test_schema)}
+
+        self.assertIn("authentik_sub", columns)
+
+    def test_users_table_has_no_password_column(self) -> None:
+        """Passwords are owned by Authentik; they must never be stored locally."""
+        inspector = inspect(self.engine)
+        columns = {column["name"] for column in inspector.get_columns("users", schema=self.test_schema)}
+
+        self.assertNotIn("hashed_password", columns)
+        self.assertNotIn("password", columns)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -1,27 +1,31 @@
-"""FastAPI Backend for Diabetes Chatbot - Exposes RAG functionality via REST API."""
+"""FastAPI Backend for Diabetes Chatbot - Exposes RAG functionality via REST API.
+
+Authentication is fully delegated to Authentik (forward-auth proxy). The backend
+never sees credentials or tokens: nginx runs an Authentik auth subrequest and
+forwards the resulting identity headers (X-authentik-uid, X-authentik-username),
+which the backend consumes after verifying the request came from a trusted
+proxy. Account deletion calls the Authentik Admin API.
+"""
 
 import ipaddress
 import logging
 import os
 import uuid
 from contextlib import asynccontextmanager
-from typing import List
+from typing import List, Tuple
 
 import nest_asyncio
 from dotenv import load_dotenv
-from fastapi import Depends, FastAPI, HTTPException, Request, Response, status
+from fastapi import Depends, FastAPI, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 
 from backend.src.api.schemas import (
-    AccountDeleteRequest,
     AuthenticatedUser,
     ConversationHistoryResponse,
     ConversationMessage,
     HealthResponse,
-    LoginRequest,
     QueryRequest,
     QueryResponse,
-    TokenResponse,
 )
 from backend.src.api.dependencies import (
     build_auth_service,
@@ -32,17 +36,7 @@ from backend.src.api.dependencies import (
 from backend.src.application.features.auth import AuthenticationService
 from backend.src.application.features.chat.chatbot_service import ChatbotService
 from backend.src.infrastructure.data.cache import init_semantic_cache
-from backend.src.config.security import (
-    JWT_SECRET_KEY,
-    JWT_ACCESS_TOKEN_EXPIRE_MINUTES,
-    AUTH_COOKIE_HTTPONLY,
-    AUTH_COOKIE_SECURE,
-    AUTH_COOKIE_SAMESITE,
-    AUTH_COOKIE_PATH,
-    AUTH_COOKIE_DOMAIN,
-    get_auth_cookie_name,
-    TRUSTED_PROXY_IPS,
-)
+from backend.src.config.security import TRUSTED_PROXY_IPS
 from backend.src.config.infrastructure import DOCS_ENABLED
 from backend.src.config.env import require
 from backend.src.infrastructure.data import initialize_database
@@ -67,27 +61,6 @@ def _is_trusted_proxy(peer: str) -> bool:
         except ValueError:
             continue
     return False
-
-
-# Rate limiting / lockout is enforced inside AuthenticationService.authenticate_credentials
-# via Redis-backed rate_limit.check_rate_limit / check_account_lockout (fail closed when
-# Redis is unavailable), keyed on the real client IP. Forwarded headers (X-Real-IP,
-# X-Forwarded-For) are honored only when the request's direct peer is a trusted
-# reverse proxy (TRUSTED_PROXY_IPS); nginx overwrites them with $remote_addr,
-# so an end client cannot spoof its identity through the proxy. Otherwise the
-# direct peer address is used and any client-supplied headers are ignored.
-def _client_ip(request: Request) -> str:
-    peer = request.client.host if request.client else "unknown"
-    if _is_trusted_proxy(peer):
-        real_ip = request.headers.get("X-Real-IP", "").strip()
-        if real_ip:
-            return real_ip
-        forwarded = request.headers.get("X-Forwarded-For", "")
-        if forwarded:
-            first_hop = forwarded.split(",")[0].strip()
-            if first_hop:
-                return first_hop
-    return peer
 
 
 def _parse_frontend_origins() -> List[str]:
@@ -117,102 +90,39 @@ def _unauthorized(detail: str = "Nao autenticado") -> HTTPException:
     )
 
 
-def _bearer_token(request: Request) -> str | None:
-    auth_header = request.headers.get("Authorization", "")
-    if auth_header.lower().startswith("bearer "):
-        return auth_header[7:]
-    return None
+def _forwarded_identity(request: Request) -> Tuple[str, str]:
+    """Return (authentik_sub, username) from the trusted proxy's forwarded headers.
 
-
-def _request_token(request: Request) -> str | None:
-    """Read the JWT from the httpOnly session cookie first, then the Authorization header.
-
-    The cookie is the primary transport (keeps the token out of JS-accessible
-    storage); the Authorization header remains supported for API clients/tests.
+    Fail closed: the X-authentik-* headers are honored only when the request's
+    direct peer is a trusted reverse proxy (TRUSTED_PROXY_IPS). nginx overwrites
+    any client-supplied X-authentik-* headers with values taken from the
+    Authentik forward-auth subrequest, so an end client cannot spoof an identity.
     """
-    cookie_token = request.cookies.get(get_auth_cookie_name())
-    if cookie_token:
-        return cookie_token
-    return _bearer_token(request)
-
-
-def _set_auth_cookie(response: Response, token: str) -> None:
-    response.set_cookie(
-        key=get_auth_cookie_name(),
-        value=token,
-        max_age=JWT_ACCESS_TOKEN_EXPIRE_MINUTES * 60,
-        httponly=AUTH_COOKIE_HTTPONLY,
-        secure=AUTH_COOKIE_SECURE,
-        samesite=AUTH_COOKIE_SAMESITE,
-        path=AUTH_COOKIE_PATH,
-        domain=AUTH_COOKIE_DOMAIN or None,
-    )
-
-
-def _clear_auth_cookie(response: Response) -> None:
-    response.delete_cookie(
-        key=get_auth_cookie_name(),
-        path=AUTH_COOKIE_PATH,
-        domain=AUTH_COOKIE_DOMAIN or None,
-        secure=AUTH_COOKIE_SECURE,
-        httponly=AUTH_COOKIE_HTTPONLY,
-        samesite=AUTH_COOKIE_SAMESITE,
-    )
+    peer = request.client.host if request.client else "unknown"
+    if not _is_trusted_proxy(peer):
+        return "", ""
+    sub = request.headers.get("X-authentik-uid", "").strip()
+    username = request.headers.get("X-authentik-username", "").strip()
+    return sub, username
 
 
 def get_current_user(
     request: Request,
     auth_service: AuthenticationService = Depends(get_auth_service),
 ) -> AuthenticatedUser:
-    token = _request_token(request)
-    if token is None:
+    sub, username = _forwarded_identity(request)
+    # Both the Authentik uid and the username must be present; a partial identity
+    # is treated as unauthenticated rather than provisioning a broken user row.
+    if not sub or not username:
         raise _unauthorized()
 
-    principal = auth_service.resolve_principal_from_token(token)
-    if principal is None:
-        raise _unauthorized("Token de acesso invalido ou expirado")
-
+    principal = auth_service.resolve_principal_from_identity(sub, username)
     return AuthenticatedUser(id=principal.id, username=principal.username)
-
-
-_DEFAULT_JWT_SECRET = "change-me"
-_MIN_JWT_SECRET_LENGTH = 32
-_RECOMMENDED_JWT_SECRET_LENGTH = 64
-
-
-def _validate_jwt_secret() -> None:
-    """Fail fast if JWT_SECRET_KEY is weak or left as the default value.
-
-    A weak or default secret is never acceptable, including in development.
-    """
-    secret = JWT_SECRET_KEY
-    weak = secret == _DEFAULT_JWT_SECRET or len(secret) < _MIN_JWT_SECRET_LENGTH
-    if weak:
-        raise RuntimeError(
-            f"JWT_SECRET_KEY must be set to a strong secret (at least {_MIN_JWT_SECRET_LENGTH} characters)."
-        )
-    # L2: lengths below the OWASP-recommended 64 chars for HS256 still start,
-    # but the operator is warned to rotate to a longer random secret.
-    if len(secret) < _RECOMMENDED_JWT_SECRET_LENGTH:
-        logger.warning(
-            "JWT_SECRET_KEY is %d characters long; OWASP recommends at least %d "
-            "random characters for HS256 (e.g. `openssl rand -hex 32`).",
-            len(secret),
-            _RECOMMENDED_JWT_SECRET_LENGTH,
-        )
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Manage chatbot lifecycle."""
-    _validate_jwt_secret()
-    if os.environ.get("AUTH_ENABLED") is not None:
-        # Dead/misleading config (L3): authentication is always enforced and
-        # AUTH_ENABLED is not read anywhere in the application.
-        logger.warning(
-            "AUTH_ENABLED is set in the environment but this application does not use it; "
-            "authentication is always enforced and the variable is ignored."
-        )
     logger.info("Initializing chatbot...")
     initialize_database()
     logger.info("Database initialized successfully")
@@ -264,72 +174,29 @@ app.add_middleware(
 )
 
 
-@app.post("/auth/login", response_model=TokenResponse)
-def login(
-    request: Request,
-    login_request: LoginRequest,
-    response: Response,
-    auth_service: AuthenticationService = Depends(get_auth_service),
-):
-    # Get real client IP for rate limiting / lockout tracking
-    client_ip = _client_ip(request)
-
-    principal = auth_service.authenticate_credentials(
-        login_request.username,
-        login_request.password,
-        client_ip=client_ip,
-    )
-    if principal is None:
-        # Uniform generic response for every login failure (bad credentials,
-        # locked account, rate limited) to avoid account enumeration and
-        # status-code-based fingerprinting.
-        raise _unauthorized("Credenciais invalidas")
-
-    access_token = auth_service.issue_access_token(principal)
-    # The JWT is delivered only via an httpOnly, Secure, SameSite=Lax cookie.
-    # It is still returned in the body so non-browser clients (API tests,
-    # curl) can use the Bearer scheme, but the browser frontend never reads
-    # it into localStorage. SameSite=Lax + the CORS origin allowlist block
-    # cross-site state-changing requests (CSRF).
-    _set_auth_cookie(response, access_token)
-    return TokenResponse(access_token=access_token)
-
-
 @app.get("/auth/me", response_model=AuthenticatedUser)
 def read_current_user(current_user: AuthenticatedUser = Depends(get_current_user)):
     return current_user
 
 
-@app.post("/auth/logout")
-def logout(
-    request: Request,
-    response: Response,
-    auth_service: AuthenticationService = Depends(get_auth_service),
-):
-    """Logout by blacklisting the current token and clearing the session cookie.
-
-    Does not require a valid token so an expired/invalid session can still be
-    cleared client-side.
-    """
-    token = _request_token(request)
-    if token:
-        auth_service.logout_token(token)
-    _clear_auth_cookie(response)
-    return {"message": "Desconectado com sucesso"}
-
-
 @app.delete("/auth/me")
 def delete_current_user(
-    response: Response,
-    delete_request: AccountDeleteRequest,
     current_user: AuthenticatedUser = Depends(get_current_user),
     auth_service: AuthenticationService = Depends(get_auth_service),
     chatbot: ChatbotService = Depends(get_chatbot_service),
 ):
-    # L2: a destructive action requires password re-confirmation so a stolen
-    # (or otherwise compromised) session alone cannot delete the account.
-    if not auth_service.confirm_password(current_user.id, delete_request.password):
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Senha incorreta")
+    """Delete the current account.
+
+    The Authentik session is itself the proof of identity (no password
+    re-confirmation exists anymore). The Authentik user is revoked first so
+    SSO access stops immediately; only then is local data purged. If the
+    Authentik deletion fails, the local account is kept untouched (fail closed).
+    """
+    if not auth_service.delete_authentik_user(current_user.username):
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="Nao foi possivel excluir a conta no provedor de identidade",
+        )
 
     # Purge cached PII (Redis conversation message cache) for this user's
     # conversation BEFORE the DB row is removed, so stale user data cannot
@@ -339,7 +206,6 @@ def delete_current_user(
     deleted = auth_service.delete_user(current_user.id)
     if not deleted:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuario nao encontrado")
-    _clear_auth_cookie(response)
     return {"message": "Usuario excluido com sucesso"}
 
 
@@ -450,7 +316,8 @@ async def root():
 
     Kept unauthenticated (harmless banner), but deliberately omits the version
     so the API surface is not fingerprinted (L2). /health must stay
-    unauthenticated too because the container healthcheck probes it.
+    unauthenticated too because the container healthcheck probes it. At the
+    edge, nginx's Authentik auth_request still guards / and /api/.
     """
     return {
         "message": "Diabetes Chatbot API",

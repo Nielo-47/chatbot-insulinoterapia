@@ -5,20 +5,23 @@ from unittest.mock import patch
 from fastapi.testclient import TestClient
 
 # The starlette TestClient reports its direct peer as the literal string
-# "testclient". Treat it as a trusted proxy so the X-Forwarded-For header used
-# by _login() is honored for per-IP rate-limit isolation, mirroring the nginx
-# reverse proxy in production. Must be set before the api module is imported.
+# "testclient". Treat it as a trusted proxy so the X-authentik-* identity
+# headers are honored, mirroring the nginx reverse proxy in production. Must be
+# set before the api module is imported.
 os.environ["TRUSTED_PROXY_IPS"] = os.environ.get("TRUSTED_PROXY_IPS") or "testclient"
 
 from backend.src.api import api
-from backend.src.application.features.auth.auth_primitives import hash_password
 from backend.src.infrastructure.data.models import Base
 from backend.src.infrastructure.repositories.users_repository import UsersRepository
+from backend.src.infrastructure.security.authentik import AuthentikAdminClient
 from backend.test.integration.db_test_utils import (
     bind_session_to_schema,
     create_isolated_test_engine,
     drop_isolated_schema,
 )
+
+ALICE_SUB = "authentik-sub-alice"
+ALICE_USERNAME = "alice"
 
 
 class DummyChatbot:
@@ -63,37 +66,33 @@ class ApiEndpointTests(unittest.TestCase):
 
         self.init_patch = patch("backend.src.api.api.initialize_database", autospec=True)
         self.chatbot_patch = patch("backend.src.api.api.build_chatbot_service", autospec=True)
-        self.secret_patch = patch.object(api, "JWT_SECRET_KEY", "test-secret-key-value-long-enough-32-bytes")
+        self.admin_delete_patch = patch.object(AuthentikAdminClient, "delete_user", return_value=True)
+        self.rate_limit_patch = patch(
+            "backend.src.infrastructure.security.rate_limit.check_query_rate_limit",
+            return_value=(True, 29),
+        )
         self.init_patch.start()
         self.chatbot = DummyChatbot()
         self.chatbot_patch.start().return_value = self.chatbot
-        self.secret_patch.start()
+        self.admin_delete_patch.start()
+        self.rate_limit_patch.start()
 
         self.client = TestClient(api.app, base_url="https://testserver")
         with self.client:
             pass
 
         self.users = UsersRepository()
-        self.user_id, _ = self.users.get_or_create_user_id("alice", hash_password("password123"))
+        self.user_id, _ = self.users.get_or_create_user_by_sub(ALICE_SUB, ALICE_USERNAME)
 
-    def _login(self, ip_suffix: str) -> dict:
-        """Login as the seeded alice user from an isolated client IP.
-
-        Each test uses its own X-Forwarded-For IP so the Redis-backed login
-        rate limiter does not throttle across test methods.
-        """
-        response = self.client.post(
-            "/auth/login",
-            json={"username": "alice", "password": "password123"},
-            headers={"X-Forwarded-For": f"198.51.100.{ip_suffix}"},
-        )
-        self.assertEqual(response.status_code, 200)
-        return response.json()
+    def _auth_headers(self) -> dict[str, str]:
+        """Headers the trusted nginx proxy would forward for an Authentik session."""
+        return {"X-authentik-uid": ALICE_SUB, "X-authentik-username": ALICE_USERNAME}
 
     def tearDown(self) -> None:
+        self.rate_limit_patch.stop()
+        self.admin_delete_patch.stop()
         self.chatbot_patch.stop()
         self.init_patch.stop()
-        self.secret_patch.stop()
 
     @classmethod
     def tearDownClass(cls) -> None:
@@ -112,70 +111,33 @@ class ApiEndpointTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["status"], "healthy")
 
-    def test_login_endpoint_returns_bearer_token(self) -> None:
-        payload = self._login("1")
-
-        self.assertEqual(payload["token_type"], "bearer")
-        self.assertTrue(payload["access_token"])
-
-    def test_login_endpoint_sets_http_only_session_cookie(self) -> None:
-        response = self.client.post(
-            "/auth/login",
-            json={"username": "alice", "password": "password123"},
-            headers={"X-Forwarded-For": "198.51.100.8"},
-        )
-
-        self.assertEqual(response.status_code, 200)
-        set_cookie = response.headers.get("set-cookie", "")
-        # The __Host- prefix is applied because the cookie is Secure, Path=/ and
-        # has no Domain attribute.
-        self.assertIn("__Host-access_token=", set_cookie)
-        self.assertIn("httponly", set_cookie.lower())
-        self.assertIn("secure", set_cookie.lower())
-        self.assertIn("samesite=lax", set_cookie.lower())
-
-    def test_session_cookie_authenticates_requests(self) -> None:
-        self._login("9")
+    def test_me_requires_authentication(self) -> None:
         response = self.client.get("/auth/me")
 
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()["username"], "alice")
+        self.assertEqual(response.status_code, 401)
 
-    def test_logout_clears_session_cookie(self) -> None:
-        self._login("12")
-        response = self.client.post("/auth/logout")
+    def test_me_returns_identity_from_forwarded_headers(self) -> None:
+        response = self.client.get("/auth/me", headers=self._auth_headers())
 
         self.assertEqual(response.status_code, 200)
-        set_cookie = response.headers.get("set-cookie", "")
-        self.assertIn("access_token=", set_cookie)
-        self.assertIn("Max-Age=0", set_cookie)
+        self.assertEqual(response.json()["username"], ALICE_USERNAME)
+        self.assertEqual(response.json()["id"], self.user_id)
 
-        me = self.client.get("/auth/me")
-        self.assertEqual(me.status_code, 401)
+    def test_me_rejects_identity_from_untrusted_peer(self) -> None:
+        # An end client that is not the nginx proxy must never have its
+        # X-authentik-* headers honored (fail closed).
+        with patch.object(api, "_is_trusted_proxy", return_value=False):
+            response = self.client.get("/auth/me", headers=self._auth_headers())
 
-    def test_login_endpoint_rejects_bad_credentials(self) -> None:
-        response = self.client.post(
-            "/auth/login",
-            json={"username": "alice", "password": "wrong"},
-            headers={"X-Forwarded-For": "198.51.100.10"},
+        self.assertEqual(response.status_code, 401)
+
+    def test_me_rejects_spoofed_uid_without_username(self) -> None:
+        response = self.client.get(
+            "/auth/me",
+            headers={"X-authentik-uid": ALICE_SUB},
         )
 
         self.assertEqual(response.status_code, 401)
-
-    def test_login_endpoint_returns_uniform_401_when_locked(self) -> None:
-        """A locked account must still return the generic 401, not 423/429."""
-        with patch(
-            "backend.src.infrastructure.security.rate_limit.check_account_lockout",
-            return_value=(True, 300),
-        ):
-            response = self.client.post(
-                "/auth/login",
-                json={"username": "alice", "password": "password123"},
-                headers={"X-Forwarded-For": "198.51.100.11"},
-            )
-
-        self.assertEqual(response.status_code, 401)
-        self.assertNotIn("locked", response.text.lower())
 
     def test_query_endpoint_requires_authentication(self) -> None:
         response = self.client.post("/query", json={"query": "Como aplicar insulina?"})
@@ -183,11 +145,10 @@ class ApiEndpointTests(unittest.TestCase):
         self.assertEqual(response.status_code, 401)
 
     def test_authenticated_query_endpoint_returns_payload(self) -> None:
-        token = self._login("2")["access_token"]
         response = self.client.post(
             "/query",
             json={"query": "Como aplicar insulina?"},
-            headers={"Authorization": f"Bearer {token}"},
+            headers=self._auth_headers(),
         )
 
         self.assertEqual(response.status_code, 200)
@@ -201,16 +162,29 @@ class ApiEndpointTests(unittest.TestCase):
         self.assertEqual(self.chatbot.queries[0][2], payload["session_id"])
 
     def test_query_endpoint_uses_provided_session_id(self) -> None:
-        token = self._login("3")["access_token"]
         response = self.client.post(
             "/query",
             json={"query": "Olá", "session_id": "session-123"},
-            headers={"Authorization": f"Bearer {token}"},
+            headers=self._auth_headers(),
         )
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["session_id"], "session-123")
         self.assertEqual(self.chatbot.queries[-1], ("Olá", self.user_id, "session-123"))
+
+    def test_query_endpoint_honors_rate_limit(self) -> None:
+        with patch(
+            "backend.src.infrastructure.security.rate_limit.check_query_rate_limit",
+            return_value=(False, 0),
+        ):
+            response = self.client.post(
+                "/query",
+                json={"query": "Pergunta"},
+                headers=self._auth_headers(),
+            )
+
+        self.assertEqual(response.status_code, 429)
+        self.assertEqual(self.chatbot.queries, [])
 
     def test_clear_session_endpoint_requires_authentication(self) -> None:
         response = self.client.delete("/user/conversations")
@@ -218,14 +192,10 @@ class ApiEndpointTests(unittest.TestCase):
         self.assertEqual(response.status_code, 401)
 
     def test_clear_session_endpoint_clears_current_user(self) -> None:
-        token = self._login("4")["access_token"]
-        response = self.client.delete(
-            "/user/conversations",
-            headers={"Authorization": f"Bearer {token}"},
-        )
+        response = self.client.delete("/user/conversations", headers=self._auth_headers())
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()["message"], "Conversation cleared successfully")
+        self.assertEqual(response.json()["message"], "Conversa limpa com sucesso")
         self.assertEqual(self.chatbot.reset_calls, [self.user_id])
 
     def test_get_conversations_requires_authentication(self) -> None:
@@ -234,8 +204,7 @@ class ApiEndpointTests(unittest.TestCase):
         self.assertEqual(response.status_code, 401)
 
     def test_get_conversations_returns_message_list(self) -> None:
-        token = self._login("5")["access_token"]
-        response = self.client.get("/user/conversations", headers={"Authorization": f"Bearer {token}"})
+        response = self.client.get("/user/conversations", headers=self._auth_headers())
 
         self.assertEqual(response.status_code, 200)
         payload = response.json()
@@ -250,58 +219,35 @@ class ApiEndpointTests(unittest.TestCase):
         self.assertEqual(messages[1]["content"], "Hi there")
         self.assertEqual(messages[1]["sources"], ["source-1"])
 
-    def test_me_endpoint_returns_current_user(self) -> None:
-        token = self._login("6")["access_token"]
-        response = self.client.get("/auth/me", headers={"Authorization": f"Bearer {token}"})
-
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()["username"], "alice")
-        self.assertEqual(response.json()["id"], self.user_id)
-
-    def test_delete_me_endpoint_deletes_current_user(self) -> None:
-        token = self._login("7")["access_token"]
-        response = self.client.request(
-            "DELETE",
-            "/auth/me",
-            json={"password": "password123"},
-            headers={"Authorization": f"Bearer {token}"},
-        )
+    def test_delete_me_deletes_current_user(self) -> None:
+        response = self.client.request("DELETE", "/auth/me", headers=self._auth_headers())
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["message"], "Usuario excluido com sucesso")
         self.assertIsNone(self.users.get_user_by_id(self.user_id))
 
-    def test_delete_me_purges_cached_user_data(self) -> None:
-        token = self._login("13")["access_token"]
-        response = self.client.request(
-            "DELETE",
-            "/auth/me",
-            json={"password": "password123"},
-            headers={"Authorization": f"Bearer {token}"},
-        )
+    def test_delete_me_purges_cached_user_data_after_revoking_authentik(self) -> None:
+        events: list[str] = []
+        with patch.object(
+            AuthentikAdminClient,
+            "delete_user",
+            side_effect=lambda username: events.append(f"admin:{username}") or True,
+        ), patch.object(DummyChatbot, "purge_user_data", side_effect=lambda user_id: events.append(f"purge:{user_id}")):
+            response = self.client.request("DELETE", "/auth/me", headers=self._auth_headers())
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(self.chatbot.purge_calls, [self.user_id])
+        # SSO access is revoked BEFORE any local data is purged, so a partial
+        # failure can never leave an Authentik account pointing at nothing.
+        self.assertEqual(events, [f"admin:{ALICE_USERNAME}", f"purge:{self.user_id}"])
 
-    def test_delete_me_requires_password_confirmation(self) -> None:
-        token = self._login("14")["access_token"]
+    def test_delete_me_fails_closed_when_authentik_revocation_fails(self) -> None:
+        with patch.object(AuthentikAdminClient, "delete_user", return_value=False):
+            response = self.client.request("DELETE", "/auth/me", headers=self._auth_headers())
 
-        response = self.client.delete("/auth/me", headers={"Authorization": f"Bearer {token}"})
-
-        self.assertEqual(response.status_code, 422)
+        self.assertEqual(response.status_code, 502)
+        # Local data must be kept untouched if the SSO account was not revoked.
         self.assertIsNotNone(self.users.get_user_by_id(self.user_id))
-
-    def test_delete_me_rejects_wrong_password(self) -> None:
-        token = self._login("15")["access_token"]
-        response = self.client.request(
-            "DELETE",
-            "/auth/me",
-            json={"password": "wrong-password"},
-            headers={"Authorization": f"Bearer {token}"},
-        )
-
-        self.assertEqual(response.status_code, 403)
-        self.assertIsNotNone(self.users.get_user_by_id(self.user_id))
+        self.assertEqual(self.chatbot.purge_calls, [])
 
     def test_docs_and_openapi_disabled_by_default(self) -> None:
         self.assertEqual(self.client.get("/docs").status_code, 404)

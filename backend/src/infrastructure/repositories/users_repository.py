@@ -12,7 +12,7 @@ def _to_domain_user(model: UserModel) -> User:
     return User(
         id=model.id,
         username=model.username,
-        hashed_password=model.hashed_password,
+        authentik_sub=model.authentik_sub,
         created_at=model.created_at,
     )
 
@@ -25,23 +25,37 @@ class UsersRepository:
                 return None
             return _to_domain_user(model)
 
-    def get_user_by_username(self, username: str) -> Optional[User]:
+    def get_user_by_sub(self, sub: str) -> Optional[User]:
         with get_db_session() as db:
-            stmt = select(UserModel).where(UserModel.username == username)
+            stmt = select(UserModel).where(UserModel.authentik_sub == sub)
             model = db.execute(stmt).scalar_one_or_none()
             if model is None:
                 return None
             return _to_domain_user(model)
 
-    def get_or_create_user_id(self, username: str, hashed_password: str) -> tuple[int, bool]:
-        """Returns (user_id, created_new) where created_new is True only if a new user was created."""
+    def get_or_create_user_by_sub(self, sub: str, username: str) -> tuple[int, bool]:
+        """Return (user_id, created_new) for an Authentik identity.
+
+        Looks the identity up by its Authentik subject (``sub``). On first
+        login a local user row is created; a legacy row that has the same
+        username but no subject yet (pre-migration bootstrap users) is adopted
+        in place so conversation history is preserved.
+        """
         with get_db_session() as db:
-            existing_stmt = select(UserModel.id).where(UserModel.username == username)
+            existing_stmt = select(UserModel.id).where(UserModel.authentik_sub == sub)
             existing_id = db.execute(existing_stmt).scalar_one_or_none()
             if existing_id is not None:
                 return (existing_id, False)
 
-            user = UserModel(username=username, hashed_password=hashed_password)
+            legacy_stmt = select(UserModel).where(
+                UserModel.username == username, UserModel.authentik_sub.is_(None)
+            )
+            legacy = db.execute(legacy_stmt).scalar_one_or_none()
+            if legacy is not None:
+                legacy.authentik_sub = sub
+                return (legacy.id, True)
+
+            user = UserModel(username=username, authentik_sub=sub)
             db.add(user)
             try:
                 db.flush()
@@ -57,12 +71,4 @@ class UsersRepository:
                 return False
 
             db.delete(user)
-            return True
-
-    def update_password(self, user_id: int, new_hashed_password: str) -> bool:
-        with get_db_session() as db:
-            user = db.get(UserModel, user_id)
-            if user is None:
-                return False
-            user.hashed_password = new_hashed_password
             return True

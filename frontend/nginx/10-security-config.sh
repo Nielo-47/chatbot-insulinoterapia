@@ -32,3 +32,5 @@ fi
 export SSL_CERTIFICATE_LINE SSL_CERTIFICATE_KEY_LINE HSTS_BLOCK
 envsubst '${SSL_CERTIFICATE_LINE} ${SSL_CERTIFICATE_KEY_LINE} ${HSTS_BLOCK}' \
     < /etc/nginx/ui.conf.tmpl > /etc/nginx/conf.d/default.conf
+envsubst '${HSTS_BLOCK}' \
+    < /etc/nginx/security-headers.conf.tmpl > /etc/nginx/security-headers.conf

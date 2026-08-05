@@ -48,11 +48,6 @@ const healthResultSchema = z.object({
   message: z.string(),
 })
 
-const loginResultSchema = z.object({
-  access_token: z.string(),
-  token_type: z.literal('bearer'),
-})
-
 const currentUserSchema = z.object({
   id: z.number(),
   username: z.string(),
@@ -75,12 +70,19 @@ async function request<T>(path: string, init: RequestInit, schema: z.ZodSchema<T
   headers.set('Content-Type', 'application/json')
 
   try {
+    // redirect: 'manual' so the Authentik forward-auth 302 is not followed into
+    // the HTML login page: an unauthenticated session surfaces as a 401 here.
     const response = await fetch(`${env.apiBaseUrl}${path}`, {
       ...init,
       headers,
       signal: controller.signal,
       credentials: 'include',
+      redirect: 'manual',
     })
+
+    if (response.type === 'opaqueredirect' || response.status === 401) {
+      throw new ApiError('Nao autenticado', 401)
+    }
 
     if (!response.ok) {
       let detail = `Request failed with status ${response.status}`
@@ -120,44 +122,14 @@ export async function checkHealth(): Promise<void> {
   await request('/health', { method: 'GET' }, healthResultSchema)
 }
 
-export async function login(username: string, password: string): Promise<void> {
-  // The backend sets the session in an httpOnly cookie; we never store the
-  // token in JS-accessible storage (localStorage/sessionStorage).
-  await request(
-    '/auth/login',
-    {
-      method: 'POST',
-      body: JSON.stringify({ username, password }),
-    },
-    loginResultSchema,
-  )
-}
-
-export async function logout(): Promise<void> {
-  // Server-side logout: blacklists the token and clears the httpOnly cookie.
-  await request('/auth/logout', { method: 'POST' }, z.object({ message: z.string() }))
-}
-
 export async function getCurrentUser(): Promise<{ id: number; username: string }> {
   return request('/auth/me', { method: 'GET' }, currentUserSchema)
 }
 
-export async function deleteAccount(password: string): Promise<void> {
-  // The backend requires password re-confirmation before deleting the account.
-  await request(
-    '/auth/me',
-    { method: 'DELETE', body: JSON.stringify({ password }) },
-    z.object({ message: z.string() }),
-  )
-}
-
-export async function clearAuthSession(): Promise<void> {
-  try {
-    await logout()
-  } catch {
-    // Best-effort: if the backend is offline the cookie simply stays (it is
-    // expired/invalid and will be replaced on the next login).
-  }
+export async function deleteAccount(): Promise<void> {
+  // The Authentik session is the proof of identity; the backend revokes the
+  // user in Authentik and then purges local data. No password re-entry exists.
+  await request('/auth/me', { method: 'DELETE' }, z.object({ message: z.string() }))
 }
 
 export async function getConversationHistory(): Promise<ConversationHistoryMessage[]> {
@@ -172,5 +144,3 @@ export async function sendQuery(payload: QueryPayload): Promise<QueryResult> {
 export async function clearConversation(): Promise<void> {
   await request(`/user/conversations`, { method: 'DELETE' }, z.object({ message: z.string() }))
 }
-
-export const clearSession = clearConversation

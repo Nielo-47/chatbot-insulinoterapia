@@ -1,0 +1,12 @@
+version: "3"
+
+agent:
+  # Bind the inspection API (and its /api/tunnels endpoint) on all interfaces so
+  # the authentik containers can discover the public URL. The default is
+  # 127.0.0.1:4040 (container-local only).
+  web_addr: 0.0.0.0:4040
+  # Other containers reach the API via the "ngrok" service hostname; without
+  # this the default localhost-only Host-header check rejects those requests.
+  web_allow_hosts:
+    - "ngrok"
+  update_check: false

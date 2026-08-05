@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 
-import { ApiError, clearAuthSession, deleteAccount, getCurrentUser, login as loginRequest, checkHealth } from '../lib/api'
+import { ApiError, deleteAccount, getCurrentUser, checkHealth } from '../lib/api'
+import { getAuthentikLogoutUrl } from '../lib/env'
 import { ChatPage } from '../features/chat/ChatPage'
-import { LoginPage } from '../features/auth/LoginPage'
+import { SignInPage } from '../features/auth/SignInPage'
 import type { AuthStatus, BackendStatus } from '../types/app'
 
 type CurrentUser = {
@@ -13,8 +14,6 @@ type CurrentUser = {
 function App() {
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null)
   const [isBootstrapping, setIsBootstrapping] = useState(true)
-  const [authError, setAuthError] = useState<string | null>(null)
-  const [isLoggingIn, setIsLoggingIn] = useState(false)
   const [backendStatus, setBackendStatus] = useState<BackendStatus>('checking')
   const [authStatus, setAuthStatus] = useState<AuthStatus>('checking')
 
@@ -36,57 +35,38 @@ function App() {
         return
       }
 
-      // The session lives in an httpOnly cookie, so there is no client-side
-      // token to inspect: probe /auth/me to learn the auth state.
+      // The Authentik session lives in browser cookies and is enforced by the
+      // nginx forward-auth proxy: /auth/me only succeeds when a valid session
+      // exists, so probing it reveals the auth state (no client-side token).
       try {
         const user = await getCurrentUser()
         setCurrentUser(user)
         setAuthStatus('authenticated')
       } catch (error) {
         if (error instanceof ApiError && error.status === 401) {
-          setAuthStatus('invalid')
+          setAuthStatus('signed_out')
         } else {
           setAuthStatus('unknown')
         }
-        await clearAuthSession()
       } finally {
         setIsBootstrapping(false)
       }
     })()
   }, [])
 
-  const handleLogin = async (username: string, password: string) => {
-    setIsLoggingIn(true)
-    setAuthError(null)
-
-    try {
-      await loginRequest(username, password)
-      const user = await getCurrentUser()
-      setCurrentUser(user)
-      setAuthStatus('authenticated')
-    } catch (error) {
-      await clearAuthSession()
-      if (error instanceof ApiError && error.status === 401) {
-        setAuthStatus('signed_out')
-      } else if (error instanceof ApiError && error.status >= 500) {
-        setAuthStatus('unknown')
-      } else {
-        setAuthStatus('signed_out')
-      }
-      setAuthError(error instanceof Error ? error.message : 'Nao foi possivel entrar.')
-    } finally {
-      setIsLoggingIn(false)
-    }
-  }
-
   const handleLogout = async (reason: 'manual' | 'expired' | 'deleted' = 'manual') => {
-    await clearAuthSession()
+    if (reason === 'manual' || reason === 'deleted') {
+      // Sign out of Authentik so the session cookie is destroyed, then the
+      // browser lands back here unauthenticated.
+      window.location.assign(getAuthentikLogoutUrl())
+      return
+    }
     setCurrentUser(null)
-    setAuthStatus(reason === 'expired' ? 'invalid' : 'signed_out')
+    setAuthStatus('expired')
   }
 
-  const handleDeleteAccount = async (password: string) => {
-    await deleteAccount(password)
+  const handleDeleteAccount = async () => {
+    await deleteAccount()
     await handleLogout('deleted')
   }
 
@@ -95,15 +75,7 @@ function App() {
   }
 
   if (!currentUser) {
-    return (
-      <LoginPage
-        onLogin={handleLogin}
-        errorMessage={authError}
-        isSubmitting={isLoggingIn}
-        backendStatus={backendStatus}
-        authStatus={authStatus}
-      />
-    )
+    return <SignInPage backendStatus={backendStatus} authStatus={authStatus} />
   }
 
   return (

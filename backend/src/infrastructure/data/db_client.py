@@ -53,6 +53,8 @@ def initialize_database() -> None:
     Base.metadata.create_all(bind=engine)
     _ensure_message_sources_column()
     _ensure_summary_column()
+    _ensure_authentik_sub_column()
+    _drop_password_column()
     logger.info("Database tables initialized")
 
 
@@ -80,6 +82,39 @@ def _ensure_summary_column() -> None:
     with engine.begin() as conn:
         conn.execute(text("ALTER TABLE conversations ADD COLUMN summary TEXT"))
     logger.info("conversations.summary column added")
+
+
+def _ensure_authentik_sub_column() -> None:
+    """Backfill the users.authentik_sub mapping column for existing databases."""
+    inspector = inspect(engine)
+    columns = {column["name"] for column in inspector.get_columns("users")}
+    if "authentik_sub" in columns:
+        return
+
+    logger.warning("users.authentik_sub column missing; applying compatibility ALTER TABLE")
+    with engine.begin() as conn:
+        conn.execute(text("ALTER TABLE users ADD COLUMN authentik_sub VARCHAR(64)"))
+        conn.execute(text("CREATE UNIQUE INDEX ix_users_authentik_sub ON users (authentik_sub)"))
+    logger.info("users.authentik_sub column added")
+
+
+def _drop_password_column() -> None:
+    """Drop the now-unused users.hashed_password column.
+
+    Passwords live in Authentik after the forward-auth migration; keeping the
+    column would retain stale password hashes for no reason. Idempotent: no-op
+    when the column is already gone (e.g. fresh databases created from the new
+    model).
+    """
+    inspector = inspect(engine)
+    columns = {column["name"] for column in inspector.get_columns("users")}
+    if "hashed_password" not in columns:
+        return
+
+    logger.warning("users.hashed_password column present; dropping it (credentials are managed by Authentik)")
+    with engine.begin() as conn:
+        conn.execute(text("ALTER TABLE users DROP COLUMN hashed_password"))
+    logger.info("users.hashed_password column dropped")
 
 
 def create_postgres_checkpointer() -> Optional[Any]:

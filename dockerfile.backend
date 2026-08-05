@@ -76,11 +76,6 @@ COPY --chown=appuser:appgroup scripts/ ./scripts/
 # Expose backend API port
 EXPOSE 8000
 
-# BOOTSTRAP_USERS is NOT declared as an ENV here on purpose: it is injected at
-# container runtime by docker-compose (environment: BOOTSTRAP_USERS=...), and
-# an ENV instruction would bake its value into the image layers (readable via
-# docker history) if it were ever set during the build.
-
 # Drop privileges: the process runs as an unprivileged user, not root.
 USER appuser
 
@@ -88,7 +83,7 @@ USER appuser
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
-# Run the FastAPI application with optional user seeding. The password is
-# handed to bootstrap_user.py via the BOOTSTRAP_PASSWORD environment variable,
-# never as a CLI argument (CLI args are visible via `ps`/process listings).
-CMD ["/bin/bash", "-c", "if [ -n \"$BOOTSTRAP_USERS\" ]; then echo \"Bootstrapping users...\" && IFS=', ' read -ra USERS <<< \"$BOOTSTRAP_USERS\" && for u in \"${USERS[@]}\"; do BOOTSTRAP_PASSWORD=\"${u#*:}\" python -m backend.scripts.bootstrap_user --username \"${u%%:*}\"; done; fi && exec uvicorn backend.src.api.api:app --host 0.0.0.0 --port 8000 --log-level info"]
+# Authentication is fully delegated to Authentik (forward-auth proxy at the
+# nginx edge), so there is no user seeding here: identities are provisioned
+# lazily by the backend from the forwarded X-authentik-* headers.
+CMD ["uvicorn", "backend.src.api.api:app", "--host", "0.0.0.0", "--port", "8000", "--log-level", "info"]

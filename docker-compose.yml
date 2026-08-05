@@ -47,14 +47,15 @@ services:
       - CHAT_CACHE_REDIS_URL=${CHAT_CACHE_REDIS_URL:-redis://redis:6379/1}
       - CHAT_CACHE_TTL_SECONDS=${CHAT_CACHE_TTL_SECONDS:-300}
       - DEV=${DEV:-false}
-      - JWT_SECRET_KEY=${JWT_SECRET_KEY:?JWT_SECRET_KEY must be set to a strong secret (>= 32 chars)}
       - EMBEDDING_BINDING_HOST=${OPENROUTER_BASE_URL:-https://openrouter.ai/api/v1}
       - EMBEDDING_API_KEY=${OPENROUTER_API_KEY}
       - PYTHONPATH=/app
-      - BOOTSTRAP_USERS=${BOOTSTRAP_USERS:-}
+      # Authentik integration (delegated auth): Admin API for account deletion.
+      - AUTHENTIK_BASE_URL=${AUTHENTIK_BASE_URL:-}
+      - AUTHENTIK_ADMIN_API_TOKEN=${AUTHENTIK_ADMIN_API_TOKEN:-}
       # The ui nginx is the only reverse proxy; its direct peer is on the
       # docker private network (default 172.16.0.0/12), so client-IP headers
-      # are trusted only from that range.
+      # and the Authentik X-authentik-* headers are trusted only from that range.
       - TRUSTED_PROXY_IPS=${TRUSTED_PROXY_IPS:-172.16.0.0/12}
     volumes:
       - ./data/processed:/app/data/processed
@@ -70,6 +71,138 @@ services:
       retries: 3
       start_period: 60s
 
+  # Dedicated Postgres for Authentik (authentication data only; separate from
+  # the application database). Old AUTHENTIK_DB_PASSWORD is honored as a
+  # deprecated alias of AUTHENTIK_POSTGRESQL__PASSWORD.
+  authentik-db:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      - POSTGRES_DB=${AUTHENTIK_POSTGRESQL__NAME:-authentik}
+      - POSTGRES_USER=${AUTHENTIK_POSTGRESQL__USER:-authentik}
+      - POSTGRES_PASSWORD=${AUTHENTIK_POSTGRESQL__PASSWORD:-${AUTHENTIK_DB_PASSWORD:?AUTHENTIK_POSTGRESQL__PASSWORD (or AUTHENTIK_DB_PASSWORD) must be set}}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${AUTHENTIK_POSTGRESQL__USER:-authentik}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    volumes:
+      - authentik_db_data:/var/lib/postgresql/data
+
+  # Authentik (delegated authentication). Served same-origin through the ui
+  # nginx (/if/, /static/, /media/, /api/v3/) plus forward-auth subrequests;
+  # no host ports are published. Shares the application Redis (logical DB 2).
+  # The entrypoint auto-populates AUTHENTIK_APP_EXTERNAL_HOST from the ngrok
+  # public URL (see scripts/authentik-entrypoint.sh) before starting.
+  authentik-server:
+    image: ghcr.io/goauthentik/server:2026.5
+    restart: unless-stopped
+    entrypoint: ["/bin/sh", "/scripts/authentik-entrypoint.sh"]
+    command: server
+    environment:
+      - AUTHENTIK_SECRET_KEY=${AUTHENTIK_SECRET_KEY:?AUTHENTIK_SECRET_KEY must be set}
+      - AUTHENTIK_POSTGRESQL__HOST=authentik-db
+      - AUTHENTIK_POSTGRESQL__NAME=${AUTHENTIK_POSTGRESQL__NAME:-authentik}
+      - AUTHENTIK_POSTGRESQL__USER=${AUTHENTIK_POSTGRESQL__USER:-authentik}
+      - AUTHENTIK_POSTGRESQL__PASSWORD=${AUTHENTIK_POSTGRESQL__PASSWORD:-${AUTHENTIK_DB_PASSWORD:?AUTHENTIK_POSTGRESQL__PASSWORD (or AUTHENTIK_DB_PASSWORD) must be set}}
+      - AUTHENTIK_REDIS__HOST=redis
+      - AUTHENTIK_REDIS__DB=${AUTHENTIK_REDIS__DB:-2}
+      # First-boot admin bootstrap — only used on a fresh database. Remove once
+      # the admin account exists (see .env.example for names).
+      - AUTHENTIK_BOOTSTRAP_TOKEN=${AUTHENTIK_BOOTSTRAP_TOKEN:-}
+      - AUTHENTIK_BOOTSTRAP_EMAIL=${AUTHENTIK_BOOTSTRAP_EMAIL:-}
+      - AUTHENTIK_BOOTSTRAP_PASSWORD=${AUTHENTIK_BOOTSTRAP_PASSWORD:-}
+      # Blueprint references (!Env in ./blueprints/authentik.yaml) resolve these
+      # from the container environment. AUTHENTIK_APP_EXTERNAL_HOST is set by the
+      # entrypoint from the ngrok public URL.
+      - AUTHENTIK_ADMIN_API_TOKEN=${AUTHENTIK_ADMIN_API_TOKEN:-}
+      - AUTHENTIK_BETA_PASSWORD=${AUTHENTIK_BETA_PASSWORD:-}
+      - AUTHENTIK_BETA_USER_1_USERNAME=${AUTHENTIK_BETA_USER_1_USERNAME:-}
+      - AUTHENTIK_BETA_USER_1_NAME=${AUTHENTIK_BETA_USER_1_NAME:-}
+      - AUTHENTIK_BETA_USER_1_EMAIL=${AUTHENTIK_BETA_USER_1_EMAIL:-}
+      - AUTHENTIK_BETA_USER_2_USERNAME=${AUTHENTIK_BETA_USER_2_USERNAME:-}
+      - AUTHENTIK_BETA_USER_2_NAME=${AUTHENTIK_BETA_USER_2_NAME:-}
+      - AUTHENTIK_BETA_USER_2_EMAIL=${AUTHENTIK_BETA_USER_2_EMAIL:-}
+    volumes:
+      - authentik_data:/media
+      # Declarative initial setup (provider, application, outpost binding,
+      # admin API token, branding, beta users) — auto-discovered and applied by
+      # the worker on startup and every 60 minutes.
+      - ./blueprints:/blueprints/custom:ro
+      # Entrypoint wrapper: fetches the ngrok public URL and exports it as
+      # AUTHENTIK_APP_EXTERNAL_HOST before starting.
+      - ./scripts/authentik-entrypoint.sh:/scripts/authentik-entrypoint.sh:ro
+    depends_on:
+      redis:
+        condition: service_healthy
+      authentik-db:
+        condition: service_healthy
+    healthcheck:
+      # python3 is present in the image (the deployed curl-based check always
+      # stays "unhealthy"); "/" returns 200 only once DB + migrations are ready.
+      test: ["CMD-SHELL", "python3 -c \"import urllib.request,sys;sys.exit(0 if urllib.request.urlopen('http://localhost:9000/',timeout=5).status==200 else 1)\""]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  authentik-worker:
+    image: ghcr.io/goauthentik/server:2026.5
+    restart: unless-stopped
+    entrypoint: ["/bin/sh", "/scripts/authentik-entrypoint.sh"]
+    command: worker
+    environment:
+      - AUTHENTIK_SECRET_KEY=${AUTHENTIK_SECRET_KEY:?AUTHENTIK_SECRET_KEY must be set}
+      - AUTHENTIK_POSTGRESQL__HOST=authentik-db
+      - AUTHENTIK_POSTGRESQL__NAME=${AUTHENTIK_POSTGRESQL__NAME:-authentik}
+      - AUTHENTIK_POSTGRESQL__USER=${AUTHENTIK_POSTGRESQL__USER:-authentik}
+      - AUTHENTIK_POSTGRESQL__PASSWORD=${AUTHENTIK_POSTGRESQL__PASSWORD:-${AUTHENTIK_DB_PASSWORD:?AUTHENTIK_POSTGRESQL__PASSWORD (or AUTHENTIK_DB_PASSWORD) must be set}}
+      - AUTHENTIK_REDIS__HOST=redis
+      - AUTHENTIK_REDIS__DB=${AUTHENTIK_REDIS__DB:-2}
+      # First-boot admin bootstrap — the docs require these on the WORKER
+      # container (only used on a fresh database). Remove once the admin account
+      # exists (see .env.example for names).
+      - AUTHENTIK_BOOTSTRAP_TOKEN=${AUTHENTIK_BOOTSTRAP_TOKEN:-}
+      - AUTHENTIK_BOOTSTRAP_EMAIL=${AUTHENTIK_BOOTSTRAP_EMAIL:-}
+      - AUTHENTIK_BOOTSTRAP_PASSWORD=${AUTHENTIK_BOOTSTRAP_PASSWORD:-}
+      # Blueprint references (!Env in ./blueprints/authentik.yaml) resolve these
+      # from the container environment. AUTHENTIK_APP_EXTERNAL_HOST is set by the
+      # entrypoint from the ngrok public URL.
+      - AUTHENTIK_ADMIN_API_TOKEN=${AUTHENTIK_ADMIN_API_TOKEN:-}
+      - AUTHENTIK_BETA_PASSWORD=${AUTHENTIK_BETA_PASSWORD:-}
+      - AUTHENTIK_BETA_USER_1_USERNAME=${AUTHENTIK_BETA_USER_1_USERNAME:-}
+      - AUTHENTIK_BETA_USER_1_NAME=${AUTHENTIK_BETA_USER_1_NAME:-}
+      - AUTHENTIK_BETA_USER_1_EMAIL=${AUTHENTIK_BETA_USER_1_EMAIL:-}
+      - AUTHENTIK_BETA_USER_2_USERNAME=${AUTHENTIK_BETA_USER_2_USERNAME:-}
+      - AUTHENTIK_BETA_USER_2_NAME=${AUTHENTIK_BETA_USER_2_NAME:-}
+      - AUTHENTIK_BETA_USER_2_EMAIL=${AUTHENTIK_BETA_USER_2_EMAIL:-}
+    volumes:
+      - authentik_data:/media
+      - ./blueprints:/blueprints/custom:ro
+      - ./scripts/authentik-entrypoint.sh:/scripts/authentik-entrypoint.sh:ro
+    depends_on:
+      redis:
+        condition: service_healthy
+      authentik-db:
+        condition: service_healthy
+
+  # ngrok tunnel exposing the ui nginx over the public internet. The agent's
+  # inspection API (http://ngrok:4040) is what the authentik entrypoint reads to
+  # auto-populate AUTHENTIK_APP_EXTERNAL_HOST. Deliberately no depends_on on ui:
+  # the ui waits for authentik-server (healthy), which itself waits for this URL,
+  # so a depends_on here would deadlock the stack. The tunnel URL rotates on each
+  # restart unless a reserved domain is configured.
+  ngrok:
+    image: ngrok/ngrok:alpine
+    restart: unless-stopped
+    command: http https://ui:443
+    environment:
+      - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN:?NGROK_AUTHTOKEN must be set}
+      - NGROK_CONFIG=/etc/ngrok.yml
+    volumes:
+      - ./scripts/ngrok.yml:/etc/ngrok.yml:ro
+
   # UI - React frontend
   ui:
     build:
@@ -78,6 +211,8 @@ services:
       args:
         - VITE_API_URL=${VITE_API_URL:-/api}
         - VITE_REQUEST_TIMEOUT_MS=${VITE_REQUEST_TIMEOUT_MS:-60000}
+        - VITE_AUTHENTIK_LOGIN_FLOW=${VITE_AUTHENTIK_LOGIN_FLOW:-default-authentication-flow}
+        - VITE_AUTHENTIK_LOGOUT_FLOW=${VITE_AUTHENTIK_LOGOUT_FLOW:-default-invalidation-flow}
     restart: unless-stopped
     env_file: .env
     ports:
@@ -91,9 +226,12 @@ services:
     depends_on:
       backend:
         condition: service_healthy
+      authentik-server:
+        condition: service_healthy
     healthcheck:
-      # --insecure is acceptable here: container-internal traffic to localhost
-      test: ["CMD-SHELL", "curl -fsS -o /dev/null --insecure https://127.0.0.1/ || exit 1"]
+      # /api/health is exempt from forward-auth; --insecure is acceptable for
+      # container-internal localhost traffic (self-signed or real certs).
+      test: ["CMD-SHELL", "curl -fsS -o /dev/null --insecure https://127.0.0.1/api/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -102,3 +240,5 @@ services:
 volumes:
   redis_data:
   postgres_data:
+  authentik_data:
+  authentik_db_data:
