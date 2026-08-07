@@ -1,6 +1,7 @@
 import { z } from 'zod'
 
 import { env } from './env'
+import { supabase } from './supabase'
 import type { ConversationHistoryMessage, QueryPayload, QueryResult } from '../types/chat'
 
 const MAX_ERROR_LENGTH = 200
@@ -49,7 +50,7 @@ const healthResultSchema = z.object({
 })
 
 const currentUserSchema = z.object({
-  id: z.number(),
+  id: z.string(),
   username: z.string(),
 })
 
@@ -63,24 +64,44 @@ const conversationHistorySchema = z.object({
   ),
 })
 
+async function getAccessToken(): Promise<string | null> {
+  const { data } = await supabase.auth.getSession()
+  return data.session?.access_token ?? null
+}
+
 async function request<T>(path: string, init: RequestInit, schema: z.ZodSchema<T>): Promise<T> {
   const controller = new AbortController()
   const timeout = window.setTimeout(() => controller.abort(), env.requestTimeoutMs)
   const headers = new Headers(init.headers)
   headers.set('Content-Type', 'application/json')
 
-  try {
-    // redirect: 'manual' so the Authentik forward-auth 302 is not followed into
-    // the HTML login page: an unauthenticated session surfaces as a 401 here.
-    const response = await fetch(`${env.apiBaseUrl}${path}`, {
+  const token = await getAccessToken()
+  if (token) {
+    headers.set('Authorization', `Bearer ${token}`)
+  }
+
+  const doFetch = () =>
+    fetch(`${env.apiBaseUrl}${path}`, {
       ...init,
       headers,
       signal: controller.signal,
-      credentials: 'include',
-      redirect: 'manual',
     })
 
-    if (response.type === 'opaqueredirect' || response.status === 401) {
+  try {
+    let response = await doFetch()
+
+    if (response.status === 401) {
+      // The access token may have just expired: silently refresh it once and
+      // retry. If the refresh itself fails (e.g. revoked session) the retry
+      // returns 401 again and we surface the unauthenticated state.
+      const { data: refreshed } = await supabase.auth.refreshSession()
+      if (refreshed.session?.access_token) {
+        headers.set('Authorization', `Bearer ${refreshed.session.access_token}`)
+        response = await doFetch()
+      }
+    }
+
+    if (response.status === 401) {
       throw new ApiError('Nao autenticado', 401)
     }
 
@@ -122,13 +143,14 @@ export async function checkHealth(): Promise<void> {
   await request('/health', { method: 'GET' }, healthResultSchema)
 }
 
-export async function getCurrentUser(): Promise<{ id: number; username: string }> {
+export async function getCurrentUser(): Promise<{ id: string; username: string }> {
   return request('/auth/me', { method: 'GET' }, currentUserSchema)
 }
 
 export async function deleteAccount(): Promise<void> {
-  // The Authentik session is the proof of identity; the backend revokes the
-  // user in Authentik and then purges local data. No password re-entry exists.
+  // The Supabase access token is the proof of identity; the backend deletes
+  // the Supabase Auth user (service role) and then purges local data. No
+  // password re-entry exists.
   await request('/auth/me', { method: 'DELETE' }, z.object({ message: z.string() }))
 }
 

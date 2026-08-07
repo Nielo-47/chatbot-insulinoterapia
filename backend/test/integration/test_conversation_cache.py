@@ -38,7 +38,13 @@ class ConversationCacheTests(unittest.TestCase):
         cache.set_messages(1, messages)
 
         self.assertEqual(fake_client.set_calls, 1)
-        self.assertEqual(cache.get_messages(1), messages)
+        self.assertEqual(
+            cache.get_messages(1),
+            [
+                {"role": "user", "content": "oi", "sources": []},
+                {"role": "assistant", "content": "olá", "sources": []},
+            ],
+        )
 
         cache.invalidate(1)
 

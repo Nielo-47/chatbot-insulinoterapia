@@ -8,14 +8,12 @@ RUN npm ci
 COPY frontend/ ./
 ARG VITE_API_URL=/api
 ARG VITE_REQUEST_TIMEOUT_MS=60000
-ARG VITE_AUTHENTIK_BASE_URL=
-ARG VITE_AUTHENTIK_LOGIN_FLOW=default-authentication-flow
-ARG VITE_AUTHENTIK_LOGOUT_FLOW=default-invalidation-flow
+ARG VITE_SUPABASE_URL=
+ARG VITE_SUPABASE_PUBLISHABLE_KEY=
 ENV VITE_API_URL=${VITE_API_URL}
 ENV VITE_REQUEST_TIMEOUT_MS=${VITE_REQUEST_TIMEOUT_MS}
-ENV VITE_AUTHENTIK_BASE_URL=${VITE_AUTHENTIK_BASE_URL}
-ENV VITE_AUTHENTIK_LOGIN_FLOW=${VITE_AUTHENTIK_LOGIN_FLOW}
-ENV VITE_AUTHENTIK_LOGOUT_FLOW=${VITE_AUTHENTIK_LOGOUT_FLOW}
+ENV VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
+ENV VITE_SUPABASE_PUBLISHABLE_KEY=${VITE_SUPABASE_PUBLISHABLE_KEY}
 RUN npm run build
 
 FROM nginx:1.27-alpine
@@ -31,7 +29,7 @@ RUN chmod +x /docker-entrypoint.d/10-security-config.sh
 EXPOSE 80 443
 
 # /etc/nginx/certs (optional) is mounted by docker-compose for real certificates.
-# Healthcheck hits /api/health, which is exempt from forward-auth, and uses
+# Healthcheck hits /api/health, which is unauthenticated, and uses
 # --insecure because it connects to localhost with either self-signed or real
 # certs. This is container-internal traffic only.
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \

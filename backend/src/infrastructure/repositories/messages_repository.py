@@ -1,5 +1,6 @@
 import json
 from typing import Any, Dict, List, Protocol
+import uuid
 
 from sqlalchemy import delete, func, select
 
@@ -10,11 +11,11 @@ from backend.src.infrastructure.data.db_client import get_db_session
 
 
 class ConversationCacheLike(Protocol):
-    def get_messages(self, conversation_id: int) -> List[Dict[str, Any]] | None: ...
+    def get_messages(self, conversation_id: uuid.UUID) -> List[Dict[str, Any]] | None: ...
 
-    def set_messages(self, conversation_id: int, messages: List[Dict[str, Any]]) -> None: ...
+    def set_messages(self, conversation_id: uuid.UUID, messages: List[Dict[str, Any]]) -> None: ...
 
-    def invalidate(self, conversation_id: int) -> None: ...
+    def invalidate(self, conversation_id: uuid.UUID) -> None: ...
 
 
 class MessagesRepository:
@@ -27,7 +28,7 @@ class MessagesRepository:
 
     def add_message(
         self,
-        conversation_id: int,
+        conversation_id: uuid.UUID,
         role: str,
         content: str,
         sources: List[dict] | None = None,
@@ -39,7 +40,7 @@ class MessagesRepository:
             )
         self.cache.invalidate(conversation_id)
 
-    def list_recent_messages(self, conversation_id: int, limit: int) -> List[Dict[str, Any]]:
+    def list_recent_messages(self, conversation_id: uuid.UUID, limit: int) -> List[Dict[str, Any]]:
         cached = self.cache.get_messages(conversation_id)
         if cached is not None:
             return cached[-limit:] if limit > 0 else cached
@@ -86,12 +87,12 @@ class MessagesRepository:
         self.cache.set_messages(conversation_id, messages)
         return messages
 
-    def count_messages(self, conversation_id: int) -> int:
+    def count_messages(self, conversation_id: uuid.UUID) -> int:
         with get_db_session() as db:
             stmt = select(func.count(Message.id)).where(Message.conversation_id == conversation_id)
             return db.execute(stmt).scalar_one()
 
-    def clear_conversation(self, conversation_id: int) -> int:
+    def clear_conversation(self, conversation_id: uuid.UUID) -> int:
         with get_db_session() as db:
             count_stmt = select(func.count(Message.id)).where(Message.conversation_id == conversation_id)
             total = db.execute(count_stmt).scalar_one()
@@ -100,5 +101,5 @@ class MessagesRepository:
         self.cache.invalidate(conversation_id)
         return int(total)
 
-    def invalidate_cache(self, conversation_id: int) -> None:
+    def invalidate_cache(self, conversation_id: uuid.UUID) -> None:
         self.cache.invalidate(conversation_id)

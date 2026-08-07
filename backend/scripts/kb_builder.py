@@ -68,6 +68,8 @@ from backend.src.config.rag import (
     EMBEDDING_FALLBACK_RETRIES,
     EMBEDDING_PRIMARY_RETRIES,
     EMBEDDING_TIMEOUT_SECONDS,
+    LLM_FALLBACK_MODEL,
+    LLM_MODEL,
 )
 from backend.src.infrastructure.rag.resilient_embeddings import (
     EmbeddingProviderConfig,
@@ -84,10 +86,10 @@ if not os.path.exists(WORKING_DIR):
 
 async def llm_model_func(prompt, system_prompt=None, history_messages=[], keyword_extraction=False, **kwargs) -> str:
     # Use OpenRouter (OpenAI-compatible) for LLM completions
-    model = require("KB_BUILD_LLM_MODEL")
-    fallback_model = require("KB_BUILD_LLM_MODEL_FALLBACK")
-    api_key = require("OPENROUTER_API_KEY")
-    base_url = require("OPENROUTER_BASE_URL")
+    model = LLM_MODEL
+    fallback_model = LLM_FALLBACK_MODEL
+    api_key = OPENROUTER_API_KEY
+    base_url = OPENROUTER_BASE_URL
 
     # Rate limit and server error handling: wait-and-retry on 429/500 responses
     max_rate_retries = require_int("LLM_RATE_LIMIT_RETRIES")
@@ -327,7 +329,7 @@ async def main():
     # Wait for core services to be reachable before initializing RAG
     service_wait_timeout = require_int("SERVICE_WAIT_TIMEOUT")
 
-    embeddings_url = require("EMBEDDING_BINDING_HOST") + "/v1"
+    embeddings_url = OPENROUTER_BASE_URL + "/v1"
     print(f"Checking availability of embeddings at {embeddings_url}...")
     ok = await asyncio.get_event_loop().run_in_executor(
         None, wait_for_service, embeddings_url, service_wait_timeout, 1

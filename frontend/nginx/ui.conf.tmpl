@@ -2,23 +2,11 @@
 # Placeholders (${SSL_CERTIFICATE_LINE}, ${SSL_CERTIFICATE_KEY_LINE},
 # ${HSTS_BLOCK}) are substituted with envsubst; $nginx variables are untouched.
 #
-# Authentication is fully delegated to Authentik (forward-auth at this edge):
-#   * Every request to a protected location runs an internal auth_request
-#     subrequest against the embedded outpost (/outpost.goauthentik.io/auth/nginx).
-#   * On success the subrequest returns the user identity in the
-#     X-authentik-uid / X-authentik-username response headers; /api/ forwards
-#     them to the backend, which trusts them only from this proxy.
-#   * On 401 the client is redirected to /outpost.goauthentik.io/start, which
-#     starts the OAuth login; /outpost.goauthentik.io itself is proxied to the
-#     embedded outpost (unauthenticated), and /if/, /static/, /media/ and
-#     /api/v3/ are proxied to the Authentik server so the login/logout UI works
-#     on the app origin. Only /api/health is exempt from the auth gate
-#     (container healthchecks).
-#
-# The auth cookie set by the outpost (Set-Cookie on /callback) is propagated to
-# the browser via `add_header Set-Cookie $auth_cookie`, and the X-Original-URL
-# header is always overwritten with the real request URL so clients cannot
-# spoof it (GHSA-5wcc-hf24-rf5h).
+# Authentication is handled by Supabase Auth (hosted): the SPA authenticates
+# via supabase-js directly with Supabase and sends the JWT access token to the
+# backend as a Bearer header. This nginx only serves the static SPA, proxies
+# the backend API (/api/), and terminates TLS. /api/health stays exempt from
+# the backend's auth check for container healthchecks.
 
 server {
     listen 80;
@@ -42,69 +30,33 @@ server {
     index index.html;
 
     # Security headers (rendered from security-headers.conf.tmpl; includes
-    # HSTS when real certificates are mounted). Locations that define their own
-    # add_header directives replace the inherited server-level ones and must
-    # include this file explicitly.
+    # HSTS when real certificates are mounted and the Supabase origin in the
+    # CSP connect-src when VITE_SUPABASE_URL is set). Locations that define
+    # their own add_header directives replace the inherited server-level ones
+    # and must include this file explicitly.
     include /etc/nginx/security-headers.conf;
 
-    # Embedded outpost endpoints. Public (no auth_request): /auth/nginx (the
-    # forward-auth check itself), /start (login redirect), /callback (OAuth
-    # return) and /ping. Note $request_uri/$http_host stay the client's values
-    # inside the auth subrequest, so X-Original-URL carries the real app URL the
-    # outpost matches against the provider external_host.
-    location /outpost.goauthentik.io {
-        proxy_pass http://authentik-server:9000/outpost.goauthentik.io;
-        proxy_http_version 1.1;
-        proxy_set_header Host $http_host;
-        proxy_set_header X-Original-URL $scheme://$http_host$request_uri;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_set_header X-Forwarded-Host $http_host;
-        proxy_set_header X-Forwarded-For $remote_addr;
-        proxy_set_header Content-Length "";
-        proxy_pass_request_body off;
-        # Propagate the session cookie the outpost sets (login/callback).
-        auth_request_set $auth_cookie $upstream_http_set_cookie;
-        add_header Set-Cookie $auth_cookie;
-        include /etc/nginx/security-headers.conf;
-    }
-
-    # SPA (requires authentication; assets are served after a successful
-    # forward-auth subrequest).
+    # SPA (served without an nginx auth gate; authentication is enforced by the
+    # backend on /api/* via the Bearer token, and the SPA never contains
+    # sensitive data).
     location / {
-        auth_request /outpost.goauthentik.io/auth/nginx;
-        auth_request_set $auth_cookie $upstream_http_set_cookie;
-        add_header Set-Cookie $auth_cookie;
-        auth_request_set $ak_username $upstream_http_x_authentik_username;
-        auth_request_set $ak_uid      $upstream_http_x_authentik_uid;
-        error_page 401 = @goauthentik_proxy_signin;
         try_files $uri $uri/ /index.html;
         include /etc/nginx/security-headers.conf;
     }
 
-    # Backend API (requires authentication).
+    # Backend API. The backend verifies the Bearer JWT itself; unauthenticated
+    # requests receive a 401 from the API.
     location /api/ {
-        auth_request /outpost.goauthentik.io/auth/nginx;
-        auth_request_set $auth_cookie $upstream_http_set_cookie;
-        add_header Set-Cookie $auth_cookie;
-        auth_request_set $ak_username $upstream_http_x_authentik_username;
-        auth_request_set $ak_uid      $upstream_http_x_authentik_uid;
-        error_page 401 = @goauthentik_proxy_signin;
         proxy_pass http://backend:8000/;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
-        # Overwrite (never append) the forwarded headers with the true peer so
-        # clients cannot spoof a first hop; the backend honors them only from
-        # trusted proxies (see TRUSTED_PROXY_IPS).
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $remote_addr;
         proxy_set_header X-Forwarded-Proto $scheme;
-        # Identity returned by the authenticated forward-auth subrequest.
-        proxy_set_header X-authentik-username $ak_username;
-        proxy_set_header X-authentik-uid $ak_uid;
         include /etc/nginx/security-headers.conf;
     }
 
-    # Health check — exempt from the auth gate so container healthchecks and
+    # Health check — unauthenticated so container healthchecks and
     # infrastructure probes can always reach it.
     location = /api/health {
         proxy_pass http://backend:8000/health;
@@ -115,69 +67,10 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    # Authentik web UI (login/logout flows) served on the app origin.
-    location /if/ {
-        proxy_pass http://authentik-server:9000;
-        proxy_http_version 1.1;
-        proxy_set_header Host $http_host;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_set_header X-Forwarded-Host $http_host;
-        proxy_set_header X-Forwarded-For $remote_addr;
-        # Authentik sends no CSP of its own and needs an inline boot-config
-        # script, so override the app-wide CSP here (keeping the other security
-        # headers). Any add_header in this location replaces the server-level
-        # ones for these responses, hence the explicit re-adding (do NOT include
-        # security-headers.conf here: its strict CSP would be sent alongside
-        # this relaxed one).
-        ${HSTS_BLOCK}
-        add_header X-Content-Type-Options "nosniff" always;
-        add_header X-Frame-Options "DENY" always;
-        add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-        add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;
-        add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'" always;
-    }
-
-    # Authentik static assets (flow interface JS/CSS).
-    location /static/ {
-        proxy_pass http://authentik-server:9000;
-        proxy_http_version 1.1;
-        proxy_set_header Host $http_host;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_set_header X-Forwarded-Host $http_host;
-        proxy_set_header X-Forwarded-For $remote_addr;
-    }
-
-    # Authentik media (branding, flow background).
-    location /media/ {
-        proxy_pass http://authentik-server:9000;
-        proxy_http_version 1.1;
-        proxy_set_header Host $http_host;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_set_header X-Forwarded-Host $http_host;
-        proxy_set_header X-Forwarded-For $remote_addr;
-    }
-
-    # Authentik API (used by the Authentik admin UI at /if/admin/).
-    location /api/v3/ {
-        proxy_pass http://authentik-server:9000;
-        proxy_http_version 1.1;
-        proxy_set_header Host $http_host;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_set_header X-Forwarded-Host $http_host;
-        proxy_set_header X-Forwarded-For $remote_addr;
-    }
-
-    # Authentik OAuth endpoints (authorize/consent). Public (no auth_request):
-    # the embedded outpost redirects the browser here to start the login flow;
-    # the flow UI then lives under /if/flow/... and /api/v3/ above.
-    location /application/ {
-        proxy_pass http://authentik-server:9000;
-        proxy_http_version 1.1;
-        proxy_set_header Host $http_host;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_set_header X-Forwarded-Host $http_host;
-        proxy_set_header X-Forwarded-For $remote_addr;
+    # Self-hosted fonts used by the app.
+    location /fonts/ {
         include /etc/nginx/security-headers.conf;
+        try_files $uri =404;
     }
 
     # CSP violation reports — logs to nginx error log for debugging.
@@ -185,14 +78,5 @@ server {
         default_type application/json;
         access_log off;
         return 204;
-    }
-
-    # Unauthenticated request -> the embedded outpost starts the OAuth login,
-    # returning to the originally requested URL after success.
-    location @goauthentik_proxy_signin {
-        internal;
-        add_header Set-Cookie $auth_cookie;
-        include /etc/nginx/security-headers.conf;
-        return 302 /outpost.goauthentik.io/start?rd=$scheme://$http_host$request_uri;
     }
 }

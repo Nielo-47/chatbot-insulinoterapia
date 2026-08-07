@@ -1,18 +1,19 @@
 """FastAPI Backend for Diabetes Chatbot - Exposes RAG functionality via REST API.
 
-Authentication is fully delegated to Authentik (forward-auth proxy). The backend
-never sees credentials or tokens: nginx runs an Authentik auth subrequest and
-forwards the resulting identity headers (X-authentik-uid, X-authentik-username),
-which the backend consumes after verifying the request came from a trusted
-proxy. Account deletion calls the Authentik Admin API.
+Authentication is delegated to Supabase Auth. The frontend authenticates with
+supabase-js and sends the resulting JWT access token as an ``Authorization:
+Bearer`` header; the backend verifies the token's signature against the
+project's public JWKS endpoint (SUPABASE_JWKS_URL) using the algorithm it
+advertises (RS256 or ES256), plus audience and role, and
+maps its ``sub`` claim (a UUID) to the local ``profiles`` row. Account deletion
+calls the ``delete-account`` edge function, which holds the secret key.
 """
 
-import ipaddress
 import logging
 import os
 import uuid
 from contextlib import asynccontextmanager
-from typing import List, Tuple
+from typing import List, Optional
 
 import nest_asyncio
 from dotenv import load_dotenv
@@ -36,31 +37,10 @@ from backend.src.api.dependencies import (
 from backend.src.application.features.auth import AuthenticationService
 from backend.src.application.features.chat.chatbot_service import ChatbotService
 from backend.src.infrastructure.data.cache import init_semantic_cache
-from backend.src.config.security import TRUSTED_PROXY_IPS
-from backend.src.config.infrastructure import DOCS_ENABLED
 from backend.src.config.env import require
 from backend.src.infrastructure.data import initialize_database
 from backend.src.infrastructure.security import rate_limit
-
-
-def _normalize_ip(ip: str) -> str:
-    """Strip the IPv4-mapped IPv6 prefix so both forms compare equal."""
-    return ip[7:] if ip.lower().startswith("::ffff:") else ip
-
-
-def _is_trusted_proxy(peer: str) -> bool:
-    """Return True if the direct peer is a configured reverse proxy (IP/CIDR)."""
-    peer = _normalize_ip(peer.strip())
-    for entry in TRUSTED_PROXY_IPS:
-        normalized = _normalize_ip(entry.strip())
-        if normalized == peer:
-            return True
-        try:
-            if ipaddress.ip_address(peer) in ipaddress.ip_network(normalized, strict=False):
-                return True
-        except ValueError:
-            continue
-    return False
+from backend.src.infrastructure.security.supabase import SupabaseTokenError, verify_access_token
 
 
 def _parse_frontend_origins() -> List[str]:
@@ -90,33 +70,42 @@ def _unauthorized(detail: str = "Nao autenticado") -> HTTPException:
     )
 
 
-def _forwarded_identity(request: Request) -> Tuple[str, str]:
-    """Return (authentik_sub, username) from the trusted proxy's forwarded headers.
-
-    Fail closed: the X-authentik-* headers are honored only when the request's
-    direct peer is a trusted reverse proxy (TRUSTED_PROXY_IPS). nginx overwrites
-    any client-supplied X-authentik-* headers with values taken from the
-    Authentik forward-auth subrequest, so an end client cannot spoof an identity.
-    """
-    peer = request.client.host if request.client else "unknown"
-    if not _is_trusted_proxy(peer):
-        return "", ""
-    sub = request.headers.get("X-authentik-uid", "").strip()
-    username = request.headers.get("X-authentik-username", "").strip()
-    return sub, username
+def _extract_bearer_token(request: Request) -> Optional[str]:
+    header = request.headers.get("Authorization", "")
+    scheme, _, token = header.partition(" ")
+    if scheme.lower() != "bearer" or not token.strip():
+        return None
+    return token.strip()
 
 
 def get_current_user(
     request: Request,
     auth_service: AuthenticationService = Depends(get_auth_service),
 ) -> AuthenticatedUser:
-    sub, username = _forwarded_identity(request)
-    # Both the Authentik uid and the username must be present; a partial identity
-    # is treated as unauthenticated rather than provisioning a broken user row.
-    if not sub or not username:
+    token = _extract_bearer_token(request)
+    if not token:
         raise _unauthorized()
 
-    principal = auth_service.resolve_principal_from_identity(sub, username)
+    try:
+        claims = verify_access_token(token)
+    except SupabaseTokenError:
+        raise _unauthorized()
+
+    sub = claims.get("sub")
+    if not sub:
+        raise _unauthorized()
+
+    # The username is cosmetic (display only); email is the natural identifier
+    # for Supabase email+password accounts.
+    username = claims.get("email") or f"user_{sub[:8]}"
+    try:
+        principal = auth_service.resolve_principal_from_identity(sub, username)
+    except ValueError:
+        # The sub claim is not a valid UUID (should never happen for Supabase
+        # tokens); treat it as unauthenticated rather than crashing.
+        logger.warning("Rejected access token with non-UUID sub claim")
+        raise _unauthorized()
+
     return AuthenticatedUser(id=principal.id, username=principal.username)
 
 
@@ -134,16 +123,16 @@ async def lifespan(app: FastAPI):
     logger.info("Shutting down chatbot...")
 
 
-# OpenAPI schema endpoints (/docs, /redoc, /openapi.json) are disabled unless
-# DOCS_ENABLED=true so the API surface is not exposed for reconnaissance.
+# OpenAPI schema endpoints (/docs, /redoc, /openapi.json) are always disabled
+# so the API surface is never exposed for reconnaissance.
 app = FastAPI(
     title="Diabetes Chatbot API",
     description="Backend API for diabetes chatbot with RAG functionality",
     version="1.0.0",
     lifespan=lifespan,
-    docs_url="/docs" if DOCS_ENABLED else None,
-    redoc_url="/redoc" if DOCS_ENABLED else None,
-    openapi_url="/openapi.json" if DOCS_ENABLED else None,
+    docs_url=None,
+    redoc_url=None,
+    openapi_url=None,
 )
 
 
@@ -181,31 +170,34 @@ def read_current_user(current_user: AuthenticatedUser = Depends(get_current_user
 
 @app.delete("/auth/me")
 def delete_current_user(
+    request: Request,
     current_user: AuthenticatedUser = Depends(get_current_user),
     auth_service: AuthenticationService = Depends(get_auth_service),
     chatbot: ChatbotService = Depends(get_chatbot_service),
 ):
     """Delete the current account.
 
-    The Authentik session is itself the proof of identity (no password
-    re-confirmation exists anymore). The Authentik user is revoked first so
-    SSO access stops immediately; only then is local data purged. If the
-    Authentik deletion fails, the local account is kept untouched (fail closed).
+    Cached PII (Redis conversation message cache, checkpointer thread state) is
+    purged FIRST, before the account is revoked, so stale user data cannot
+    outlive the account. The Auth user is then revoked via the ``delete-account``
+    edge function (the caller's access token is forwarded; the secret key lives
+    only in Supabase). The local profiles/conversations/messages rows are
+    removed by the ``on_auth_user_deleted`` trigger. If the revocation fails,
+    the account is kept (fail closed).
     """
-    if not auth_service.delete_authentik_user(current_user.username):
+    token = _extract_bearer_token(request)
+    if not token:
+        raise _unauthorized()
+
+    # Purge cached PII for this user's conversation BEFORE the account is
+    # revoked. The semantic cache is global (keyed by prompt hash), not
+    # user-scoped, and is therefore not part of per-user purging.
+    chatbot.purge_user_data(current_user.id)
+    if not auth_service.delete_supabase_user(current_user.id, token):
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail="Nao foi possivel excluir a conta no provedor de identidade",
         )
-
-    # Purge cached PII (Redis conversation message cache) for this user's
-    # conversation BEFORE the DB row is removed, so stale user data cannot
-    # outlive the account. The semantic cache is global (keyed by prompt hash),
-    # not user-scoped, and is therefore not part of per-user purging.
-    chatbot.purge_user_data(current_user.id)
-    deleted = auth_service.delete_user(current_user.id)
-    if not deleted:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuario nao encontrado")
     return {"message": "Usuario excluido com sucesso"}
 
 
@@ -316,12 +308,12 @@ async def root():
 
     Kept unauthenticated (harmless banner), but deliberately omits the version
     so the API surface is not fingerprinted (L2). /health must stay
-    unauthenticated too because the container healthcheck probes it. At the
-    edge, nginx's Authentik auth_request still guards / and /api/.
+    unauthenticated too because the container healthcheck probes it. All
+    other endpoints require a valid Supabase Bearer token.
     """
     return {
         "message": "Diabetes Chatbot API",
-        "docs": "/docs" if DOCS_ENABLED else None,
+        "docs": None,
     }
 
 

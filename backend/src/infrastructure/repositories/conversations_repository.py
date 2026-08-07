@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 from typing import Optional
+import uuid
 
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
@@ -9,12 +10,12 @@ from backend.src.infrastructure.data.db_client import get_db_session
 
 
 class ConversationsRepository:
-    def get_conversation_id_by_user(self, user_id: int) -> Optional[int]:
+    def get_conversation_id_by_user(self, user_id: uuid.UUID) -> Optional[uuid.UUID]:
         with get_db_session() as db:
             stmt = select(Conversation.id).where(Conversation.user_id == user_id)
             return db.execute(stmt).scalar_one_or_none()
 
-    def get_or_create_conversation_id(self, user_id: int) -> int:
+    def get_or_create_conversation_id(self, user_id: uuid.UUID) -> uuid.UUID:
         with get_db_session() as db:
             existing_stmt = select(Conversation.id).where(Conversation.user_id == user_id)
             existing_id = db.execute(existing_stmt).scalar_one_or_none()
@@ -30,7 +31,7 @@ class ConversationsRepository:
                 db.rollback()
                 return db.execute(existing_stmt).scalar_one()
 
-    def touch_conversation(self, conversation_id: int) -> None:
+    def touch_conversation(self, conversation_id: uuid.UUID) -> None:
         with get_db_session() as db:
             conversation = db.get(Conversation, conversation_id)
             if conversation is None:
@@ -38,14 +39,14 @@ class ConversationsRepository:
             conversation.updated_at = datetime.now(timezone.utc)
             db.add(conversation)
 
-    def get_summary(self, conversation_id: int) -> Optional[str]:
+    def get_summary(self, conversation_id: uuid.UUID) -> Optional[str]:
         with get_db_session() as db:
             conversation = db.get(Conversation, conversation_id)
             if conversation is None:
                 return None
             return conversation.summary
 
-    def update_summary(self, conversation_id: int, summary: str) -> None:
+    def update_summary(self, conversation_id: uuid.UUID, summary: str) -> None:
         with get_db_session() as db:
             conversation = db.get(Conversation, conversation_id)
             if conversation is None:

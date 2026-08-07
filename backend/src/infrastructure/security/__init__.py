@@ -1,6 +1,11 @@
-from backend.src.infrastructure.security.authentik import AuthentikAdminClient, AuthentikError
+from backend.src.infrastructure.security.supabase import (
+    SupabaseAccountDeletionClient,
+    SupabaseTokenError,
+    verify_access_token,
+)
 
 __all__ = [
-    "AuthentikAdminClient",
-    "AuthentikError",
+    "SupabaseAccountDeletionClient",
+    "SupabaseTokenError",
+    "verify_access_token",
 ]

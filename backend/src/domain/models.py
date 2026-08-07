@@ -1,42 +1,23 @@
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
+import uuid
 
 
 @dataclass(frozen=True)
 class AuthenticatedPrincipal:
-    id: int
+    id: uuid.UUID
     username: str
 
 
 @dataclass(frozen=True)
-class User:
-    id: int
+class Profile:
+    user_id: uuid.UUID
     username: str
-    authentik_sub: Optional[str] = None
-    created_at: Optional[datetime] = None
-
-
-@dataclass(frozen=True)
-class Conversation:
-    id: int
-    user_id: int
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
-
-
-@dataclass(frozen=True)
-class Message:
-    id: Optional[int]
-    conversation_id: int
-    role: str
-    content: str
     created_at: Optional[datetime] = None
 
 
 __all__ = [
     "AuthenticatedPrincipal",
-    "Conversation",
-    "Message",
-    "User",
+    "Profile",
 ]

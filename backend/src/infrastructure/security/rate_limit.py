@@ -1,8 +1,8 @@
 """Per-user query rate limiting using Redis.
 
-Login throttling, account lockout and token blacklisting have been removed:
-those are now owned by Authentik (forward-auth). What remains is the
-application-level query quota (a functional cap, not an authentication control).
+Login throttling, account lockout and token blacklisting live in Supabase
+Auth; what remains here is the application-level query quota (a functional
+cap, not an authentication control).
 
 Fail-closed policy: Redis is a hard dependency of the whole application
 (docker-compose deployment), so when Redis is unavailable every throttle check
@@ -11,6 +11,7 @@ operation degrades safely instead of raising.
 """
 
 import logging
+import uuid
 
 import redis
 
@@ -30,12 +31,12 @@ def _get_redis_client() -> redis.Redis:
 QUERY_LIMIT_PREFIX = "ratelimit:query:"
 
 
-def _get_query_limit_key(user_id: int) -> str:
+def _get_query_limit_key(user_id: uuid.UUID) -> str:
     """Get Redis key for per-user query rate limiting."""
     return f"{QUERY_LIMIT_PREFIX}{user_id}"
 
 
-def check_query_rate_limit(user_id: int) -> tuple[bool, int]:
+def check_query_rate_limit(user_id: uuid.UUID) -> tuple[bool, int]:
     """
     Check if a user has exceeded the query rate limit.
 
@@ -64,7 +65,7 @@ def check_query_rate_limit(user_id: int) -> tuple[bool, int]:
         return False, 0
 
 
-def get_query_rate_limit_remaining_seconds(user_id: int) -> int:
+def get_query_rate_limit_remaining_seconds(user_id: uuid.UUID) -> int:
     """Get remaining seconds until the query rate limit resets."""
     key = _get_query_limit_key(user_id)
 

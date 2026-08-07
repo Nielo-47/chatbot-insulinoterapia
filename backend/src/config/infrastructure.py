@@ -15,10 +15,6 @@ CHAT_CACHE_REDIS_URL = require("CHAT_CACHE_REDIS_URL")
 CHAT_CACHE_TTL_SECONDS = require_int("CHAT_CACHE_TTL_SECONDS")
 CHAT_CACHE_KEY_PREFIX = require("CHAT_CACHE_KEY_PREFIX")
 
-# API docs exposure. Disabled by default (fail closed) to avoid leaking the API
-# schema for reconnaissance; opt in explicitly for development.
-DOCS_ENABLED = get_bool("DOCS_ENABLED", False)
-
 # LLM semantic cache (Redis). GLOBAL and keyed by prompt hash, NOT user-scoped,
 # so a cached response containing PII could be served to another user. Disabled
 # by default for that reason; enable only if responses can never contain

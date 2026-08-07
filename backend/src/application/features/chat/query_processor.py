@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 class QueryGraphState(BaseModel):
     query: str
-    user_id: int
+    user_id: uuid.UUID
     mode: QueryMode
     session_id: str
     query_params: Dict[str, Any] = Field(default_factory=dict)
@@ -205,7 +205,7 @@ class QueryProcessor:
     async def query(
         self,
         query: str,
-        user_id: int,
+        user_id: uuid.UUID,
         mode: QueryMode = "hybrid",
         session_id: Optional[str] = None,
         **query_params,

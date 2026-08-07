@@ -9,8 +9,8 @@ from backend.src.infrastructure.llm.client import LLMClient
 from backend.src.infrastructure.rag.factory import RAGFactory
 from backend.src.infrastructure.repositories.conversations_repository import ConversationsRepository
 from backend.src.infrastructure.repositories.messages_repository import MessagesRepository
-from backend.src.infrastructure.repositories.users_repository import UsersRepository
-from backend.src.infrastructure.security.authentik import AuthentikAdminClient
+from backend.src.infrastructure.repositories.profiles_repository import ProfilesRepository
+from backend.src.infrastructure.security.supabase import SupabaseAccountDeletionClient
 
 
 async def build_chatbot_service() -> ChatbotService:
@@ -21,7 +21,6 @@ async def build_chatbot_service() -> ChatbotService:
     await rag_runtime.initialize(llm_client.complete)
 
     conversation_service = ConversationService(
-        users_repository=UsersRepository(),
         conversations_repository=ConversationsRepository(),
         messages_repository=MessagesRepository(),
         summary_call_llm=llm_client.complete,
@@ -33,8 +32,8 @@ async def build_chatbot_service() -> ChatbotService:
 
 def build_auth_service() -> AuthenticationService:
     return build_authentication_service(
-        users_repository=UsersRepository(),
-        authentik_admin_client=AuthentikAdminClient(),
+        profiles_repository=ProfilesRepository(),
+        account_deletion_client=SupabaseAccountDeletionClient(),
     )
 
 

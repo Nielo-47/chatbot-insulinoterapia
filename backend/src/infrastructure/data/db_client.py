@@ -1,18 +1,56 @@
 import logging
+import uuid
 from contextlib import contextmanager
 from typing import Any, Iterator, Optional
 
-from sqlalchemy import create_engine, inspect, text
+from sqlalchemy import create_engine, text
+from sqlalchemy.engine import make_url
 from sqlalchemy.orm import Session, sessionmaker
 
 from backend.src.config.infrastructure import DATABASE_URL, DB_MAX_OVERFLOW, DB_POOL_SIZE
-from backend.src.infrastructure.data.models import Base
 
 logger = logging.getLogger(__name__)
 
 
+def _ensure_psycopg_dialect(db_url: str) -> str:
+    """Map bare Postgres URLs to the installed psycopg3 dialect.
+
+    SQLAlchemy resolves a plain ``postgresql://`` (or ``postgres://``) scheme
+    to the psycopg2 dialect, which is not installed — only psycopg3
+    (``psycopg[binary]``) ships in this image. URLs already carrying a driver
+    (e.g. ``postgresql+psycopg://``) are left untouched.
+    """
+    for plain, driver in (
+        ("postgresql://", "postgresql+psycopg://"),
+        ("postgres://", "postgres+psycopg://"),
+    ):
+        if db_url.startswith(plain):
+            return driver + db_url[len(plain):]
+    return db_url
+
+
+def _prepare_db_url(db_url: str) -> str:
+    """Normalize a raw DATABASE_URL for this stack.
+
+    Ensures the psycopg3 dialect is selected and that a non-local Postgres URL
+    requests an encrypted connection. Supabase pooler connections require
+    sslmode; the URL in .env may already include it. Local/test hosts keep
+    their existing behavior (plaintext).
+    """
+    db_url = _ensure_psycopg_dialect(db_url)
+    url = make_url(db_url)
+    if not url.drivername.startswith("postgres"):
+        return db_url
+    host = (url.host or "").lower()
+    if host in ("localhost", "127.0.0.1", "::1"):
+        return db_url
+    query = dict(url.query)
+    query.setdefault("sslmode", "require")
+    return url.set(query=query).render_as_string(hide_password=False)
+
+
 def _build_engine():
-    db_url = DATABASE_URL
+    db_url = _prepare_db_url(DATABASE_URL)
     engine_kwargs: dict[str, Any] = {"pool_pre_ping": True}
 
     if db_url.startswith("sqlite"):
@@ -48,73 +86,14 @@ def check_database_connection() -> bool:
 
 
 def initialize_database() -> None:
-    """Initialize persistent chat tables if they do not exist yet."""
-    check_database_connection()
-    Base.metadata.create_all(bind=engine)
-    _ensure_message_sources_column()
-    _ensure_summary_column()
-    _ensure_authentik_sub_column()
-    _drop_password_column()
-    logger.info("Database tables initialized")
+    """Verify the database is reachable.
 
-
-def _ensure_message_sources_column() -> None:
-    """Backfill schema changes for environments that already have existing tables."""
-    inspector = inspect(engine)
-    columns = {column["name"] for column in inspector.get_columns("messages")}
-    if "sources_json" in columns:
-        return
-
-    logger.warning("messages.sources_json column missing; applying compatibility ALTER TABLE")
-    with engine.begin() as conn:
-        conn.execute(text("ALTER TABLE messages ADD COLUMN sources_json TEXT"))
-    logger.info("messages.sources_json column added")
-
-
-def _ensure_summary_column() -> None:
-    """Backfill schema changes for conversations.summary column."""
-    inspector = inspect(engine)
-    columns = {column["name"] for column in inspector.get_columns("conversations")}
-    if "summary" in columns:
-        return
-
-    logger.warning("conversations.summary column missing; applying compatibility ALTER TABLE")
-    with engine.begin() as conn:
-        conn.execute(text("ALTER TABLE conversations ADD COLUMN summary TEXT"))
-    logger.info("conversations.summary column added")
-
-
-def _ensure_authentik_sub_column() -> None:
-    """Backfill the users.authentik_sub mapping column for existing databases."""
-    inspector = inspect(engine)
-    columns = {column["name"] for column in inspector.get_columns("users")}
-    if "authentik_sub" in columns:
-        return
-
-    logger.warning("users.authentik_sub column missing; applying compatibility ALTER TABLE")
-    with engine.begin() as conn:
-        conn.execute(text("ALTER TABLE users ADD COLUMN authentik_sub VARCHAR(64)"))
-        conn.execute(text("CREATE UNIQUE INDEX ix_users_authentik_sub ON users (authentik_sub)"))
-    logger.info("users.authentik_sub column added")
-
-
-def _drop_password_column() -> None:
-    """Drop the now-unused users.hashed_password column.
-
-    Passwords live in Authentik after the forward-auth migration; keeping the
-    column would retain stale password hashes for no reason. Idempotent: no-op
-    when the column is already gone (e.g. fresh databases created from the new
-    model).
+    DDL lives in scripts/supabase_migration.sql and is applied from the
+    Supabase dashboard, never at runtime, so startup only validates the
+    connection.
     """
-    inspector = inspect(engine)
-    columns = {column["name"] for column in inspector.get_columns("users")}
-    if "hashed_password" not in columns:
-        return
-
-    logger.warning("users.hashed_password column present; dropping it (credentials are managed by Authentik)")
-    with engine.begin() as conn:
-        conn.execute(text("ALTER TABLE users DROP COLUMN hashed_password"))
-    logger.info("users.hashed_password column dropped")
+    check_database_connection()
+    logger.info("Database connection verified")
 
 
 def create_postgres_checkpointer() -> Optional[Any]:
@@ -131,7 +110,7 @@ def create_postgres_checkpointer() -> Optional[Any]:
         return None
 
     try:
-        db_url = DATABASE_URL.replace("+psycopg", "")
+        db_url = _prepare_db_url(DATABASE_URL).replace("+psycopg", "")
         conn = psycopg.connect(db_url)
         return PostgresSaver(conn)
     except Exception as e:
@@ -139,7 +118,7 @@ def create_postgres_checkpointer() -> Optional[Any]:
         return None
 
 
-def purge_user_checkpoint_threads(user_id: int) -> bool:
+def purge_user_checkpoint_threads(user_id: uuid.UUID) -> bool:
     """Delete LangGraph checkpointer state for a user's thread (user_{user_id}).
 
     Called during account deletion: the PostgresSaver tables (checkpoints,
@@ -159,7 +138,7 @@ def purge_user_checkpoint_threads(user_id: int) -> bool:
 
     thread_id = f"user_{user_id}"
     try:
-        db_url = DATABASE_URL.replace("+psycopg", "")
+        db_url = _prepare_db_url(DATABASE_URL).replace("+psycopg", "")
         with psycopg.connect(db_url) as conn:
             with conn.cursor() as cur:
                 for table in ("checkpoints", "checkpoint_blobs", "checkpoint_writes"):

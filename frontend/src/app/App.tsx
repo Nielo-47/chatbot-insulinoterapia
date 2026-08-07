@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react'
 
 import { ApiError, deleteAccount, getCurrentUser, checkHealth } from '../lib/api'
-import { getAuthentikLogoutUrl } from '../lib/env'
+import { supabase } from '../lib/supabase'
 import { ChatPage } from '../features/chat/ChatPage'
 import { SignInPage } from '../features/auth/SignInPage'
 import type { AuthStatus, BackendStatus } from '../types/app'
 
 type CurrentUser = {
-  id: number
+  id: string
   username: string
 }
 
@@ -35,15 +35,26 @@ function App() {
         return
       }
 
-      // The Authentik session lives in browser cookies and is enforced by the
-      // nginx forward-auth proxy: /auth/me only succeeds when a valid session
-      // exists, so probing it reveals the auth state (no client-side token).
+      // The Supabase session lives in localStorage; /auth/me only succeeds when
+      // the session yields a valid access token, so probing it reveals the
+      // auth state.
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
+
+      if (!session) {
+        setAuthStatus('signed_out')
+        setIsBootstrapping(false)
+        return
+      }
+
       try {
         const user = await getCurrentUser()
         setCurrentUser(user)
         setAuthStatus('authenticated')
       } catch (error) {
         if (error instanceof ApiError && error.status === 401) {
+          await supabase.auth.signOut()
           setAuthStatus('signed_out')
         } else {
           setAuthStatus('unknown')
@@ -54,15 +65,32 @@ function App() {
     })()
   }, [])
 
+  useEffect(() => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_IN') {
+        void (async () => {
+          try {
+            const user = await getCurrentUser()
+            setCurrentUser(user)
+            setAuthStatus('authenticated')
+          } catch {
+            // The bootstrap flow re-evaluates on next reload; ignore transient errors.
+          }
+        })()
+      } else if (event === 'SIGNED_OUT') {
+        setCurrentUser(null)
+        setAuthStatus('signed_out')
+      }
+    })
+    return () => subscription.unsubscribe()
+  }, [])
+
   const handleLogout = async (reason: 'manual' | 'expired' | 'deleted' = 'manual') => {
-    if (reason === 'manual' || reason === 'deleted') {
-      // Sign out of Authentik so the session cookie is destroyed, then the
-      // browser lands back here unauthenticated.
-      window.location.assign(getAuthentikLogoutUrl())
-      return
-    }
+    await supabase.auth.signOut()
     setCurrentUser(null)
-    setAuthStatus('expired')
+    setAuthStatus(reason === 'expired' ? 'expired' : 'signed_out')
   }
 
   const handleDeleteAccount = async () => {
