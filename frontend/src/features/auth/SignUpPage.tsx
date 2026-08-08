@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { ArrowLeft, Mail, Lock, UserPlus } from 'lucide-react'
 
 import { supabase } from '../../lib/supabase'
+import { translateAuthError } from '../../lib/authErrors'
 import { navigateTo } from '../../lib/router'
 import type { AuthStatus, BackendStatus } from '../../types/app'
 import { AuthShell, TextField } from './AuthShell'
@@ -40,7 +41,7 @@ export function SignUpPage({ backendStatus, authStatus }: SignUpPageProps) {
         password,
       })
       if (signUpError) {
-        setError(signUpError.message)
+        setError(translateAuthError(signUpError))
       } else if (data.session) {
         // Email confirmation is disabled in this Supabase project, so the
         // session is already active and the onAuthStateChange handler in

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { LogIn, Mail, Lock, UserPlus } from 'lucide-react'
 
 import { supabase } from '../../lib/supabase'
+import { translateAuthError } from '../../lib/authErrors'
 import { navigateTo } from '../../lib/router'
 import type { AuthStatus, BackendStatus } from '../../types/app'
 import { AuthShell, TextField } from './AuthShell'
@@ -27,7 +28,7 @@ export function SignInPage({ backendStatus, authStatus }: SignInPageProps) {
         password,
       })
       if (authError) {
-        setError(authError.message)
+        setError(translateAuthError(authError))
       }
       // On success the onAuthStateChange handler in App.tsx picks up the new
       // session and renders the chat page.
