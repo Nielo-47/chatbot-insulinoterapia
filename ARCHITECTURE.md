@@ -199,9 +199,9 @@ frontend/
 
 ```bash
 # 1. Apply scripts/supabase_migration.sql in the Supabase SQL editor.
-# 2. Deploy the delete-account edge function and set its secret:
-#    supabase functions deploy delete-account
-#    supabase secrets set SUPABASE_SECRET_KEY=<your secret key>
+# 2. Deploy the delete-account edge function (keys are injected automatically
+#    by the edge runtime; the script links the project, deploys and verifies):
+#    scripts/deploy_edge_function.sh
 # 3. Fill .env and start the stack (ngrok is boot-blocking).
 docker compose up --build
 ```

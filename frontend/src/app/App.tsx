@@ -4,6 +4,7 @@ import { ApiError, deleteAccount, getCurrentUser, checkHealth } from '../lib/api
 import { supabase } from '../lib/supabase'
 import { ChatPage } from '../features/chat/ChatPage'
 import { SignInPage } from '../features/auth/SignInPage'
+import { SignUpPage } from '../features/auth/SignUpPage'
 import type { AuthStatus, BackendStatus } from '../types/app'
 
 type CurrentUser = {
@@ -11,11 +12,23 @@ type CurrentUser = {
   username: string
 }
 
+function readRoute(): string {
+  // Hash-based routing: no hash -> login, `#/signin` -> registration.
+  return window.location.hash.startsWith('#/signin') ? '/signin' : '/'
+}
+
 function App() {
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null)
+  const [route, setRoute] = useState<string>(() => readRoute())
   const [isBootstrapping, setIsBootstrapping] = useState(true)
   const [backendStatus, setBackendStatus] = useState<BackendStatus>('checking')
   const [authStatus, setAuthStatus] = useState<AuthStatus>('checking')
+
+  useEffect(() => {
+    const handleHashChange = () => setRoute(readRoute())
+    window.addEventListener('hashchange', handleHashChange)
+    return () => window.removeEventListener('hashchange', handleHashChange)
+  }, [])
 
   useEffect(() => {
     void (async () => {
@@ -103,7 +116,11 @@ function App() {
   }
 
   if (!currentUser) {
-    return <SignInPage backendStatus={backendStatus} authStatus={authStatus} />
+    return route === '/signin' ? (
+      <SignUpPage backendStatus={backendStatus} authStatus={authStatus} />
+    ) : (
+      <SignInPage backendStatus={backendStatus} authStatus={authStatus} />
+    )
   }
 
   return (

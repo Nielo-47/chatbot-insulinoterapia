@@ -9,8 +9,10 @@
 //
 // Deployed with:
 //
-//   supabase functions deploy delete-account
-//   supabase secrets set SUPABASE_SECRET_KEY=<your secret key>
+//   scripts/deploy_edge_function.sh
+//
+// No secrets need to be set manually: the edge runtime injects
+// SUPABASE_PUBLISHABLE_KEYS / SUPABASE_SECRET_KEYS automatically.
 //
 // The backend forwards the caller's access token in the Authorization header;
 // the edge runtime authenticates them, and the handler refuses to delete any
