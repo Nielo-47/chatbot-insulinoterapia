@@ -15,6 +15,7 @@ export interface ChatMessage {
   createdAt: string
   sources?: ChatSource[]
   summarized?: boolean
+  followUpQuestions?: string[]
   isError?: boolean
 }
 
@@ -25,6 +26,7 @@ export interface QueryPayload {
 export interface QueryResult {
   response: string
   sources: ChatSource[]
+  followUpQuestions: string[]
   summarized: boolean
 }
 

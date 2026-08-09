@@ -23,6 +23,7 @@ class QueryRequest(BaseModel):
 class QueryResponse(BaseModel):
     response: str
     sources: List[SourceItem]
+    follow_up_questions: List[str] = Field(default_factory=list)
     summarized: bool
     session_id: str
 

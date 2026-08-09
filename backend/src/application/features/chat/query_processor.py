@@ -8,6 +8,7 @@ from backend.src.config.conversation import SUMMARIZE_MAX_MESSAGES
 from backend.src.config.prompts import SYSTEM_PROMPT, USER_QUERY_PROMPT
 from backend.src.application.features.chat.critique import CritiqueService
 from backend.src.application.features.chat.summarizer import SummarizationService
+from backend.src.application.features.chat.suggestions import SuggestionService
 from backend.src.infrastructure.data.db_client import create_postgres_checkpointer
 from langgraph.graph import END, StateGraph
 from lightrag.prompt import PROMPTS
@@ -28,6 +29,7 @@ class QueryGraphState(BaseModel):
     sources: List[dict] = Field(default_factory=list)
     initial_response: str = ""
     final_response: str = ""
+    follow_up_questions: List[str] = Field(default_factory=list)
     critique: Dict[str, Any] = Field(default_factory=dict)
     was_summarized: bool = False
 
@@ -43,6 +45,7 @@ class QueryProcessor:
         self._conversation_service = conversation_service
         self._call_llm = call_llm
         self._critique_svc = CritiqueService(call_llm)
+        self._suggestion_svc = SuggestionService(call_llm)
         self._summarizer = SummarizationService(conversation_service, call_llm)
         self._checkpointer = create_postgres_checkpointer()
         self._graph = self._build_graph()
@@ -60,6 +63,7 @@ class QueryProcessor:
             ("generate_initial", self._node_generate_initial),
             ("critique_response", self._node_critique_response),
             ("refine_response", self._node_refine_response),
+            ("generate_suggestions", self._node_generate_suggestions),
             ("persist_messages", self._node_persist_messages),
             ("summarize_conversation", self._node_summarize),
         ]:
@@ -68,18 +72,19 @@ class QueryProcessor:
         g.set_entry_point("load_history")
         g.add_edge("load_history", "retrieve_rag")
         g.add_edge("retrieve_rag", "generate_initial")
-        g.add_edge("refine_response", "persist_messages")
+        g.add_edge("refine_response", "generate_suggestions")
+        g.add_edge("generate_suggestions", "persist_messages")
         g.add_edge("summarize_conversation", END)
 
         g.add_conditional_edges(
             "generate_initial",
             self._route_after_initial_response,
-            {"critique": "critique_response", "persist": "persist_messages"},
+            {"critique": "critique_response", "suggestions": "generate_suggestions"},
         )
         g.add_conditional_edges(
             "critique_response",
             self._route_after_critique,
-            {"refine": "refine_response", "persist": "persist_messages"},
+            {"refine": "refine_response", "suggestions": "generate_suggestions"},
         )
         g.add_conditional_edges(
             "persist_messages",
@@ -161,6 +166,14 @@ class QueryProcessor:
         refined = await self._call_llm(refinement_query, history_messages=state.conversation_history)
         return {"final_response": refined}
 
+    async def _node_generate_suggestions(self, state: QueryGraphState) -> Dict[str, Any]:
+        response = state.final_response or state.initial_response
+        if not response or response == PROMPTS["fail_response"]:
+            # No useful answer to follow up on — the frontend falls back to templates.
+            return {"follow_up_questions": []}
+        questions = await self._suggestion_svc.generate(state.query, response)
+        return {"follow_up_questions": questions}
+
     def _node_persist_messages(self, state: QueryGraphState) -> Dict[str, Any]:
         self._conversation_service.add_message(state.user_id, "user", state.query)
         self._conversation_service.add_message(
@@ -184,12 +197,12 @@ class QueryProcessor:
     def _route_after_initial_response(state: QueryGraphState) -> str:
         if state.initial_response == PROMPTS["fail_response"]:
             logger.info("No relevant context — skipping critique")
-            return "persist"
+            return "suggestions"
         return "critique"
 
     @staticmethod
     def _route_after_critique(state: QueryGraphState) -> str:
-        return "refine" if state.critique.get("needs_refinement") else "persist"
+        return "refine" if state.critique.get("needs_refinement") else "suggestions"
 
     @staticmethod
     def _should_summarize(state: QueryGraphState) -> str:
@@ -236,6 +249,7 @@ class QueryProcessor:
         return {
             "response": data.get("final_response") or data.get("initial_response", ""),
             "sources": data.get("sources", []),
+            "follow_up_questions": data.get("follow_up_questions", []),
             "summarized": data.get("was_summarized", False),
             "session_id": data.get("session_id", session_label),
         }

@@ -42,6 +42,7 @@ const sourceItemSchema = z.object({
 const queryResultSchema = z.object({
   response: z.string(),
   sources: z.array(sourceItemSchema),
+  follow_up_questions: z.array(z.string()).default([]),
   summarized: z.boolean(),
 })
 
@@ -161,7 +162,13 @@ export async function getConversationHistory(): Promise<ConversationHistoryMessa
 }
 
 export async function sendQuery(payload: QueryPayload): Promise<QueryResult> {
-  return request('/query', { method: 'POST', body: JSON.stringify(payload) }, queryResultSchema)
+  const result = await request('/query', { method: 'POST', body: JSON.stringify(payload) }, queryResultSchema)
+  return {
+    response: result.response,
+    sources: result.sources,
+    followUpQuestions: result.follow_up_questions,
+    summarized: result.summarized,
+  }
 }
 
 export async function clearConversation(): Promise<void> {

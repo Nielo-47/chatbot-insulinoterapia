@@ -91,6 +91,7 @@ class QueryProcessorTests(unittest.IsolatedAsyncioTestCase):
             side_effect=[
                 "Resposta inicial",
                 '{"needs_refinement": false, "issues": [], "suggestions": []}',
+                '{"questions": ["Q1?", "Q2?", "Q3?"]}',
             ]
         )
         processor = make_processor(DummyRAGRuntime(rag_data=rag_data), conversation_service, call_llm)
@@ -98,6 +99,7 @@ class QueryProcessorTests(unittest.IsolatedAsyncioTestCase):
         result = await processor.query("Pergunta", user_id=USER_ID, session_id="sess-1")
 
         self.assertEqual(result["response"], "Resposta inicial")
+        self.assertEqual(result["follow_up_questions"], ["Q1?", "Q2?", "Q3?"])
         self.assertEqual(
             result["sources"],
             [
@@ -121,7 +123,7 @@ class QueryProcessorTests(unittest.IsolatedAsyncioTestCase):
                 ],
             ),
         )
-        self.assertEqual(call_llm.await_count, 2)
+        self.assertEqual(call_llm.await_count, 3)
 
     async def test_query_with_refinement(self) -> None:
         rag_data = {"status": "success", "data": {"chunks": []}}
@@ -131,6 +133,7 @@ class QueryProcessorTests(unittest.IsolatedAsyncioTestCase):
                 "Resposta inicial",
                 '{"needs_refinement": true, "issues": ["x"], "suggestions": ["y"]}',
                 "Resposta refinada",
+                '{"questions": ["Ref Q1?", "Ref Q2?", "Ref Q3?"]}',
             ]
         )
         processor = make_processor(DummyRAGRuntime(rag_data=rag_data), conversation_service, call_llm)
@@ -138,21 +141,29 @@ class QueryProcessorTests(unittest.IsolatedAsyncioTestCase):
         result = await processor.query("Pergunta", user_id=USER_ID)
 
         self.assertEqual(result["response"], "Resposta refinada")
+        self.assertEqual(result["follow_up_questions"], ["Ref Q1?", "Ref Q2?", "Ref Q3?"])
         self.assertFalse(result["summarized"])
         self.assertEqual(conversation_service.added_messages[0], (USER_ID, "user", "Pergunta", []))
         self.assertEqual(conversation_service.added_messages[1], (USER_ID, "assistant", "Resposta refinada", []))
-        self.assertEqual(call_llm.await_count, 3)
+        self.assertEqual(call_llm.await_count, 4)
 
     async def test_query_with_malformed_critique_falls_back(self) -> None:
         rag_data = {"status": "success", "data": {"chunks": []}}
         conversation_service = DummyConversationService()
-        call_llm = AsyncMock(side_effect=["Resposta inicial", "not-json"])
+        call_llm = AsyncMock(
+            side_effect=[
+                "Resposta inicial",
+                "not-json",
+                '{"questions": ["Q1?", "Q2?", "Q3?"]}',
+            ]
+        )
         processor = make_processor(DummyRAGRuntime(rag_data=rag_data), conversation_service, call_llm)
 
         result = await processor.query("Pergunta", user_id=USER_ID)
 
         self.assertEqual(result["response"], "Resposta inicial")
-        self.assertEqual(call_llm.await_count, 2)
+        self.assertEqual(result["follow_up_questions"], ["Q1?", "Q2?", "Q3?"])
+        self.assertEqual(call_llm.await_count, 3)
         self.assertEqual(conversation_service.added_messages[1], (USER_ID, "assistant", "Resposta inicial", []))
 
     async def test_query_skips_critique_when_fail_response(self) -> None:
@@ -164,9 +175,28 @@ class QueryProcessorTests(unittest.IsolatedAsyncioTestCase):
         result = await processor.query("Pergunta", user_id=USER_ID)
 
         self.assertEqual(result["response"], PROMPTS["fail_response"])
+        self.assertEqual(result["follow_up_questions"], [])
         self.assertEqual(call_llm.await_count, 1)
         self.assertEqual(conversation_service.added_messages[0], (USER_ID, "user", "Pergunta", []))
         self.assertEqual(conversation_service.added_messages[1], (USER_ID, "assistant", PROMPTS["fail_response"], []))
+
+    async def test_query_malformed_suggestions_falls_back_to_empty(self) -> None:
+        rag_data = {"status": "success", "data": {"chunks": []}}
+        conversation_service = DummyConversationService()
+        call_llm = AsyncMock(
+            side_effect=[
+                "Resposta inicial",
+                '{"needs_refinement": false, "issues": [], "suggestions": []}',
+                "not-json",
+            ]
+        )
+        processor = make_processor(DummyRAGRuntime(rag_data=rag_data), conversation_service, call_llm)
+
+        result = await processor.query("Pergunta", user_id=USER_ID)
+
+        self.assertEqual(result["response"], "Resposta inicial")
+        self.assertEqual(result["follow_up_questions"], [])
+        self.assertEqual(call_llm.await_count, 3)
 
     async def test_query_rag_error_does_not_persist_messages(self) -> None:
         conversation_service = DummyConversationService()
@@ -194,6 +224,7 @@ class QueryProcessorTests(unittest.IsolatedAsyncioTestCase):
             side_effect=[
                 "Nova resposta",
                 '{"needs_refinement": false, "issues": [], "suggestions": []}',
+                '{"questions": ["Q1?", "Q2?", "Q3?"]}',
             ]
         )
         rag_runtime = DummyRAGRuntime(rag_data=rag_data)

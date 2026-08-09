@@ -5,6 +5,7 @@ import { ApiError, clearConversation, getConversationHistory, sendQuery } from '
 import type { AuthStatus, BackendStatus } from '../../types/app'
 import type { ChatMessage } from '../../types/chat'
 import { Composer } from './components/Composer'
+import { FollowUpSuggestions } from './components/FollowUpSuggestions'
 import { MessageBubble } from './components/MessageBubble'
 import { SourceDrawer } from './components/SourceDrawer'
 
@@ -15,6 +16,12 @@ const initialMessage: ChatMessage = {
     'Olá. Sou seu assistente de insulinoterapia. Faça perguntas sobre aplicação, rotina e cuidados com diabetes para receber orientações seguras.',
   createdAt: new Date().toISOString(),
 }
+
+const defaultSuggestions = [
+  'Como aplicar a insulina com caneta?',
+  'Onde devo guardar minha insulina?',
+  'O que fazer em caso de hipoglicemia?',
+]
 
 function normalizeSources(sources: Array<{path: string, page?: number, content?: string}>) {
   return sources.map((source, index) => ({
@@ -73,6 +80,18 @@ export function ChatPage({ username, backendStatus, authStatus, onLogout, onDele
     [messages],
   )
 
+  // Show the latest assistant answer's follow-up questions, or templates when
+  // no answer with suggestions exists yet (fresh chat / after clearing).
+  const activeSuggestions = useMemo(() => {
+    for (let i = sortedMessages.length - 1; i >= 0; i -= 1) {
+      const message = sortedMessages[i]
+      if (message.role === 'assistant' && !message.isError && message.followUpQuestions?.length) {
+        return message.followUpQuestions
+      }
+    }
+    return defaultSuggestions
+  }, [sortedMessages])
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
   }, [sortedMessages.length, isSending])
@@ -108,6 +127,7 @@ export function ChatPage({ username, backendStatus, authStatus, onLogout, onDele
         createdAt: new Date().toISOString(),
         sources: normalizeSources(result.sources),
         summarized: result.summarized,
+        followUpQuestions: result.followUpQuestions,
       }
 
       setMessages((current) => [...current, assistantMessage])
@@ -217,6 +237,7 @@ export function ChatPage({ username, backendStatus, authStatus, onLogout, onDele
           </section>
 
           <div className="mt-4">
+            <FollowUpSuggestions suggestions={activeSuggestions} disabled={isSending} onSelect={(question) => void handleSend(question)} />
             <Composer disabled={isSending} onSubmit={handleSend} />
           </div>
         </main>
