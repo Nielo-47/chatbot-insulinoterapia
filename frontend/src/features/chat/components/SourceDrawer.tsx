@@ -9,7 +9,7 @@ export function SourceDrawer({ message, onClose }: SourceDrawerProps) {
   if (!message || !message.sources || message.sources.length === 0) {
     return (
       <aside className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-        <h3 className="text-sm font-semibold text-slate-900">Referencias</h3>
+        <h3 className="text-sm font-semibold text-slate-900">Referências</h3>
         <p className="mt-2 text-sm text-slate-500">Selecione uma resposta para ver as fontes utilizadas.</p>
       </aside>
     )
@@ -18,7 +18,7 @@ export function SourceDrawer({ message, onClose }: SourceDrawerProps) {
   return (
     <aside className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 shadow-sm">
       <div className="mb-3 flex items-center justify-between gap-3">
-        <h3 className="text-sm font-semibold text-emerald-900">Referencias da resposta</h3>
+        <h3 className="text-sm font-semibold text-emerald-900">Referências da resposta</h3>
         <button
           type="button"
           onClick={onClose}

@@ -7,12 +7,13 @@ import type { ConversationHistoryMessage, QueryPayload, QueryResult } from '../t
 const MAX_ERROR_LENGTH = 200
 
 function sanitizeError(message: string): string {
-  // Strip non-printable characters: keep only printable ASCII, space, tab, newline, carriage return
+  // Strip control characters but keep printable Unicode text so accented
+  // Portuguese characters in backend messages are preserved.
   const cleaned = message
     .split('')
     .filter((ch) => {
       const code = ch.charCodeAt(0)
-      return code === 0x09 || code === 0x0a || code === 0x0d || (code >= 0x20 && code <= 0x7e)
+      return code === 0x09 || code === 0x0a || code === 0x0d || code >= 0x20
     })
     .join('')
   // Truncate to max length
@@ -102,7 +103,7 @@ async function request<T>(path: string, init: RequestInit, schema: z.ZodSchema<T
     }
 
     if (response.status === 401) {
-      throw new ApiError('Nao autenticado', 401)
+      throw new ApiError('Não autenticado', 401)
     }
 
     if (!response.ok) {
@@ -122,7 +123,7 @@ async function request<T>(path: string, init: RequestInit, schema: z.ZodSchema<T
     return schema.parse(json)
   } catch (error) {
     if (error instanceof DOMException && error.name === 'AbortError') {
-      throw new Error('A requisicao demorou demais. Tente novamente.')
+      throw new Error('A requisição demorou demais. Tente novamente.')
     }
 
     if (error instanceof z.ZodError) {

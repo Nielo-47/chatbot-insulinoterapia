@@ -40,12 +40,12 @@ def build_auth_service() -> AuthenticationService:
 def get_chatbot_service(request: Request) -> ChatbotService:
     chatbot = getattr(request.app.state, "chatbot", None)
     if chatbot is None:
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Chatbot nao inicializado")
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Chatbot não inicializado")
     return chatbot
 
 
 def get_auth_service(request: Request) -> AuthenticationService:
     auth_service = getattr(request.app.state, "auth_service", None)
     if auth_service is None:
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Autenticacao nao inicializada")
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Autenticação não inicializada")
     return auth_service

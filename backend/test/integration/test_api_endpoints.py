@@ -319,7 +319,7 @@ class ApiEndpointTests(unittest.TestCase):
         response = self.client.request("DELETE", "/auth/me", headers=self._alice_headers())
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()["message"], "Usuario excluido com sucesso")
+        self.assertEqual(response.json()["message"], "Usuário excluído com sucesso")
         self.assertIsNone(self.profiles.get_profile_by_id(ALICE_USER_ID))
 
     def test_delete_me_forwards_the_callers_access_token(self) -> None:

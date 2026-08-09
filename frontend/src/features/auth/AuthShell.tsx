@@ -6,16 +6,16 @@ const FEATURES: Array<{ icon: LucideIcon; title: string; description: string }> 
   {
     icon: BotMessageSquare,
     title: 'Assistente especializado',
-    description: 'Orientacoes sobre aplicacao, rotina e cuidados com diabetes.',
+    description: 'Orientações sobre aplicação, rotina e cuidados com diabetes.',
   },
   {
     icon: BookOpenText,
-    title: 'Referencias das fontes',
-    description: 'Respostas fundamentadas em base de conhecimento com citacoes.',
+    title: 'Referências das fontes',
+    description: 'Respostas fundamentadas em base de conhecimento com citações.',
   },
   {
     icon: History,
-    title: 'Historico persistente',
+    title: 'Histórico persistente',
     description: 'Suas conversas ficam salvas e sincronizadas na sua conta.',
   },
 ]
@@ -39,8 +39,8 @@ export function AuthShell({ children }: AuthShellProps) {
                   Assistente de insulinoterapia
                 </h1>
                 <p className="mt-3 max-w-md text-sm leading-6 text-slate-600">
-                  Perguntas e respostas sobre aplicacao, rotina e cuidados com
-                  diabetes, com suporte de base de conhecimento e referencias.
+                  Perguntas e respostas sobre aplicação, rotina e cuidados com
+                  diabetes, com suporte de base de conhecimento e referências.
                 </p>
               </div>
 
@@ -63,7 +63,7 @@ export function AuthShell({ children }: AuthShellProps) {
               </ul>
 
               <p className="max-w-md rounded-2xl border border-slate-200 bg-white/70 px-4 py-3 text-xs leading-5 text-slate-500">
-                As respostas nao substituem avaliacao medica presencial.
+                As respostas não substituem avaliação médica presencial.
               </p>
             </div>
 

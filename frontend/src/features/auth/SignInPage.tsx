@@ -50,14 +50,14 @@ export function SignInPage({ backendStatus, authStatus }: SignInPageProps) {
 
       {backendStatus === 'offline' && (
         <div className="mt-5 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
-          O backend esta indisponivel no momento. Tente novamente quando o
-          servico estiver online.
+          O backend está indisponível no momento. Tente novamente quando o
+          serviço estiver online.
         </div>
       )}
 
       {authStatus === 'expired' && (
         <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-          Sua sessao expirou. Entre novamente.
+          Sua sessão expirou. Entre novamente.
         </div>
       )}
 
@@ -68,7 +68,7 @@ export function SignInPage({ backendStatus, authStatus }: SignInPageProps) {
           icon={Mail}
           type="email"
           autoComplete="email"
-          placeholder="voce@exemplo.com"
+          placeholder="seu@email.com"
           value={email}
           onChange={setEmail}
           disabled={submitting || backendStatus === 'offline'}

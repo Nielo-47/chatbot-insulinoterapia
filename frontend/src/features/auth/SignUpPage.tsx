@@ -30,7 +30,7 @@ export function SignUpPage({ backendStatus, authStatus }: SignUpPageProps) {
       return
     }
     if (password !== confirmPassword) {
-      setError('As senhas nao coincidem.')
+      setError('As senhas não coincidem.')
       return
     }
 
@@ -43,13 +43,13 @@ export function SignUpPage({ backendStatus, authStatus }: SignUpPageProps) {
       if (signUpError) {
         setError(translateAuthError(signUpError))
       } else if (data.session) {
-        // Email confirmation is disabled in this Supabase project, so the
-        // session is already active and the onAuthStateChange handler in
-        // App.tsx renders the chat page.
+        // Email confirmation is enabled in this Supabase project, so a new
+        // signup only reaches this branch if confirmation was skipped. In that
+        // case the onAuthStateChange handler in App.tsx renders the chat page.
       } else if (data.user) {
         setInfo('Conta criada. Confirme o e-mail enviado para ativar o acesso.')
       } else {
-        setError('Nao foi possivel criar a conta. Tente novamente.')
+        setError('Não foi possível criar a conta. Tente novamente.')
       }
     } catch {
       setError('Erro inesperado ao tentar criar a conta.')
@@ -65,7 +65,7 @@ export function SignUpPage({ backendStatus, authStatus }: SignUpPageProps) {
           type="button"
           onClick={() => navigateTo('/')}
           className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-300 bg-white text-slate-600 transition hover:bg-slate-100"
-          aria-label="Voltar para a pagina de entrada"
+          aria-label="Voltar para a página de entrada"
         >
           <ArrowLeft className="h-4 w-4" />
         </button>
@@ -74,20 +74,20 @@ export function SignUpPage({ backendStatus, authStatus }: SignUpPageProps) {
         </h2>
       </div>
       <p className="mt-2 text-sm leading-6 text-slate-600">
-        Cadastre-se para participar do teste fechado e comecar a usar o
+        Cadastre-se para participar do teste fechado e começar a usar o
         assistente.
       </p>
 
       {backendStatus === 'offline' && (
         <div className="mt-5 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
-          O backend esta indisponivel no momento. Tente novamente quando o
-          servico estiver online.
+          O backend está indisponível no momento. Tente novamente quando o
+          serviço estiver online.
         </div>
       )}
 
       {authStatus === 'expired' && (
         <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-          Sua sessao expirou. Entre novamente.
+          Sua sessão expirou. Entre novamente.
         </div>
       )}
 
@@ -104,7 +104,7 @@ export function SignUpPage({ backendStatus, authStatus }: SignUpPageProps) {
           icon={Mail}
           type="email"
           autoComplete="email"
-          placeholder="voce@exemplo.com"
+          placeholder="seu@email.com"
           value={email}
           onChange={setEmail}
           disabled={submitting || backendStatus === 'offline'}
@@ -149,7 +149,7 @@ export function SignUpPage({ backendStatus, authStatus }: SignUpPageProps) {
       </form>
 
       <p className="mt-6 text-center text-sm text-slate-500">
-        Ja tem uma conta?{' '}
+        Já tem uma conta?{' '}
         <button
           type="button"
           onClick={() => navigateTo('/')}

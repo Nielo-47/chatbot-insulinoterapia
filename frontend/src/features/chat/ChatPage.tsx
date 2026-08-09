@@ -12,7 +12,7 @@ const initialMessage: ChatMessage = {
   id: 'welcome',
   role: 'assistant',
   content:
-    'Ola. Sou seu assistente de insulinoterapia. Faca perguntas sobre aplicacao, rotina e cuidados com diabetes para receber orientacoes seguras.',
+    'Olá. Sou seu assistente de insulinoterapia. Faça perguntas sobre aplicação, rotina e cuidados com diabetes para receber orientações seguras.',
   createdAt: new Date().toISOString(),
 }
 
@@ -63,7 +63,7 @@ export function ChatPage({ username, backendStatus, authStatus, onLogout, onDele
           return
         }
 
-        setLocalError(error instanceof Error ? error.message : 'Nao foi possivel carregar o historico.')
+        setLocalError(error instanceof Error ? error.message : 'Não foi possível carregar o histórico.')
       }
     })()
   }, [onLogout])
@@ -81,11 +81,11 @@ export function ChatPage({ username, backendStatus, authStatus, onLogout, onDele
     if (backendStatus === 'offline') {
       const offlineMessage: ChatMessage = {
         role: 'assistant',
-        content: 'Nao foi possivel enviar sua mensagem porque o backend esta indisponivel no momento.',
+        content: 'Não foi possível enviar sua mensagem porque o backend está indisponível no momento.',
         createdAt: new Date().toISOString(),
         isError: true,
       }
-      setLocalError('Backend indisponivel. Verifique se a API esta ativa e tente novamente.')
+      setLocalError('Backend indisponível. Verifique se a API está ativa e tente novamente.')
       setMessages((current) => [...current, offlineMessage])
       return
     }
@@ -141,7 +141,7 @@ export function ChatPage({ username, backendStatus, authStatus, onLogout, onDele
         return
       }
 
-      setLocalError(error instanceof Error ? error.message : 'Nao foi possivel limpar a conversa.')
+      setLocalError(error instanceof Error ? error.message : 'Não foi possível limpar a conversa.')
     }
   }
 
@@ -155,7 +155,7 @@ export function ChatPage({ username, backendStatus, authStatus, onLogout, onDele
   }
 
   const handleDeleteAccount = async () => {
-    const shouldDelete = window.confirm('Tem certeza que deseja excluir sua conta? Esta acao nao pode ser desfeita.')
+    const shouldDelete = window.confirm('Tem certeza que deseja excluir sua conta? Esta ação não pode ser desfeita.')
 
     if (!shouldDelete) {
       return
@@ -170,7 +170,7 @@ export function ChatPage({ username, backendStatus, authStatus, onLogout, onDele
         return
       }
 
-      setLocalError(error instanceof Error ? error.message : 'Nao foi possivel excluir a conta.')
+      setLocalError(error instanceof Error ? error.message : 'Não foi possível excluir a conta.')
     } finally {
       setIsDeletingAccount(false)
     }
@@ -188,14 +188,14 @@ export function ChatPage({ username, backendStatus, authStatus, onLogout, onDele
                   Teste Fechado
                 </span>
               </h1>
-              <p className="mt-1 text-sm text-slate-600">Perguntas e respostas com suporte de base de conhecimento e referencias.</p>
-              <p className="mt-1 text-xs text-slate-500">As respostas nao substituem avaliacao medica presencial.</p>
+              <p className="mt-1 text-sm text-slate-600">Perguntas e respostas com suporte de base de conhecimento e referências.</p>
+              <p className="mt-1 text-xs text-slate-500">As respostas não substituem avaliação médica presencial.</p>
             </div>
           </header>
 
           {backendStatus === 'offline' && (
             <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
-              Nao foi possivel validar o backend. Verifique se a API esta ativa e tente novamente.
+              Não foi possível validar o backend. Verifique se a API está ativa e tente novamente.
             </div>
           )}
 
@@ -262,12 +262,12 @@ export function ChatPage({ username, backendStatus, authStatus, onLogout, onDele
             </div>
             {backendStatus === 'offline' && (
               <p className="mt-3 rounded-xl border border-rose-200 bg-rose-50 p-2 text-xs text-rose-700">
-                O backend esta indisponivel no momento.
+                O backend está indisponível no momento.
               </p>
             )}
             {(authStatus === 'expired' || authStatus === 'unknown') && (
               <p className="mt-2 rounded-xl border border-amber-200 bg-amber-50 p-2 text-xs text-amber-800">
-                Sessao com status {authStatus === 'expired' ? 'expirado' : 'indefinido'}.
+                Sessão com status {authStatus === 'expired' ? 'expirado' : 'indefinido'}.
               </p>
             )}
           </div>

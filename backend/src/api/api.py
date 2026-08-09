@@ -62,7 +62,7 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
-def _unauthorized(detail: str = "Nao autenticado") -> HTTPException:
+def _unauthorized(detail: str = "Não autenticado") -> HTTPException:
     return HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail=detail,
@@ -196,9 +196,9 @@ def delete_current_user(
     if not auth_service.delete_supabase_user(current_user.id, token):
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
-            detail="Nao foi possivel excluir a conta no provedor de identidade",
+            detail="Não foi possível excluir a conta no provedor de identidade",
         )
-    return {"message": "Usuario excluido com sucesso"}
+    return {"message": "Usuário excluído com sucesso"}
 
 
 @app.get("/user/conversations", response_model=ConversationHistoryResponse)
@@ -223,7 +223,7 @@ def get_user_conversations(
     except Exception as e:
         logger.error("Error retrieving conversation history for user %s: %s", current_user.id, type(e).__name__)
         logger.debug("Conversation history error detail for user %s: %s", current_user.id, e)
-        _raise_api_error(e, "Erro ao recuperar historico da conversa")
+        _raise_api_error(e, "Erro ao recuperar histórico da conversa")
 
 
 @app.get("/health", response_model=HealthResponse)
@@ -295,7 +295,7 @@ async def clear_user_conversations(
         if cleared:
             logger.info("Cleared conversation for user %s", current_user.id)
             return {"message": "Conversa limpa com sucesso"}
-        return {"message": "No conversation found"}
+        return {"message": "Nenhuma conversa encontrada"}
     except Exception as e:
         logger.error("Error clearing conversation for user %s: %s", current_user.id, type(e).__name__)
         logger.debug("Clear conversation error detail for user %s: %s", current_user.id, e)

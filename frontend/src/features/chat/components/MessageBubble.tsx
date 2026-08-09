@@ -36,7 +36,7 @@ export function MessageBubble({ message, onShowSources }: MessageBubbleProps) {
       )}
     >
       <header className="mb-2 flex items-center justify-between text-xs font-medium uppercase tracking-[0.08em] text-slate-500">
-        <span>{isUser ? 'Voce' : 'Assistente'}</span>
+        <span>{isUser ? 'Você' : 'Assistente'}</span>
         <time>{new Date(message.createdAt).toLocaleTimeString()}</time>
       </header>
 
@@ -81,7 +81,7 @@ export function MessageBubble({ message, onShowSources }: MessageBubbleProps) {
               }}
               className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-100"
             >
-              Ver referencias ({message.sources?.length ?? 0})
+              Ver referências ({message.sources?.length ?? 0})
             </button>
         </div>
       )}
