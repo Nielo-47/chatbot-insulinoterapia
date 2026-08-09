@@ -42,6 +42,44 @@ function normalizeSources(sources: Array<{path: string, page?: number, content?:
   }));
 }
 
+const SUGGESTIONS_STORAGE_PREFIX = 'chat-followup-suggestions'
+
+function suggestionsStorageKey(username: string): string {
+  return `${SUGGESTIONS_STORAGE_PREFIX}:${username}`
+}
+
+function readCachedSuggestions(username: string): string[] | null {
+  try {
+    const raw = window.localStorage.getItem(suggestionsStorageKey(username))
+    if (!raw) {
+      return null
+    }
+    const parsed: unknown = JSON.parse(raw)
+    if (Array.isArray(parsed) && parsed.every((item) => typeof item === 'string')) {
+      return parsed as string[]
+    }
+    return null
+  } catch {
+    return null
+  }
+}
+
+function writeCachedSuggestions(username: string, questions: string[]): void {
+  try {
+    window.localStorage.setItem(suggestionsStorageKey(username), JSON.stringify(questions))
+  } catch {
+    // Storage unavailable (private mode / quota) — suggestions simply won't persist.
+  }
+}
+
+function clearCachedSuggestions(username: string): void {
+  try {
+    window.localStorage.removeItem(suggestionsStorageKey(username))
+  } catch {
+    // Ignore storage errors when clearing.
+  }
+}
+
 interface ChatPageProps {
   username: string
   backendStatus: BackendStatus
@@ -52,6 +90,7 @@ interface ChatPageProps {
 
 export function ChatPage({ username, backendStatus, authStatus, onLogout, onDeleteAccount }: ChatPageProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([initialMessage])
+  const [cachedSuggestions, setCachedSuggestions] = useState<string[] | null>(() => readCachedSuggestions(username))
   const [activeSourcesMessage, setActiveSourcesMessage] = useState<ChatMessage | null>(null)
   const [isSending, setIsSending] = useState(false)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
@@ -100,8 +139,8 @@ export function ChatPage({ username, backendStatus, authStatus, onLogout, onDele
     [messages],
   )
 
-  // Show the latest assistant answer's follow-up questions, or templates when
-  // no answer with suggestions exists yet (fresh chat / after clearing).
+  // Show the latest in-session assistant answer's follow-up questions; fall
+  // back to the last cached ones (survives page refresh), then to templates.
   const activeSuggestions = useMemo(() => {
     for (let i = sortedMessages.length - 1; i >= 0; i -= 1) {
       const message = sortedMessages[i]
@@ -109,8 +148,8 @@ export function ChatPage({ username, backendStatus, authStatus, onLogout, onDele
         return message.followUpQuestions
       }
     }
-    return defaultSuggestions
-  }, [sortedMessages])
+    return cachedSuggestions ?? defaultSuggestions
+  }, [sortedMessages, cachedSuggestions])
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
@@ -161,6 +200,10 @@ export function ChatPage({ username, backendStatus, authStatus, onLogout, onDele
       }
 
       setMessages((current) => [...current, assistantMessage])
+      if (result.followUpQuestions?.length) {
+        setCachedSuggestions(result.followUpQuestions)
+        writeCachedSuggestions(username, result.followUpQuestions)
+      }
     } catch (error) {
       if (error instanceof ApiError && error.status === 401) {
         await onLogoutRef.current('expired')
@@ -187,6 +230,8 @@ export function ChatPage({ username, backendStatus, authStatus, onLogout, onDele
       setLocalError(null)
       setActiveSourcesMessage(null)
       setMessages([initialMessage])
+      setCachedSuggestions(null)
+      clearCachedSuggestions(username)
     } catch (error) {
       if (error instanceof ApiError && error.status === 401) {
         await onLogout('expired')
