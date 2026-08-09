@@ -21,6 +21,9 @@ interface MessageBubbleProps {
 export function MessageBubble({ message, onShowSources }: MessageBubbleProps) {
   const isUser = message.role === 'user'
   const hasSources = !isUser && !!message.sources && message.sources.length > 0
+  const documentCount = hasSources
+    ? new Set((message.sources ?? []).map((source) => source.path)).size
+    : 0
 
   return (
     <article
@@ -81,7 +84,7 @@ export function MessageBubble({ message, onShowSources }: MessageBubbleProps) {
               }}
               className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-100"
             >
-              Ver referências ({message.sources?.length ?? 0})
+              Ver referências ({documentCount})
             </button>
         </div>
       )}

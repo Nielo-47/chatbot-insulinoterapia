@@ -1,6 +1,16 @@
 import { BotMessageSquare, BookOpenText, LogOut, RefreshCcw } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
+let messageIdCounter = 0
+
+function createMessageId(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID()
+  }
+  messageIdCounter += 1
+  return `msg-${messageIdCounter}`
+}
+
 import { ApiError, clearConversation, getConversationHistory, sendQuery } from '../../lib/api'
 import type { AuthStatus, BackendStatus } from '../../types/app'
 import type { ChatMessage } from '../../types/chat'
@@ -48,32 +58,42 @@ export function ChatPage({ username, backendStatus, authStatus, onLogout, onDele
   const [isDeletingAccount, setIsDeletingAccount] = useState(false)
   const [localError, setLocalError] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement | null>(null)
+  const isSendingRef = useRef(false)
+  const onLogoutRef = useRef(onLogout)
+  onLogoutRef.current = onLogout
 
   useEffect(() => {
     void (async () => {
       try {
         const history = await getConversationHistory()
-        if (history.length > 0) {
-          const loadedMessages: ChatMessage[] = history.map((msg, index) => ({
-            id: `history-${index}`,
-            role: msg.role as 'user' | 'assistant',
-            content: msg.content,
-            createdAt: new Date().toISOString(),
-            sources: normalizeSources(msg.sources),
-          }))
-          // Load conversation history after the welcome message
-          setMessages([initialMessage, ...loadedMessages])
-        }
+        const loadedMessages: ChatMessage[] = history.map((msg, index) => ({
+          id: `history-${index}`,
+          role: msg.role as 'user' | 'assistant',
+          content: msg.content,
+          createdAt: new Date().toISOString(),
+          sources: normalizeSources(msg.sources),
+        }))
+        // Seed history only once, and never clobber messages the user already
+        // sent while the fetch was in flight (that replace could corrupt the
+        // list and, together with unstable keys, produce duplicate bubbles).
+        setMessages((current) => {
+          if (current.length > 1) {
+            return current
+          }
+          return [initialMessage, ...loadedMessages]
+        })
       } catch (error) {
         if (error instanceof ApiError && error.status === 401) {
-          await onLogout('expired')
+          await onLogoutRef.current('expired')
           return
         }
 
         setLocalError(error instanceof Error ? error.message : 'Não foi possível carregar o histórico.')
       }
     })()
-  }, [onLogout])
+    // Run once on mount: onLogout changes identity on every App re-render, and
+    // re-running this effect would re-fetch and replace the message list.
+  }, [])
 
   const sortedMessages = useMemo(
     () => [...messages].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()),
@@ -97,8 +117,15 @@ export function ChatPage({ username, backendStatus, authStatus, onLogout, onDele
   }, [sortedMessages.length, isSending])
 
   const handleSend = async (value: string) => {
+    if (isSendingRef.current) {
+      // Guard against concurrent submissions (double Enter / double click /
+      // suggestion clicks): a second send would duplicate the message pair.
+      return
+    }
+
     if (backendStatus === 'offline') {
       const offlineMessage: ChatMessage = {
+        id: createMessageId(),
         role: 'assistant',
         content: 'Não foi possível enviar sua mensagem porque o backend está indisponível no momento.',
         createdAt: new Date().toISOString(),
@@ -110,18 +137,21 @@ export function ChatPage({ username, backendStatus, authStatus, onLogout, onDele
     }
 
     const userMessage: ChatMessage = {
+      id: createMessageId(),
       role: 'user',
       content: value,
       createdAt: new Date().toISOString(),
     }
 
     setMessages((current) => [...current, userMessage])
+    isSendingRef.current = true
     setIsSending(true)
     setLocalError(null)
 
     try {
       const result = await sendQuery({ query: value })
       const assistantMessage: ChatMessage = {
+        id: createMessageId(),
         role: 'assistant',
         content: result.response,
         createdAt: new Date().toISOString(),
@@ -133,11 +163,12 @@ export function ChatPage({ username, backendStatus, authStatus, onLogout, onDele
       setMessages((current) => [...current, assistantMessage])
     } catch (error) {
       if (error instanceof ApiError && error.status === 401) {
-        await onLogout('expired')
+        await onLogoutRef.current('expired')
         return
       }
 
       const errorMessage: ChatMessage = {
+        id: createMessageId(),
         role: 'assistant',
         content: error instanceof Error ? error.message : 'Erro inesperado na consulta.',
         createdAt: new Date().toISOString(),
@@ -145,6 +176,7 @@ export function ChatPage({ username, backendStatus, authStatus, onLogout, onDele
       }
       setMessages((current) => [...current, errorMessage])
     } finally {
+      isSendingRef.current = false
       setIsSending(false)
     }
   }
@@ -197,9 +229,9 @@ export function ChatPage({ username, backendStatus, authStatus, onLogout, onDele
   }
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(220,252,231,0.8),_rgba(255,255,255,1)_45%)]">
-      <div className="mx-auto grid min-h-screen max-w-7xl grid-cols-1 gap-5 px-4 py-5 lg:grid-cols-[2.4fr_1fr] lg:px-8 lg:py-8">
-        <main className="flex max-h-[calc(100dvh-2.5rem)] min-h-[20rem] flex-col rounded-3xl border border-slate-200 bg-white/90 p-4 shadow-xl shadow-slate-200/40 backdrop-blur lg:min-h-[28rem] lg:p-6">
+    <div className="flex h-dvh flex-col overflow-hidden bg-[radial-gradient(circle_at_top,_rgba(220,252,231,0.8),_rgba(255,255,255,1)_45%)]">
+      <div className="mx-auto flex w-full max-w-7xl flex-1 min-h-0 flex-col gap-5 px-4 py-5 lg:flex-row lg:px-8 lg:py-8">
+        <main className="flex min-h-0 flex-1 flex-col rounded-3xl border border-slate-200 bg-white/90 p-4 shadow-xl shadow-slate-200/40 backdrop-blur lg:p-6">
           <header className="mb-3 flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-3">
             <div>
               <h1 className="font-serif text-2xl font-semibold text-slate-900 lg:text-3xl">
@@ -242,7 +274,8 @@ export function ChatPage({ username, backendStatus, authStatus, onLogout, onDele
           </div>
         </main>
 
-        <aside className="space-y-4">
+        <aside className="max-h-[40dvh] w-full min-h-0 shrink-0 overflow-y-auto lg:max-h-none lg:w-80">
+          <div className="space-y-4">
           <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
             <h2 className="mb-2 inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.06em] text-slate-700">
               <BookOpenText className="h-4 w-4" />
@@ -301,6 +334,7 @@ export function ChatPage({ username, backendStatus, authStatus, onLogout, onDele
           </div>
 
           <SourceDrawer message={activeSourcesMessage} onClose={() => setActiveSourcesMessage(null)} />
+          </div>
         </aside>
       </div>
     </div>
