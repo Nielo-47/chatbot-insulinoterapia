@@ -68,14 +68,15 @@ from backend.src.config.rag import (
     EMBEDDING_FALLBACK_RETRIES,
     EMBEDDING_PRIMARY_RETRIES,
     EMBEDDING_TIMEOUT_SECONDS,
-    LLM_FALLBACK_MODEL,
-    LLM_MODEL,
+    INGESTION_LLM_FALLBACK_MODEL,
+    INGESTION_LLM_MODEL,
+    INGESTION_LLM_TEMPERATURE,
 )
 from backend.src.infrastructure.rag.resilient_embeddings import (
     EmbeddingProviderConfig,
     build_embedding_callable,
 )
-from backend.src.config.env import require, require_int, require_float
+from backend.src.config.env import get_int, require, require_int
 
 WORKING_DIR = require("WORKING_DIR")
 RAW_DATA_DIR = os.getenv("RAW_DATA_DIR", "data/raw")
@@ -85,18 +86,20 @@ if not os.path.exists(WORKING_DIR):
 
 
 async def llm_model_func(prompt, system_prompt=None, history_messages=[], keyword_extraction=False, **kwargs) -> str:
-    # Use OpenRouter (OpenAI-compatible) for LLM completions
-    model = LLM_MODEL
-    fallback_model = LLM_FALLBACK_MODEL
+    # Use OpenRouter (OpenAI-compatible) for LLM completions.
+    # The ingestion pipeline uses its own models (INGESTION_LLM_*), independent
+    # from the runtime chatbot models (LLM_MODEL / LLM_FALLBACK_MODEL).
+    model = INGESTION_LLM_MODEL
+    fallback_model = INGESTION_LLM_FALLBACK_MODEL
     api_key = OPENROUTER_API_KEY
     base_url = OPENROUTER_BASE_URL
 
     # Rate limit and server error handling: wait-and-retry on 429/500 responses
-    max_rate_retries = require_int("LLM_RATE_LIMIT_RETRIES")
-    sleep_on_rate = require_int("LLM_RATE_LIMIT_SLEEP")
+    max_rate_retries = get_int("LLM_RATE_LIMIT_RETRIES", 3)
+    sleep_on_rate = get_int("LLM_RATE_LIMIT_SLEEP", 5)
 
-    max_server_retries = require_int("LLM_SERVER_ERROR_RETRIES")
-    sleep_on_server = require_int("LLM_SERVER_ERROR_SLEEP")
+    max_server_retries = get_int("LLM_SERVER_ERROR_RETRIES", 2)
+    sleep_on_server = get_int("LLM_SERVER_ERROR_SLEEP", 3)
 
     attempt_rate = 0
     attempt_server = 0
@@ -111,7 +114,7 @@ async def llm_model_func(prompt, system_prompt=None, history_messages=[], keywor
                 history_messages=history_messages,
                 api_key=api_key,
                 base_url=base_url,
-                temperature=require_float("LLM_TEMPERATURE"),
+                temperature=INGESTION_LLM_TEMPERATURE,
                 **kwargs,
             )
         except Exception as e:
@@ -327,7 +330,7 @@ async def main():
         return
 
     # Wait for core services to be reachable before initializing RAG
-    service_wait_timeout = require_int("SERVICE_WAIT_TIMEOUT")
+    service_wait_timeout = get_int("SERVICE_WAIT_TIMEOUT", 60)
 
     embeddings_url = OPENROUTER_BASE_URL + "/v1"
     print(f"Checking availability of embeddings at {embeddings_url}...")

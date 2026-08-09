@@ -35,6 +35,17 @@ def get_int(key: str, default: int) -> int:
         return default
 
 
+def get_float(key: str, default: float) -> float:
+    """Get a float environment variable with a default value."""
+    value = os.getenv(key)
+    if value is None or value == "":
+        return default
+    try:
+        return float(value)
+    except ValueError:
+        return default
+
+
 def get_str(key: str, default: str) -> str:
     """Get a string environment variable with a default value."""
     return os.getenv(key, default)
