@@ -4,7 +4,7 @@ export interface ChatSource {
   id?: string
   path: string          // file path (relative)
   page?: number        // optional page number
-  excerpt?: string     // short text excerpt
+  content?: string     // full chunk text
   label?: string       // computed friendly label (optional)
 }
 

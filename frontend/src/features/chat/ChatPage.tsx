@@ -16,12 +16,12 @@ const initialMessage: ChatMessage = {
   createdAt: new Date().toISOString(),
 }
 
-function normalizeSources(sources: Array<{path: string, page?: number, excerpt?: string}>) {
+function normalizeSources(sources: Array<{path: string, page?: number, content?: string}>) {
   return sources.map((source, index) => ({
     id: `${index}-${source.path.slice(0, 24)}-${source.page || '0'}`,
     path: source.path,
     page: source.page,
-    excerpt: source.excerpt,
+    content: source.content,
   }));
 }
 

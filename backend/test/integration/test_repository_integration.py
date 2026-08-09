@@ -56,8 +56,8 @@ class RepositoryIntegrationTests(unittest.TestCase):
                     "role": "assistant",
                     "content": "olá",
                     "sources": [
-                        {"path": "doc-a.md", "page": None, "excerpt": None},
-                        {"path": "doc-b.md", "page": None, "excerpt": None},
+                        {"path": "doc-a.md", "page": None, "content": None},
+                        {"path": "doc-b.md", "page": None, "content": None},
                     ],
                 },
             ],

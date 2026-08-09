@@ -24,9 +24,9 @@ def extract_page_from_text(text: str) -> int | None:
 
 
 def extract_sources(rag_data: Any) -> list[dict]:
-    """Extract structured source info with page and excerpt from RAG response.
+    """Extract structured source info with page and full content from RAG response.
     
-    Returns list of dicts: {path, page, excerpt}
+    Returns list of dicts: {path, page, content}
     """
     sources: list[dict] = []
     seen_chunk_ids = set()
@@ -73,16 +73,16 @@ def extract_sources(rag_data: Any) -> list[dict]:
                 chunk_content = chunk.get("content", "")
                 page_num = extract_page_from_text(chunk_content)
 
-                # Create excerpt: first 200 chars without marker
-                excerpt = chunk_content
+                # Keep the full content without any page markers
                 if page_num is not None:
-                    excerpt = PAGE_PATTERN.sub('', chunk_content, count=1).strip()
-                excerpt = excerpt[:200] + ("..." if len(excerpt) > 200 else "")
+                    content = re.sub(r'\n{2,}', '\n', PAGE_PATTERN.sub('', chunk_content)).strip()
+                else:
+                    content = chunk_content
 
                 sources.append({
                     "path": clean_path,
                     "page": page_num,
-                    "excerpt": excerpt,
+                    "content": content,
                 })
 
         return sources

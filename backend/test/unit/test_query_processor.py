@@ -101,8 +101,8 @@ class QueryProcessorTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(
             result["sources"],
             [
-                {"path": "doc1.md", "page": None, "excerpt": ""},
-                {"path": "doc1.md", "page": None, "excerpt": ""},
+                {"path": "doc1.md", "page": None, "content": ""},
+                {"path": "doc1.md", "page": None, "content": ""},
             ],
         )
         self.assertFalse(result["summarized"])  # Not enough messages to trigger summarization
@@ -116,8 +116,8 @@ class QueryProcessorTests(unittest.IsolatedAsyncioTestCase):
                 "assistant",
                 "Resposta inicial",
                 [
-                    {"path": "doc1.md", "page": None, "excerpt": ""},
-                    {"path": "doc1.md", "page": None, "excerpt": ""},
+                    {"path": "doc1.md", "page": None, "content": ""},
+                    {"path": "doc1.md", "page": None, "content": ""},
                 ],
             ),
         )
@@ -203,6 +203,40 @@ class QueryProcessorTests(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(result["response"], "Nova resposta")
         self.assertEqual(rag_runtime.last_history, [{"role": "assistant", "content": "Resposta anterior"}])
+
+    def test_extract_sources_removes_all_page_markers(self) -> None:
+        rag_data = {
+            "status": "success",
+            "data": {
+                "chunks": [
+                    {
+                        "chunk_id": "chunk-1",
+                        "reference_id": "1",
+                        "content": "[PAGE 3]\nTexto inicial.\n[PAGE 4]\nTexto na página seguinte.",
+                    },
+                ],
+                "references": [
+                    {"reference_id": "1", "file_path": "data/raw/doc1.md"},
+                ],
+            },
+        }
+
+        sources = extract_sources(rag_data)
+
+        self.assertEqual(
+            sources,
+            [
+                {
+                    "path": "doc1.md",
+                    "page": 3,
+                    "content": "Texto inicial.\nTexto na página seguinte.",
+                },
+            ],
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()
 
 
 if __name__ == "__main__":

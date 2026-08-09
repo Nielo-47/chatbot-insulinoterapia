@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field
 class SourceItem(BaseModel):
     path: str
     page: Optional[int] = None
-    excerpt: Optional[str] = None
+    content: Optional[str] = None
 
 
 class AuthenticatedUser(BaseModel):

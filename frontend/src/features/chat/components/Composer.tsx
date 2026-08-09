@@ -62,7 +62,7 @@ export function Composer({ disabled, onSubmit }: ComposerProps) {
         <button
           type="submit"
           disabled={disabled || value.trim().length === 0}
-          className="rounded-xl bg-cyan-700 px-5 py-2.5 text-sm font-semibold text-black transition hover:bg-cyan-800 disabled:cursor-not-allowed disabled:bg-cyan-300"
+          className="rounded-xl bg-cyan-600 px-5 py-2.5 text-sm font-semibold text-black transition hover:bg-cyan-700 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400"
         >
           {disabled ? 'Enviando...' : 'Enviar'}
         </button>

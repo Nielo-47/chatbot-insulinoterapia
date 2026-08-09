@@ -64,14 +64,14 @@ class MessagesRepository:
             if not isinstance(raw_sources, list):
                 raw_sources = []
 
-            # Normalize to structured format (dicts with path/page/excerpt)
+            # Normalize to structured format (dicts with path/page/content)
             structured_sources: List[Dict[str, Any]] = []
             for src in raw_sources:
                 if isinstance(src, dict):
                     structured_sources.append(src)
                 elif isinstance(src, str):
                     # Legacy format: just a path string
-                    structured_sources.append({"path": src, "page": None, "excerpt": None})
+                    structured_sources.append({"path": src, "page": None, "content": None})
                 else:
                     continue
 

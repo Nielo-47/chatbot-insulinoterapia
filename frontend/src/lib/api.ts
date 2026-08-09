@@ -34,8 +34,8 @@ export class ApiError extends Error {
 const sourceItemSchema = z.object({
   id: z.string().optional(),
   path: z.string(),
-  page: z.number().optional(),
-  excerpt: z.string().optional(),
+  page: z.number().nullish().transform((value) => value ?? undefined),
+  content: z.string().nullish().transform((value) => value ?? undefined),
   label: z.string().optional(),
 })
 

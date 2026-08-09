@@ -53,7 +53,7 @@ class ConversationCache:
                         if isinstance(src, dict):
                             structured_sources.append(src)
                         elif isinstance(src, str):
-                            structured_sources.append({"path": src, "page": None, "excerpt": None})
+                            structured_sources.append({"path": src, "page": None, "content": None})
                         else:
                             continue
                     cleaned.append(

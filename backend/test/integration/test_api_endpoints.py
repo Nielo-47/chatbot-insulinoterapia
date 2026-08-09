@@ -90,7 +90,7 @@ class DummyChatbot:
         self.queries.append((query, user_id, session_id))
         return {
             "response": f"echo:{query}",
-            "sources": [{"path": "source-1", "page": None, "excerpt": None}],
+            "sources": [{"path": "source-1", "page": None, "content": None}],
             "summarized": False,
             "session_id": session_id or "generated-session",
         }
@@ -101,7 +101,7 @@ class DummyChatbot:
             {
                 "role": "assistant",
                 "content": "Hi there",
-                "sources": [{"path": "source-1", "page": None, "excerpt": None}],
+            "sources": [{"path": "source-1", "page": None, "content": None}],
             },
         ]
 
@@ -250,7 +250,7 @@ class ApiEndpointTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         payload = response.json()
         self.assertEqual(payload["response"], "echo:Como aplicar insulina?")
-        self.assertEqual(payload["sources"], [{"path": "source-1", "page": None, "excerpt": None}])
+        self.assertEqual(payload["sources"], [{"path": "source-1", "page": None, "content": None}])
         self.assertFalse(payload["summarized"])
         self.assertIsInstance(payload["session_id"], str)
         self.assertEqual(self.chatbot.queries[0][0], "Como aplicar insulina?")
@@ -313,7 +313,7 @@ class ApiEndpointTests(unittest.TestCase):
         self.assertEqual(messages[0]["sources"], [])
         self.assertEqual(messages[1]["role"], "assistant")
         self.assertEqual(messages[1]["content"], "Hi there")
-        self.assertEqual(messages[1]["sources"], [{"path": "source-1", "page": None, "excerpt": None}])
+        self.assertEqual(messages[1]["sources"], [{"path": "source-1", "page": None, "content": None}])
 
     def test_delete_me_deletes_current_user(self) -> None:
         response = self.client.request("DELETE", "/auth/me", headers=self._alice_headers())
