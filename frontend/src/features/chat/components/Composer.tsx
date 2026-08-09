@@ -55,14 +55,14 @@ export function Composer({ disabled, onSubmit }: ComposerProps) {
         onKeyDown={handleKeyDown}
         disabled={disabled}
         placeholder="Digite sua pergunta sobre diabetes ou insulinoterapia"
-        className="min-h-24 w-full resize-none rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-cyan-500 focus:ring-2 focus:ring-cyan-100 disabled:cursor-not-allowed disabled:opacity-70"
+        className="min-h-28 w-full resize-none rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-cyan-500 focus:ring-2 focus:ring-cyan-100 disabled:cursor-not-allowed disabled:opacity-70"
       />
       <div className="mt-3 flex items-center justify-between gap-3">
         <p className="text-xs text-slate-500">Enter envia. Shift + Enter quebra linha.</p>
         <button
           type="submit"
           disabled={disabled || value.trim().length === 0}
-          className="rounded-xl bg-cyan-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-cyan-700 disabled:cursor-not-allowed disabled:bg-cyan-300"
+          className="rounded-xl bg-cyan-700 px-5 py-2.5 text-sm font-semibold text-black transition hover:bg-cyan-800 disabled:cursor-not-allowed disabled:bg-cyan-300"
         >
           {disabled ? 'Enviando...' : 'Enviar'}
         </button>

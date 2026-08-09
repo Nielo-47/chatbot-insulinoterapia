@@ -1,5 +1,5 @@
+import { BotMessageSquare, BookOpenText, LogOut, RefreshCcw } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { BotMessageSquare, LogOut, RefreshCcw } from 'lucide-react'
 
 import { ApiError, clearConversation, getConversationHistory, sendQuery } from '../../lib/api'
 import type { AuthStatus, BackendStatus } from '../../types/app'
@@ -178,18 +178,16 @@ export function ChatPage({ username, backendStatus, authStatus, onLogout, onDele
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(220,252,231,0.8),_rgba(255,255,255,1)_45%)]">
-      <div className="mx-auto grid min-h-screen max-w-7xl grid-cols-1 gap-5 px-4 py-5 lg:grid-cols-[2.2fr_1fr] lg:px-8 lg:py-8">
+      <div className="mx-auto grid min-h-screen max-w-7xl grid-cols-1 gap-5 px-4 py-5 lg:grid-cols-[2.4fr_1fr] lg:px-8 lg:py-8">
         <main className="flex max-h-[calc(100dvh-2.5rem)] min-h-[20rem] flex-col rounded-3xl border border-slate-200 bg-white/90 p-4 shadow-xl shadow-slate-200/40 backdrop-blur lg:min-h-[28rem] lg:p-6">
-          <header className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-4">
+          <header className="mb-3 flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-3">
             <div>
               <h1 className="font-serif text-2xl font-semibold text-slate-900 lg:text-3xl">
                 Chatbot de Insulinoterapia
-                <span className="ml-2 inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-amber-700">
+                <span className="ml-2 inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-[10px] font-semibold uppercase leading-none tracking-wide text-amber-700">
                   Teste Fechado
                 </span>
               </h1>
-              <p className="mt-1 text-sm text-slate-600">Perguntas e respostas com suporte de base de conhecimento e referências.</p>
-              <p className="mt-1 text-xs text-slate-500">As respostas não substituem avaliação médica presencial.</p>
             </div>
           </header>
 
@@ -224,6 +222,15 @@ export function ChatPage({ username, backendStatus, authStatus, onLogout, onDele
         </main>
 
         <aside className="space-y-4">
+          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+            <h2 className="mb-2 inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.06em] text-slate-700">
+              <BookOpenText className="h-4 w-4" />
+              Sobre o assistente
+            </h2>
+            <p className="text-sm text-slate-600">Perguntas e respostas com suporte de base de conhecimento e referências.</p>
+            <p className="mt-2 text-xs text-slate-500">As respostas não substituem avaliação médica presencial.</p>
+          </div>
+
           <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
             <h2 className="mb-2 inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.06em] text-slate-700">
               <BotMessageSquare className="h-4 w-4" />

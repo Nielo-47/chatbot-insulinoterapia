@@ -1,6 +1,6 @@
-import type { ReactNode } from 'react'
-import type { LucideIcon } from 'lucide-react'
-import { BotMessageSquare, BookOpenText, History } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react';
+import { BookOpenText, BotMessageSquare, History } from 'lucide-react';
+import type { ReactNode } from 'react';
 
 const FEATURES: Array<{ icon: LucideIcon; title: string; description: string }> = [
   {
@@ -63,7 +63,7 @@ export function AuthShell({ children }: AuthShellProps) {
               </ul>
 
               <p className="max-w-md rounded-2xl border border-slate-200 bg-white/70 px-4 py-3 text-xs leading-5 text-slate-500">
-                As respostas não substituem avaliação médica presencial.
+                As respostas não substituem avaliação médica.
               </p>
             </div>
 
