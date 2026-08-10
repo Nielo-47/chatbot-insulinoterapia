@@ -1,6 +1,7 @@
 import os
 import json
 import asyncio
+import re
 import requests
 import time
 import sys
@@ -11,44 +12,6 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 load_dotenv()
-
-# ──────────────────────────────────────────────────────────────
-# Patch LightRAG's openai_embed BEFORE any LightRAG imports.
-# OpenRouter occasionally returns response.data = None which causes
-# "TypeError: 'NoneType' object is not iterable". We retry 5× and,
-# on final failure, return zero vectors so the document can continue.
-# ──────────────────────────────────────────────────────────────
-try:
-    import lightrag.llm.openai as _lightrag_openai
-
-    _original_openai_embed = _lightrag_openai.openai_embed
-
-    async def _patched_openai_embed(*args, **kwargs):
-        for attempt in range(5):
-            try:
-                return await _original_openai_embed(*args, **kwargs)
-            except TypeError as e:
-                if "'NoneType' object is not iterable" in str(e):
-                    if attempt < 4:
-                        await asyncio.sleep(2**attempt)
-                        continue
-                    # Final attempt: return zero vectors so processing can continue
-                    texts_arg = args[1] if len(args) > 1 else kwargs.get("texts", [])
-                    texts = texts_arg if isinstance(texts_arg, list) else [texts_arg]
-                    dim = kwargs.get("embedding_dim") or (args[2] if len(args) > 2 else 1024)
-                    import numpy as np
-
-                    return np.zeros((len(texts), int(dim)), dtype=np.float32)
-                raise
-
-    _lightrag_openai.openai_embed = _patched_openai_embed
-    print("[kilo] Patched lightrag.llm.openai.openai_embed (5 retries, zero-vector fallback)")
-except Exception as exc:
-    print(f"[kilo] Warning: could not patch lightrag openai_embed: {exc}")
-
-import nest_asyncio
-
-nest_asyncio.apply()
 
 # Now import LightRAG and other modules
 from lightrag import LightRAG, QueryParam
@@ -230,12 +193,18 @@ async def initialize_rag():
     return rag
 
 
+# Tesseract language packs used for OCR. Tesseract uses 3-letter ISO 639-2
+# codes: "por" (Portuguese) and "eng" (English).
+OCR_LANGUAGES = ["por", "eng"]
+
+SUPPORTED_EXTENSIONS = {".pdf", ".docx", ".png", ".jpg", ".jpeg"}
+
+
 def get_all_documents(root_dir):
     """
-    Recursively find all PDF and DOCX files in the directory.
+    Recursively find all supported documents (PDF, DOCX, PNG, JPG, JPEG) in the directory.
     Excludes Zone.Identifier files.
     """
-    supported_extensions = {".pdf", ".docx"}
     documents = []
 
     for root, dirs, files in os.walk(root_dir):
@@ -245,49 +214,191 @@ def get_all_documents(root_dir):
             if ":Zone.Identifier" in file or file.endswith(".Identifier"):
                 continue
             # Check if file has supported extension
-            if file_path.suffix.lower() in supported_extensions:
+            if file_path.suffix.lower() in SUPPORTED_EXTENSIONS:
                 documents.append(file_path)
 
     return sorted(documents)
 
 
+def ocr_pdf_page(file_path, page_num, ocr_languages):
+    """Render a single PDF page to an image and OCR it. Returns stripped text or ''."""
+    from pdf2image import convert_from_path
+    from unstructured_pytesseract import pytesseract
+
+    try:
+        images = convert_from_path(
+            str(file_path), first_page=page_num, last_page=page_num, dpi=200
+        )
+    except Exception as e:
+        print(f"  ⚠️  Could not render page {page_num} of {file_path.name}: {e}")
+        return ""
+    if not images:
+        return ""
+    try:
+        return pytesseract.image_to_string(
+            images[0], lang="+".join(ocr_languages)
+        ).strip()
+    except Exception as e:
+        print(f"  ⚠️  OCR failed for page {page_num} of {file_path.name}: {e}")
+        return ""
+
+
+def ocr_image_file(file_path, ocr_languages):
+    """OCR a standalone image file. Returns stripped text or ''."""
+    from PIL import Image
+    from unstructured_pytesseract import pytesseract
+
+    try:
+        with Image.open(str(file_path)) as img:
+            return pytesseract.image_to_string(
+                img, lang="+".join(ocr_languages)
+            ).strip()
+    except Exception as e:
+        print(f"  ⚠️  OCR failed for {file_path.name}: {e}")
+        return ""
+
+
+def classify_and_extract_pdf(file_path, ocr_languages):
+    """
+    Classify a PDF and extract text per page. Pages without a selectable text
+    layer are rendered to an image and OCR'd.
+
+    Returns (classification, page_contents, page_has_text):
+      - classification: "full" | "partial" | "scanned" | "unreadable"
+      - page_contents: list of "[PAGE n]\n\n{text}" blocks (text or OCR)
+      - page_has_text: {page_num: bool} whether the page had a text layer
+    """
+    from pypdf import PdfReader
+
+    try:
+        reader = PdfReader(str(file_path))
+    except Exception as e:
+        print(f"  ⚠️  Could not open {file_path.name}: {e}")
+        return "unreadable", [], {}
+
+    page_contents = []
+    page_has_text = {}
+    text_pages = 0
+
+    for page_num, page in enumerate(reader.pages, start=1):
+        text = ""
+        try:
+            text = (page.extract_text() or "").strip()
+        except Exception:
+            text = ""
+        page_has_text[page_num] = bool(text)
+        if text:
+            text_pages += 1
+            page_contents.append(f"[PAGE {page_num}]\n\n{text}")
+        else:
+            ocr_text = ocr_pdf_page(file_path, page_num, ocr_languages)
+            if ocr_text:
+                page_contents.append(f"[PAGE {page_num}]\n\n{ocr_text}")
+
+    total_pages = len(reader.pages)
+    if total_pages == 0 or text_pages == 0:
+        classification = "scanned" if page_contents else "unreadable"
+    elif text_pages == total_pages:
+        classification = "full"
+    else:
+        classification = "partial"
+
+    return classification, page_contents, page_has_text
+
+
 async def process_document(file_path, rag):
     """
     Process a single document and insert it into the RAG system.
+
+    Returns a record dict: {"status", "type", "chars", "error"} where status is
+    "ingested" | "empty" | "failed".
     """
     try:
         print(f"\n{'='*80}")
         print(f"Reading file: {file_path}")
         print(f"{'='*80}")
 
-        loader = UnstructuredLoader(str(file_path), languages=["pt", "en"])
-        docs = loader.load()
-
+        ext = file_path.suffix.lower()
         page_contents = []
-        for doc in docs:
-            page_num = doc.metadata.get("page_number", 1)
-            content = doc.page_content.strip()
-            if content:
-                marked_content = f"[PAGE {page_num}]\n\n{content}"
-                page_contents.append(marked_content)
+        classification = "unknown"
+
+        if ext == ".pdf":
+            classification, page_contents, _ = classify_and_extract_pdf(
+                file_path, OCR_LANGUAGES
+            )
+        elif ext in {".png", ".jpg", ".jpeg"}:
+            classification = "image"
+            ocr_text = ocr_image_file(file_path, OCR_LANGUAGES)
+            if ocr_text:
+                page_contents.append(ocr_text)
+        else:  # .docx
+            classification = "docx"
+            loader = UnstructuredLoader(str(file_path), languages=["pt", "en"])
+            docs = loader.load()
+            for doc in docs:
+                page_num = doc.metadata.get("page_number", 1)
+                content = doc.page_content.strip()
+                if content:
+                    marked_content = f"[PAGE {page_num}]\n\n{content}"
+                    page_contents.append(marked_content)
 
         if not page_contents:
             print(f"⚠️  No content extracted from {file_path}")
-            return False
+            return {
+                "status": "empty",
+                "type": classification,
+                "chars": 0,
+                "error": "No content extracted",
+            }
 
         text = "\n\n".join(page_contents)
+        chars = sum(len(block) for block in page_contents)
 
         # Insert with proper file_paths parameter for citation.
         # LightRAG will automatically check its internal kv_store_doc_status.json
         # to see if this exact content has already been processed.
         await rag.ainsert(input=text, file_paths=str(file_path))
 
-        print(f"✓ File parsed and passed to LightRAG: {file_path.name}")
-        return True
+        print(f"✓ File parsed and passed to LightRAG: {file_path.name} ({classification}, {chars} chars)")
+        return {
+            "status": "ingested",
+            "type": classification,
+            "chars": chars,
+            "error": None,
+        }
 
     except Exception as e:
         print(f"✗ Error processing {file_path}: {str(e)}")
-        return False
+        return {
+            "status": "failed",
+            "type": "unknown",
+            "chars": 0,
+            "error": str(e),
+        }
+
+
+def run_dry_run(documents):
+    """Classify all documents (PDFs only) without initializing RAG or calling any service."""
+    print("\nClassification (dry-run):\n")
+    counts = {}
+    for doc in documents:
+        ext = doc.suffix.lower()
+        if ext == ".pdf":
+            classification, _, page_has_text = classify_and_extract_pdf(doc, OCR_LANGUAGES)
+            pages_with_text = sum(1 for v in page_has_text.values() if v)
+            pages_total = len(page_has_text)
+            print(f"{classification:>10} | {doc.name} | {pages_with_text}/{pages_total} pages with text")
+        elif ext in {".png", ".jpg", ".jpeg"}:
+            classification = "image"
+            print(f"{classification:>10} | {doc.name}")
+        else:
+            classification = "docx"
+            print(f"{classification:>10} | {doc.name}")
+        counts[classification] = counts.get(classification, 0) + 1
+
+    print("\n" + "=" * 40)
+    for key in sorted(counts):
+        print(f"{key}: {counts[key]}")
 
 
 def wait_for_service(url, timeout=60, interval=1):
@@ -311,6 +422,7 @@ async def main():
     # Parse command-line arguments
     parser = argparse.ArgumentParser(description="Build the knowledge base by processing documents")
     parser.add_argument("--max-docs", type=int, default=0, help="Limit processing to first N documents (0 = no limit)")
+    parser.add_argument("--dry-run", action="store_true", help="Classify documents without initializing RAG or calling external services")
     args = parser.parse_args()
 
     # Gather documents
@@ -327,6 +439,10 @@ async def main():
 
     if not documents:
         print("No documents found. Exiting.")
+        return
+
+    if args.dry_run:
+        run_dry_run(documents)
         return
 
     # Wait for core services to be reachable before initializing RAG
@@ -347,28 +463,43 @@ async def main():
     # Initialize RAG
     rag = await initialize_rag()
 
-    successful = 0
-    failed = 0
-
+    results = []
     for doc_path in documents:
-        success = await process_document(doc_path, rag)
-        if success:
-            successful += 1
-        else:
-            failed += 1
-
+        results.append(await process_document(doc_path, rag))
         await asyncio.sleep(0.5)
 
     # Summary
+    ingested = sum(1 for r in results if r["status"] == "ingested")
+    empty = sum(1 for r in results if r["status"] == "empty")
+    failed = sum(1 for r in results if r["status"] == "failed")
+
     print(f"\n{'='*80}")
     print(f"Script Execution Complete!")
     print(f"{'='*80}")
-    print(f"✓ Read successfully: {successful} documents")
+    print(f"✓ Read successfully: {ingested} documents")
+    print(f"⚠️  Empty (no content): {empty} documents")
     print(f"✗ Failed to read: {failed} documents")
     print(f"Total attempted: {len(documents)} documents")
     print(
         "\nNote: LightRAG handles actual duplication internally. It will skip graph extraction for files it has already processed in 'kv_store_doc_status.json'."
     )
+
+    # Write per-file report next to the processed index
+    report = {
+        "generated_at": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
+        "raw_data_dir": RAW_DATA_DIR,
+        "results": [
+            {"file": str(doc_path), "status": record["status"], "type": record["type"], "chars": record["chars"], "error": record["error"]}
+            for doc_path, record in zip(documents, results)
+        ],
+    }
+    report_path = os.path.join(WORKING_DIR, "kb_builder_report.json")
+    with open(report_path, "w", encoding="utf-8") as f:
+        json.dump(report, f, ensure_ascii=False, indent=2)
+    print(f"\nReport written to {report_path}")
+
+    if empty or failed:
+        raise SystemExit(1)
 
     # Run a test query
     print(f"\n{'='*80}")

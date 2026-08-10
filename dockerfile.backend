@@ -26,7 +26,11 @@ RUN pip install --upgrade pip
 # the runtime stage can install them with --no-index (no network, no builds).
 WORKDIR /tmp
 COPY backend/requirements.txt ./requirements.txt
-RUN pip wheel --wheel-dir /wheels -r requirements.txt
+RUN pip wheel --wheel-dir /wheels -r requirements.txt \
+    # spaCy model used by unstructured's DOCX tokenizer (distributed on GitHub
+    # releases, not PyPI). Collected as a wheel here so the offline runtime
+    # stage can install it without the non-root user downloading into site-packages.
+    && pip wheel --wheel-dir /wheels https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl
 
 # --------------------------------------------------------------------------- #
 # Runtime stage: slim image, non-root user
@@ -43,6 +47,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     poppler-utils \
     tesseract-ocr \
+    tesseract-ocr-por \
     libmagic1 \
     libgl1 \
     libxrender1 \
@@ -56,6 +61,7 @@ COPY --from=builder /wheels /wheels
 COPY --from=builder /tmp/requirements.txt /tmp/requirements.txt
 RUN pip install --upgrade pip \
     && pip install --no-cache-dir --no-index --find-links=/wheels -r /tmp/requirements.txt \
+    && pip install --no-cache-dir --no-index --find-links=/wheels en_core_web_sm==3.8.0 \
     && rm -rf /wheels /tmp/requirements.txt /root/.cache/pip
 
 # Non-root application user. UID/GID default to 1000 to match the host user

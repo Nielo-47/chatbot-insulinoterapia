@@ -1,4 +1,4 @@
-import { BotMessageSquare, BookOpenText, LogOut, RefreshCcw } from 'lucide-react'
+import { BookOpenText, BotMessageSquare, LogOut, RefreshCcw } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 let messageIdCounter = 0
@@ -277,7 +277,7 @@ export function ChatPage({ username, backendStatus, authStatus, onLogout, onDele
     <div className="flex h-dvh flex-col overflow-hidden bg-[radial-gradient(circle_at_top,_rgba(220,252,231,0.8),_rgba(255,255,255,1)_45%)]">
       <div className="mx-auto flex w-full max-w-7xl flex-1 min-h-0 flex-col gap-5 px-4 py-5 lg:flex-row lg:px-8 lg:py-8">
         <main className="flex min-h-0 flex-1 flex-col rounded-3xl border border-slate-200 bg-white/90 p-4 shadow-xl shadow-slate-200/40 backdrop-blur lg:p-6">
-          <header className="mb-3 flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-3">
+          <header className="mb-3 flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-3 align-middle">
             <div>
               <h1 className="font-serif text-2xl font-semibold text-slate-900 lg:text-3xl">
                 Chatbot de Insulinoterapia
