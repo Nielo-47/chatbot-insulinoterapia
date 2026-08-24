@@ -126,8 +126,8 @@ async def lifespan(app: FastAPI):
 # OpenAPI schema endpoints (/docs, /redoc, /openapi.json) are always disabled
 # so the API surface is never exposed for reconnaissance.
 app = FastAPI(
-    title="Diabetes Chatbot API",
-    description="Backend API for diabetes chatbot with RAG functionality",
+    title="LinaChat API",
+    description="Backend API for LinaChat — diabetes and insulinotherapy assistant",
     version="1.0.0",
     lifespan=lifespan,
     docs_url=None,
@@ -312,7 +312,7 @@ async def root():
     other endpoints require a valid Supabase Bearer token.
     """
     return {
-        "message": "Diabetes Chatbot API",
+        "message": "LinaChat API",
         "docs": None,
     }
 

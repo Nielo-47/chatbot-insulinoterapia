@@ -75,7 +75,7 @@ export function SignUpPage({ backendStatus, authStatus }: SignUpPageProps) {
       </div>
       <p className="mt-2 text-sm leading-6 text-slate-600">
         Cadastre-se para participar do teste fechado e começar a usar o
-        assistente.
+        LinaChat.
       </p>
 
       {backendStatus === 'offline' && (

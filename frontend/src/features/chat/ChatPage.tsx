@@ -1,4 +1,5 @@
-import { BookOpenText, BotMessageSquare, LogOut, RefreshCcw } from 'lucide-react'
+import { BookOpenText, BotMessageSquare, LogOut, RefreshCcw, Menu, X } from 'lucide-react'
+import iconImage from '../../assets/icon.png'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 let messageIdCounter = 0
@@ -23,7 +24,7 @@ const initialMessage: ChatMessage = {
   id: 'welcome',
   role: 'assistant',
   content:
-    'Olá. Sou seu assistente de insulinoterapia. Faça perguntas sobre aplicação, rotina e cuidados com diabetes para receber orientações seguras.',
+    'Olá. Eu sou a Lina, sua assistente de insulinoterapia. Faça perguntas sobre aplicação, rotina e cuidados com diabetes para receber orientações seguras.',
   createdAt: new Date().toISOString(),
 }
 
@@ -93,6 +94,7 @@ export function ChatPage({ username, backendStatus, authStatus, onLogout, onDele
   const [cachedSuggestions, setCachedSuggestions] = useState<string[] | null>(() => readCachedSuggestions(username))
   const [activeSourcesMessage, setActiveSourcesMessage] = useState<ChatMessage | null>(null)
   const [isSending, setIsSending] = useState(false)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const [isDeletingAccount, setIsDeletingAccount] = useState(false)
   const [localError, setLocalError] = useState<string | null>(null)
@@ -275,17 +277,26 @@ export function ChatPage({ username, backendStatus, authStatus, onLogout, onDele
 
   return (
     <div className="flex h-dvh flex-col overflow-hidden bg-[radial-gradient(circle_at_top,_rgba(220,252,231,0.8),_rgba(255,255,255,1)_45%)]">
-      <div className="mx-auto flex w-full max-w-7xl flex-1 min-h-0 flex-col gap-5 px-4 py-5 lg:flex-row lg:px-8 lg:py-8">
-        <main className="flex min-h-0 flex-1 flex-col rounded-3xl border border-slate-200 bg-white/90 p-4 shadow-xl shadow-slate-200/40 backdrop-blur lg:p-6">
-          <header className="mb-3 flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-3 align-middle">
-            <div>
-              <h1 className="font-serif text-2xl font-semibold text-slate-900 lg:text-3xl">
-                Chatbot de Insulinoterapia
+      <div className="mx-auto flex w-full max-w-7xl flex-1 min-h-0 flex-col gap-3 px-3 py-3 lg:flex-row lg:gap-5 lg:px-8 lg:py-8">
+        <main className="flex min-h-0 flex-1 flex-col rounded-3xl border border-slate-200 bg-white/90 p-3 shadow-xl shadow-slate-200/40 backdrop-blur lg:p-6">
+          <header className="mb-2 flex items-center gap-2 border-b border-slate-200 pb-2 lg:mb-3 lg:gap-3 lg:pb-3">
+            <img src={iconImage} alt="" className="h-8 w-8 shrink-0 rounded-full border border-slate-200 object-cover lg:hidden" />
+            <div className="min-w-0 flex-1">
+              <h1 className="truncate font-serif text-lg font-semibold text-slate-900 lg:text-3xl">
+                LinaChat
                 <span className="ml-2 inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-[10px] font-semibold uppercase leading-none tracking-wide text-amber-700">
                   Teste Fechado
                 </span>
               </h1>
             </div>
+            <button
+              type="button"
+              onClick={() => setIsSidebarOpen(true)}
+              className="shrink-0 rounded-xl border border-slate-200 bg-white p-2 text-slate-600 transition hover:bg-slate-100 lg:hidden"
+              aria-label="Abrir menu"
+            >
+              <Menu className="h-5 w-5" />
+            </button>
           </header>
 
           {backendStatus === 'offline' && (
@@ -300,7 +311,7 @@ export function ChatPage({ username, backendStatus, authStatus, onLogout, onDele
             </div>
           )}
 
-          <section className="chat-scroll-area min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
+          <section className="chat-scroll-area min-h-0 flex-1 space-y-2 overflow-y-auto pr-1 lg:space-y-3">
             {sortedMessages.map((message) => (
               <MessageBubble key={message.id} message={message} onShowSources={setActiveSourcesMessage} />
             ))}
@@ -313,20 +324,20 @@ export function ChatPage({ username, backendStatus, authStatus, onLogout, onDele
             <div ref={messagesEndRef} aria-hidden="true" />
           </section>
 
-          <div className="mt-4">
+          <div className="shrink-0 mt-3 lg:mt-4">
             <FollowUpSuggestions suggestions={activeSuggestions} disabled={isSending} onSelect={(question) => void handleSend(question)} />
             <Composer disabled={isSending} onSubmit={handleSend} />
           </div>
         </main>
 
-        <aside className="max-h-[40dvh] w-full min-h-0 shrink-0 overflow-y-auto lg:max-h-none lg:w-80">
+        <aside className="hidden lg:block lg:max-h-none lg:w-80 lg:shrink-0 lg:overflow-y-auto">
           <div className="space-y-4">
           <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
             <h2 className="mb-2 inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.06em] text-slate-700">
               <BookOpenText className="h-4 w-4" />
-              Sobre o assistente
+              Sobre a Lina
             </h2>
-            <p className="text-sm text-slate-600">Perguntas e respostas com suporte de base de conhecimento e referências.</p>
+            <p className="text-sm text-slate-600">Sou a Lina, sua assistente virtual de insulinoterapia. Perguntas e respostas com suporte de base de conhecimento e referências.</p>
             <p className="mt-2 text-xs text-slate-500">As respostas não substituem avaliação médica presencial.</p>
           </div>
 
@@ -381,6 +392,103 @@ export function ChatPage({ username, backendStatus, authStatus, onLogout, onDele
           <SourceDrawer message={activeSourcesMessage} onClose={() => setActiveSourcesMessage(null)} />
           </div>
         </aside>
+
+        {activeSourcesMessage && (
+          <div
+            className="fixed inset-0 z-40 flex items-end bg-slate-900/60 backdrop-blur-sm lg:hidden"
+            onClick={() => setActiveSourcesMessage(null)}
+          >
+            <div
+              className="max-h-[70dvh] w-full overflow-y-auto rounded-t-2xl bg-white p-4 shadow-xl"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <SourceDrawer message={activeSourcesMessage} onClose={() => setActiveSourcesMessage(null)} />
+            </div>
+          </div>
+        )}
+
+        {isSidebarOpen && (
+          <div
+            className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm lg:hidden"
+            onClick={() => setIsSidebarOpen(false)}
+          >
+            <div
+              className="ml-auto flex h-full w-80 max-w-[85vw] flex-col overflow-y-auto bg-white p-5 shadow-xl"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="text-sm font-semibold uppercase tracking-[0.06em] text-slate-700">Menu</h2>
+                <button
+                  type="button"
+                  onClick={() => setIsSidebarOpen(false)}
+                  className="rounded-full border border-slate-300 p-1.5 text-slate-600 transition hover:bg-slate-100"
+                  aria-label="Fechar menu"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                  <h2 className="mb-2 inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.06em] text-slate-700">
+                    <BookOpenText className="h-4 w-4" />
+                    Sobre a Lina
+                  </h2>
+                  <p className="text-sm text-slate-600">Sou a Lina, sua assistente virtual de insulinoterapia. Perguntas e respostas com suporte de base de conhecimento e referências.</p>
+                  <p className="mt-2 text-xs text-slate-500">As respostas não substituem avaliação médica presencial.</p>
+                </div>
+
+                <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                  <h2 className="mb-2 inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.06em] text-slate-700">
+                    <BotMessageSquare className="h-4 w-4" />
+                    Conta
+                  </h2>
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">
+                    <span className="font-medium">{username}</span>
+                  </div>
+                  <div className="mt-3 space-y-2">
+                    <button
+                      type="button"
+                      onClick={() => { void handleClearConversation(); setIsSidebarOpen(false) }}
+                      disabled={backendStatus === 'offline'}
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-70"
+                    >
+                      <RefreshCcw className="h-4 w-4" />
+                      Limpar conversa
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void handleLogout()}
+                      disabled={isLoggingOut}
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-70"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      {isLoggingOut ? 'Saindo...' : 'Sair'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void handleDeleteAccount()}
+                      disabled={isDeletingAccount}
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-rose-300 bg-white px-3 py-2 text-sm font-medium text-rose-700 transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-70"
+                    >
+                      {isDeletingAccount ? 'Excluindo...' : 'Excluir conta'}
+                    </button>
+                  </div>
+                  {backendStatus === 'offline' && (
+                    <p className="mt-3 rounded-xl border border-rose-200 bg-rose-50 p-2 text-xs text-rose-700">
+                      O backend está indisponível no momento.
+                    </p>
+                  )}
+                  {(authStatus === 'expired' || authStatus === 'unknown') && (
+                    <p className="mt-2 rounded-xl border border-amber-200 bg-amber-50 p-2 text-xs text-amber-800">
+                      Sessão com status {authStatus === 'expired' ? 'expirado' : 'indefinido'}.
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

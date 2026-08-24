@@ -18,7 +18,7 @@ export function FollowUpSuggestions({ suggestions, disabled, onSelect }: FollowU
         <Lightbulb className="h-3.5 w-3.5" />
         Perguntas sugeridas
       </p>
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-nowrap gap-2 overflow-x-auto pb-1 hide-scrollbar lg:flex-wrap lg:overflow-visible lg:pb-0">
         {suggestions.slice(0, 3).map((question, index) => (
           <button
             key={`${index}-${question}`}
@@ -26,7 +26,7 @@ export function FollowUpSuggestions({ suggestions, disabled, onSelect }: FollowU
             onClick={() => onSelect(question)}
             disabled={disabled}
             className={clsx(
-              'rounded-xl border border-cyan-200 bg-cyan-50 px-3 py-2 text-left text-xs font-medium text-cyan-800 transition',
+              'shrink-0 rounded-xl border border-cyan-200 bg-cyan-50 px-3 py-2 text-left text-xs font-medium text-cyan-800 transition',
               disabled ? 'cursor-not-allowed opacity-60' : 'hover:border-cyan-400 hover:bg-cyan-100 active:bg-cyan-200',
             )}
           >

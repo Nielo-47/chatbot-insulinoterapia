@@ -5,8 +5,8 @@ import type { ReactNode } from 'react';
 const FEATURES: Array<{ icon: LucideIcon; title: string; description: string }> = [
   {
     icon: BotMessageSquare,
-    title: 'Assistente especializado',
-    description: 'Orientações sobre aplicação, rotina e cuidados com diabetes.',
+    title: 'Assistente personalizada',
+    description: 'Orientações da Lina sobre aplicação, rotina e cuidados com diabetes.',
   },
   {
     icon: BookOpenText,
@@ -36,7 +36,7 @@ export function AuthShell({ children }: AuthShellProps) {
                   Teste Fechado
                 </span>
                 <h1 className="mt-4 font-serif text-3xl font-semibold leading-tight text-slate-900 sm:text-4xl">
-                  Assistente de insulinoterapia
+                  LinaChat
                 </h1>
                 <p className="mt-3 max-w-md text-sm leading-6 text-slate-600">
                   Perguntas e respostas sobre aplicação, rotina e cuidados com

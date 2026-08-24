@@ -46,6 +46,7 @@
 
 :root {
   font-family: 'IBM Plex Sans', 'Segoe UI', sans-serif;
+  font-size: 18px;
   color: #0f172a;
   background-color: #f8fafc;
   text-rendering: optimizeLegibility;
@@ -83,6 +84,15 @@ body {
 
 .markdown-content {
   overflow-wrap: anywhere;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 .markdown-content > *:first-child {
