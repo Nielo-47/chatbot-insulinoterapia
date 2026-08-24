@@ -1,25 +1,30 @@
 import json
-from typing import Any, Dict, List, Protocol
-import uuid
-
-from sqlalchemy import delete, func, select
+from typing import Any, Dict, List, Optional, Protocol
 
 from backend.src.config.infrastructure import CHAT_CACHE_KEY_PREFIX, CHAT_CACHE_REDIS_URL, CHAT_CACHE_TTL_SECONDS
 from backend.src.infrastructure.data import ConversationCache
-from backend.src.infrastructure.data.models import Message
-from backend.src.infrastructure.data.db_client import get_db_session
+from backend.src.infrastructure.pocketbase import PocketBaseClient, get_pocketbase_client
+
+MESSAGES_COLLECTION = "messages"
 
 
 class ConversationCacheLike(Protocol):
-    def get_messages(self, conversation_id: uuid.UUID) -> List[Dict[str, Any]] | None: ...
+    def get_messages(self, conversation_id: str) -> List[Dict[str, Any]] | None: ...
 
-    def set_messages(self, conversation_id: uuid.UUID, messages: List[Dict[str, Any]]) -> None: ...
+    def set_messages(self, conversation_id: str, messages: List[Dict[str, Any]]) -> None: ...
 
-    def invalidate(self, conversation_id: uuid.UUID) -> None: ...
+    def invalidate(self, conversation_id: str) -> None: ...
 
 
 class MessagesRepository:
-    def __init__(self, cache: ConversationCacheLike | None = None):
+    """PocketBase-backed message storage with the Redis read cache in front."""
+
+    def __init__(
+        self,
+        client: Optional[PocketBaseClient] = None,
+        cache: ConversationCacheLike | None = None,
+    ):
+        self._client = client or get_pocketbase_client()
         self.cache = cache or ConversationCache(
             redis_url=CHAT_CACHE_REDIS_URL,
             ttl_seconds=CHAT_CACHE_TTL_SECONDS,
@@ -28,78 +33,88 @@ class MessagesRepository:
 
     def add_message(
         self,
-        conversation_id: uuid.UUID,
+        conversation_id: str,
         role: str,
         content: str,
         sources: List[dict] | None = None,
     ) -> None:
         serialized_sources = json.dumps(sources or [])
-        with get_db_session() as db:
-            db.add(
-                Message(conversation_id=conversation_id, role=role, content=content, sources_json=serialized_sources)
-            )
+        self._client.create_record(
+            MESSAGES_COLLECTION,
+            {
+                "conversation": conversation_id,
+                "role": role,
+                "content": content,
+                "sources_json": serialized_sources,
+            },
+        )
         self.cache.invalidate(conversation_id)
 
-    def list_recent_messages(self, conversation_id: uuid.UUID, limit: int) -> List[Dict[str, Any]]:
+    @staticmethod
+    def _parse_sources(sources_json: Any) -> List[Dict[str, Any]]:
+        try:
+            raw_sources = json.loads(sources_json) if sources_json else []
+        except (json.JSONDecodeError, TypeError):
+            raw_sources = []
+        if not isinstance(raw_sources, list):
+            return []
+
+        # Normalize to structured format (dicts with path/page/content)
+        structured_sources: List[Dict[str, Any]] = []
+        for src in raw_sources:
+            if isinstance(src, dict):
+                structured_sources.append(src)
+            elif isinstance(src, str):
+                # Legacy format: just a path string
+                structured_sources.append({"path": src, "page": None, "content": None})
+
+        # Filter out entries without a path
+        return [s for s in structured_sources if s.get("path")]
+
+    @staticmethod
+    def _to_history_entry(record: Dict[str, Any]) -> Dict[str, Any]:
+        return {
+            "role": record.get("role", ""),
+            "content": record.get("content", ""),
+            "sources": MessagesRepository._parse_sources(record.get("sources_json")),
+        }
+
+    def list_recent_messages(self, conversation_id: str, limit: int) -> List[Dict[str, Any]]:
         cached = self.cache.get_messages(conversation_id)
         if cached is not None:
             return cached[-limit:] if limit > 0 else cached
 
-        with get_db_session() as db:
-            stmt = (
-                select(Message.role, Message.content, Message.sources_json)
-                .where(Message.conversation_id == conversation_id)
-                .order_by(Message.created_at.desc(), Message.id.desc())
-                .limit(limit)
-            )
-            rows = db.execute(stmt).all()
+        records = self._client.list_records(
+            MESSAGES_COLLECTION,
+            filter_expr=f'conversation = "{conversation_id}"',
+            sort="-created",
+        )
+        if limit > 0 and len(records) > limit:
+            records = records[:limit]
 
-        rows = list(reversed(rows))
-        messages: List[Dict[str, Any]] = []
-        for role, content, sources_json in rows:
-            try:
-                raw_sources = json.loads(sources_json) if sources_json else []
-            except json.JSONDecodeError:
-                raw_sources = []
-            if not isinstance(raw_sources, list):
-                raw_sources = []
-
-            # Normalize to structured format (dicts with path/page/content)
-            structured_sources: List[Dict[str, Any]] = []
-            for src in raw_sources:
-                if isinstance(src, dict):
-                    structured_sources.append(src)
-                elif isinstance(src, str):
-                    # Legacy format: just a path string
-                    structured_sources.append({"path": src, "page": None, "content": None})
-                else:
-                    continue
-
-            # Filter out entries without a path
-            sources_list = [s for s in structured_sources if s.get("path")]
-            messages.append(
-                {
-                    "role": role,
-                    "content": content,
-                    "sources": sources_list,
-                }
-            )
+        messages = [self._to_history_entry(record) for record in reversed(records)]
         self.cache.set_messages(conversation_id, messages)
         return messages
 
-    def count_messages(self, conversation_id: uuid.UUID) -> int:
-        with get_db_session() as db:
-            stmt = select(func.count(Message.id)).where(Message.conversation_id == conversation_id)
-            return db.execute(stmt).scalar_one()
+    def count_messages(self, conversation_id: str) -> int:
+        return self._client.count_records(
+            MESSAGES_COLLECTION,
+            filter_expr=f'conversation = "{conversation_id}"',
+        )
 
-    def clear_conversation(self, conversation_id: uuid.UUID) -> int:
-        with get_db_session() as db:
-            count_stmt = select(func.count(Message.id)).where(Message.conversation_id == conversation_id)
-            total = db.execute(count_stmt).scalar_one()
-            stmt = delete(Message).where(Message.conversation_id == conversation_id)
-            db.execute(stmt)
+    def clear_conversation(self, conversation_id: str) -> int:
+        # Invalidate the cache FIRST so a partial failure can never leave the
+        # Redis view out of sync with what remains stored.
         self.cache.invalidate(conversation_id)
-        return int(total)
+        records = self._client.list_records(
+            MESSAGES_COLLECTION,
+            filter_expr=f'conversation = "{conversation_id}"',
+        )
+        total = 0
+        for record in records:
+            self._client.delete_record(MESSAGES_COLLECTION, str(record["id"]))
+            total += 1
+        return total
 
-    def invalidate_cache(self, conversation_id: uuid.UUID) -> None:
+    def invalidate_cache(self, conversation_id: str) -> None:
         self.cache.invalidate(conversation_id)

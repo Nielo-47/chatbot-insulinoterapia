@@ -1,5 +1,4 @@
 import unittest
-import uuid
 from typing import Any, Dict, List, Optional
 from unittest.mock import AsyncMock
 
@@ -7,7 +6,7 @@ from backend.src.application.features.chat.query_processor import QueryProcessor
 from backend.src.infrastructure.rag.cleaner import extract_sources
 from lightrag.prompt import PROMPTS
 
-USER_ID = uuid.uuid4()
+USER_ID = "user0000alice0001"
 
 
 class DummyRAGRuntime:

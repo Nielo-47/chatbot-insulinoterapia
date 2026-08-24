@@ -1,16 +1,15 @@
 """FastAPI Backend for Diabetes Chatbot - Exposes RAG functionality via REST API.
 
-Authentication is delegated to Supabase Auth. The frontend authenticates with
-supabase-js and sends the resulting JWT access token as an ``Authorization:
-Bearer`` header; the backend verifies the token's signature against the
-project's public JWKS endpoint (SUPABASE_JWKS_URL) using the algorithm it
-advertises (RS256 or ES256), plus audience and role, and
-maps its ``sub`` claim (a UUID) to the local ``profiles`` row. Account deletion
-calls the ``delete-account`` edge function, which holds the secret key.
+Authentication is delegated to the self-hosted PocketBase container. The
+frontend authenticates with pocketbase-js and sends the resulting JWT access
+token as an ``Authorization: Bearer`` header; the backend verifies the token
+locally with the users collection's HS256 signing secret and maps its ``id``
+claim (the PocketBase record id) to the application principal. Account
+deletion removes the user record via the superuser API (CascadeDelete
+relations purge conversations/messages).
 """
 
 import logging
-import os
 import uuid
 from contextlib import asynccontextmanager
 from typing import List, Optional
@@ -38,9 +37,9 @@ from backend.src.application.features.auth import AuthenticationService
 from backend.src.application.features.chat.chatbot_service import ChatbotService
 from backend.src.infrastructure.data.cache import init_semantic_cache
 from backend.src.config.env import require
-from backend.src.infrastructure.data import initialize_database
+from backend.src.infrastructure.pocketbase import get_pocketbase_client
 from backend.src.infrastructure.security import rate_limit
-from backend.src.infrastructure.security.supabase import SupabaseTokenError, verify_access_token
+from backend.src.infrastructure.security.pocketbase import PocketBaseTokenError, verify_access_token
 
 
 def _parse_frontend_origins() -> List[str]:
@@ -87,23 +86,25 @@ def get_current_user(
         raise _unauthorized()
 
     try:
-        claims = verify_access_token(token)
-    except SupabaseTokenError:
+        identity = verify_access_token(token)
+    except PocketBaseTokenError:
         raise _unauthorized()
 
-    sub = claims.get("sub")
-    if not sub:
+    user_id = str(identity.get("id") or "")
+    if not user_id:
         raise _unauthorized()
 
-    # The username is cosmetic (display only); email is the natural identifier
-    # for Supabase email+password accounts.
-    username = claims.get("email") or f"user_{sub[:8]}"
+    # The username is cosmetic (display only); email is the natural identifier.
+    # Introspection usually returns the record's email; fall back to a cached
+    # directory lookup otherwise.
+    username = identity.get("email")
+    if not isinstance(username, str) or not username:
+        username = auth_service.resolve_username(user_id)
+
     try:
-        principal = auth_service.resolve_principal_from_identity(sub, username)
+        principal = auth_service.resolve_principal_from_identity(user_id, username)
     except ValueError:
-        # The sub claim is not a valid UUID (should never happen for Supabase
-        # tokens); treat it as unauthenticated rather than crashing.
-        logger.warning("Rejected access token with non-UUID sub claim")
+        logger.warning("Rejected access token with empty subject id")
         raise _unauthorized()
 
     return AuthenticatedUser(id=principal.id, username=principal.username)
@@ -113,8 +114,10 @@ def get_current_user(
 async def lifespan(app: FastAPI):
     """Manage chatbot lifecycle."""
     logger.info("Initializing chatbot...")
-    initialize_database()
-    logger.info("Database initialized successfully")
+    if not get_pocketbase_client().health():
+        logger.warning("PocketBase is not reachable yet; continuing startup (requests will retry auth)")
+    else:
+        logger.info("PocketBase connection verified")
     init_semantic_cache()
     app.state.chatbot = await build_chatbot_service()
     app.state.auth_service = build_auth_service()
@@ -177,12 +180,10 @@ def delete_current_user(
 ):
     """Delete the current account.
 
-    Cached PII (Redis conversation message cache, checkpointer thread state) is
-    purged FIRST, before the account is revoked, so stale user data cannot
-    outlive the account. The Auth user is then revoked via the ``delete-account``
-    edge function (the caller's access token is forwarded; the secret key lives
-    only in Supabase). The local profiles/conversations/messages rows are
-    removed by the ``on_auth_user_deleted`` trigger. If the revocation fails,
+    Cached PII (Redis conversation message cache) is purged FIRST, before the
+    account is revoked, so stale user data cannot outlive the account. The
+    PocketBase user record is then deleted via the superuser API; CascadeDelete
+    relations remove the conversations and messages. If the deletion fails,
     the account is kept (fail closed).
     """
     token = _extract_bearer_token(request)
@@ -193,7 +194,7 @@ def delete_current_user(
     # revoked. The semantic cache is global (keyed by prompt hash), not
     # user-scoped, and is therefore not part of per-user purging.
     chatbot.purge_user_data(current_user.id)
-    if not auth_service.delete_supabase_user(current_user.id, token):
+    if not auth_service.delete_account(current_user.id):
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail="Não foi possível excluir a conta no provedor de identidade",
@@ -309,7 +310,7 @@ async def root():
     Kept unauthenticated (harmless banner), but deliberately omits the version
     so the API surface is not fingerprinted (L2). /health must stay
     unauthenticated too because the container healthcheck probes it. All
-    other endpoints require a valid Supabase Bearer token.
+    other endpoints require a valid PocketBase Bearer token.
     """
     return {
         "message": "LinaChat API",

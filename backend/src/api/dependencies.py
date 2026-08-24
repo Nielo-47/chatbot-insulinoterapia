@@ -6,11 +6,14 @@ from backend.src.application.features.chat.conversation_service import Conversat
 from backend.src.application.features.chat.query_processor import QueryProcessor
 from backend.src.config.infrastructure import OPENROUTER_API_KEY, OPENROUTER_BASE_URL
 from backend.src.infrastructure.llm.client import LLMClient
+from backend.src.infrastructure.pocketbase import get_pocketbase_client
 from backend.src.infrastructure.rag.factory import RAGFactory
 from backend.src.infrastructure.repositories.conversations_repository import ConversationsRepository
 from backend.src.infrastructure.repositories.messages_repository import MessagesRepository
-from backend.src.infrastructure.repositories.profiles_repository import ProfilesRepository
-from backend.src.infrastructure.security.supabase import SupabaseAccountDeletionClient
+from backend.src.infrastructure.security.pocketbase import (
+    PocketBaseAccountDeletionClient,
+    PocketBaseUserDirectory,
+)
 
 
 async def build_chatbot_service() -> ChatbotService:
@@ -21,8 +24,8 @@ async def build_chatbot_service() -> ChatbotService:
     await rag_runtime.initialize(llm_client.complete)
 
     conversation_service = ConversationService(
-        conversations_repository=ConversationsRepository(),
-        messages_repository=MessagesRepository(),
+        conversations_repository=ConversationsRepository(get_pocketbase_client()),
+        messages_repository=MessagesRepository(client=get_pocketbase_client()),
         summary_call_llm=llm_client.complete,
     )
     query_processor = QueryProcessor(rag_runtime, conversation_service, llm_client.complete)
@@ -31,9 +34,10 @@ async def build_chatbot_service() -> ChatbotService:
 
 
 def build_auth_service() -> AuthenticationService:
+    client = get_pocketbase_client()
     return build_authentication_service(
-        profiles_repository=ProfilesRepository(),
-        account_deletion_client=SupabaseAccountDeletionClient(),
+        account_deletion_client=PocketBaseAccountDeletionClient(client),
+        username_resolver=PocketBaseUserDirectory(client).resolve_username,
     )
 
 

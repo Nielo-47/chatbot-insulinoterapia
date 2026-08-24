@@ -1,6 +1,6 @@
 """Per-user query rate limiting using Redis.
 
-Login throttling, account lockout and token blacklisting live in Supabase
+Login throttling, account lockout and token invalidation live in PocketBase
 Auth; what remains here is the application-level query quota (a functional
 cap, not an authentication control).
 
@@ -11,7 +11,6 @@ operation degrades safely instead of raising.
 """
 
 import logging
-import uuid
 
 import redis
 
@@ -31,12 +30,12 @@ def _get_redis_client() -> redis.Redis:
 QUERY_LIMIT_PREFIX = "ratelimit:query:"
 
 
-def _get_query_limit_key(user_id: uuid.UUID) -> str:
+def _get_query_limit_key(user_id: str) -> str:
     """Get Redis key for per-user query rate limiting."""
     return f"{QUERY_LIMIT_PREFIX}{user_id}"
 
 
-def check_query_rate_limit(user_id: uuid.UUID) -> tuple[bool, int]:
+def check_query_rate_limit(user_id: str) -> tuple[bool, int]:
     """
     Check if a user has exceeded the query rate limit.
 
@@ -65,7 +64,7 @@ def check_query_rate_limit(user_id: uuid.UUID) -> tuple[bool, int]:
         return False, 0
 
 
-def get_query_rate_limit_remaining_seconds(user_id: uuid.UUID) -> int:
+def get_query_rate_limit_remaining_seconds(user_id: str) -> int:
     """Get remaining seconds until the query rate limit resets."""
     key = _get_query_limit_key(user_id)
 

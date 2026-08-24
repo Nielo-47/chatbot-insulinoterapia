@@ -1,52 +1,26 @@
 import unittest
-import uuid
 
-from backend.src.infrastructure.data.models import Base
 from backend.src.infrastructure.repositories.conversations_repository import ConversationsRepository
 from backend.src.infrastructure.repositories.messages_repository import MessagesRepository
-from backend.src.infrastructure.repositories.profiles_repository import ProfilesRepository
-from backend.test.integration.db_test_utils import (
-    bind_session_to_schema,
-    create_isolated_test_engine,
-    drop_isolated_schema,
-)
+from backend.test.integration.fake_pb_client import FakePocketBaseClient
 
 
 class RepositoryIntegrationTests(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls) -> None:
-        cls.engine, cls.schema_name = create_isolated_test_engine()
-        cls.schema_engine = bind_session_to_schema(cls.engine, cls.schema_name)
-        cls.profiles = ProfilesRepository()
-        cls.conversations = ConversationsRepository()
-        cls.messages = MessagesRepository()
-
-        Base.metadata.create_all(bind=cls.schema_engine)
-
     def setUp(self) -> None:
-        Base.metadata.drop_all(bind=self.schema_engine)
-        Base.metadata.create_all(bind=self.schema_engine)
+        self.client = FakePocketBaseClient()
+        self.conversations = ConversationsRepository(self.client)
+        self.messages = MessagesRepository(client=self.client, cache=_NoopCache())
 
-    @classmethod
-    def tearDownClass(cls) -> None:
-        drop_isolated_schema(cls.engine, cls.schema_name)
-        cls.engine.dispose()
-
-    def test_create_profile_conversation_and_messages(self) -> None:
-        user_id = uuid.uuid4()
-        user_id, created = self.profiles.get_or_create_profile(user_id, "alice")
+    def test_create_conversation_and_messages(self) -> None:
+        user_id = "useraaaaaaaaaaaaa"
         conversation_id = self.conversations.get_or_create_conversation_id(user_id)
-        profile = self.profiles.get_profile_by_id(user_id)
 
         self.messages.add_message(conversation_id, "user", "oi")
         self.messages.add_message(conversation_id, "assistant", "olá", sources=["doc-a.md", "doc-b.md"])
 
-        self.assertTrue(created)
-        self.assertIsNotNone(profile)
-        assert profile is not None
-        self.assertEqual(profile.user_id, user_id)
-        self.assertEqual(profile.username, "alice")
-        self.assertEqual(self.conversations.get_conversation_id_by_user(user_id), conversation_id)
+        self.assertEqual(
+            self.conversations.get_conversation_id_by_user(user_id), conversation_id
+        )
         self.assertEqual(self.messages.count_messages(conversation_id), 2)
         self.assertEqual(
             self.messages.list_recent_messages(conversation_id, limit=10),
@@ -64,7 +38,7 @@ class RepositoryIntegrationTests(unittest.TestCase):
         )
 
     def test_clear_conversation_removes_only_messages(self) -> None:
-        user_id, _ = self.profiles.get_or_create_profile(uuid.uuid4(), "bob")
+        user_id = "userbbbbbbbbbbbbb"
         conversation_id = self.conversations.get_or_create_conversation_id(user_id)
 
         self.messages.add_message(conversation_id, "user", "primeira")
@@ -74,45 +48,44 @@ class RepositoryIntegrationTests(unittest.TestCase):
 
         self.assertEqual(cleared, 2)
         self.assertEqual(self.messages.count_messages(conversation_id), 0)
-        self.assertEqual(self.conversations.get_conversation_id_by_user(user_id), conversation_id)
+        self.assertEqual(
+            self.conversations.get_conversation_id_by_user(user_id), conversation_id
+        )
 
-    def test_delete_profile_cascades_conversation_and_messages(self) -> None:
-        user_id, _ = self.profiles.get_or_create_profile(uuid.uuid4(), "carol")
+    def test_list_recent_messages_respects_limit_and_order(self) -> None:
+        user_id = "userccccccccccccc"
         conversation_id = self.conversations.get_or_create_conversation_id(user_id)
 
-        self.messages.add_message(conversation_id, "user", "pergunta")
-        self.messages.add_message(conversation_id, "assistant", "resposta")
+        for i in range(5):
+            self.messages.add_message(conversation_id, "user", f"msg-{i}")
 
-        deleted = self.profiles.delete_profile(user_id)
+        history = self.messages.list_recent_messages(conversation_id, limit=3)
 
-        self.assertTrue(deleted)
-        self.assertIsNone(self.profiles.get_profile_by_id(user_id))
-        self.assertIsNone(self.conversations.get_conversation_id_by_user(user_id))
-        self.assertEqual(self.messages.count_messages(conversation_id), 0)
+        self.assertEqual([m["content"] for m in history], ["msg-2", "msg-3", "msg-4"])
 
-    def test_duplicate_user_id_returns_same_profile(self) -> None:
-        user_id = uuid.uuid4()
-        first_id, first_created = self.profiles.get_or_create_profile(user_id, "dana")
-        second_id, second_created = self.profiles.get_or_create_profile(user_id, "dana")
+    def test_get_or_create_is_unique_per_user(self) -> None:
+        user_id = "userddddddddddddd"
+        first = self.conversations.get_or_create_conversation_id(user_id)
+        second = self.conversations.get_or_create_conversation_id(user_id)
 
-        self.assertEqual(first_id, second_id)
-        self.assertTrue(first_created)
-        self.assertFalse(second_created)
+        self.assertEqual(first, second)
+        self.assertEqual(len(self.client.collections["conversations"]), 1)
 
-    def test_get_profile_by_id_returns_persisted_profile(self) -> None:
-        user_id, _ = self.profiles.get_or_create_profile(uuid.uuid4(), "eve")
 
-        profile = self.profiles.get_profile_by_id(user_id)
+class _NoopCache:
+    """Cache double: always misses, records invalidations."""
 
-        self.assertIsNotNone(profile)
-        assert profile is not None
-        self.assertEqual(profile.user_id, user_id)
-        self.assertEqual(profile.username, "eve")
+    def __init__(self) -> None:
+        self.invalidated: list[str] = []
 
-    def test_delete_profile_returns_false_for_missing_profile(self) -> None:
-        deleted = self.profiles.delete_profile(uuid.uuid4())
+    def get_messages(self, conversation_id):
+        return None
 
-        self.assertFalse(deleted)
+    def set_messages(self, conversation_id, messages):
+        pass
+
+    def invalidate(self, conversation_id):
+        self.invalidated.append(conversation_id)
 
 
 if __name__ == "__main__":

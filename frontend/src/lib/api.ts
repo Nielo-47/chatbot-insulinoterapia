@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 import { env } from './env'
-import { supabase } from './supabase'
+import { pocketbase } from './pocketbase'
 import type { ConversationHistoryMessage, QueryPayload, QueryResult } from '../types/chat'
 
 const MAX_ERROR_LENGTH = 200
@@ -66,9 +66,8 @@ const conversationHistorySchema = z.object({
   ),
 })
 
-async function getAccessToken(): Promise<string | null> {
-  const { data } = await supabase.auth.getSession()
-  return data.session?.access_token ?? null
+function getAccessToken(): string | null {
+  return pocketbase.authStore.token || null
 }
 
 async function request<T>(path: string, init: RequestInit, schema: z.ZodSchema<T>): Promise<T> {
@@ -77,7 +76,7 @@ async function request<T>(path: string, init: RequestInit, schema: z.ZodSchema<T
   const headers = new Headers(init.headers)
   headers.set('Content-Type', 'application/json')
 
-  const token = await getAccessToken()
+  const token = getAccessToken()
   if (token) {
     headers.set('Authorization', `Bearer ${token}`)
   }
@@ -90,20 +89,11 @@ async function request<T>(path: string, init: RequestInit, schema: z.ZodSchema<T
     })
 
   try {
-    let response = await doFetch()
+    const response = await doFetch()
 
     if (response.status === 401) {
-      // The access token may have just expired: silently refresh it once and
-      // retry. If the refresh itself fails (e.g. revoked session) the retry
-      // returns 401 again and we surface the unauthenticated state.
-      const { data: refreshed } = await supabase.auth.refreshSession()
-      if (refreshed.session?.access_token) {
-        headers.set('Authorization', `Bearer ${refreshed.session.access_token}`)
-        response = await doFetch()
-      }
-    }
-
-    if (response.status === 401) {
+      // PocketBase tokens are long-lived but not renewable: an expired or
+      // revoked token means the user must sign in again.
       throw new ApiError('Não autenticado', 401)
     }
 
@@ -150,9 +140,9 @@ export async function getCurrentUser(): Promise<{ id: string; username: string }
 }
 
 export async function deleteAccount(): Promise<void> {
-  // The Supabase access token is the proof of identity; the backend deletes
-  // the Supabase Auth user (service role) and then purges local data. No
-  // password re-entry exists.
+  // The PocketBase access token is the proof of identity; the backend deletes
+  // the users record via the superuser API and then purges local cached data.
+  // No password re-entry exists.
   await request('/auth/me', { method: 'DELETE' }, z.object({ message: z.string() }))
 }
 

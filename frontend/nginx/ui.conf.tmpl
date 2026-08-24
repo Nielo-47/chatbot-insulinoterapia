@@ -2,11 +2,12 @@
 # Placeholders (${SSL_CERTIFICATE_LINE}, ${SSL_CERTIFICATE_KEY_LINE},
 # ${HSTS_BLOCK}) are substituted with envsubst; $nginx variables are untouched.
 #
-# Authentication is handled by Supabase Auth (hosted): the SPA authenticates
-# via supabase-js directly with Supabase and sends the JWT access token to the
-# backend as a Bearer header. This nginx only serves the static SPA, proxies
-# the backend API (/api/), and terminates TLS. /api/health stays exempt from
-# the backend's auth check for container healthchecks.
+# Authentication is handled by the self-hosted PocketBase container: the SPA
+# authenticates via pocketbase-js through the same-origin /pb proxy and sends
+# the JWT access token to the backend as a Bearer header. This nginx serves
+# the static SPA, proxies the backend API (/api/) and PocketBase (/pb/), and
+# terminates TLS. /api/health stays exempt from the backend's auth check for
+# container healthchecks.
 
 server {
     listen 80;
@@ -30,8 +31,7 @@ server {
     index index.html;
 
     # Security headers (rendered from security-headers.conf.tmpl; includes
-    # HSTS when real certificates are mounted and the Supabase origin in the
-    # CSP connect-src when VITE_SUPABASE_URL is set). Locations that define
+    # HSTS when real certificates are mounted). Locations that define
     # their own add_header directives replace the inherited server-level ones
     # and must include this file explicitly.
     include /etc/nginx/security-headers.conf;
@@ -48,6 +48,18 @@ server {
     # requests receive a 401 from the API.
     location /api/ {
         proxy_pass http://backend:8000/;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        include /etc/nginx/security-headers.conf;
+    }
+
+    # PocketBase auth (same-origin proxy so the CSP never needs third-party
+    # connect-src entries). The trailing slash strips the /pb prefix.
+    location /pb/ {
+        proxy_pass http://pocketbase:8090/;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;

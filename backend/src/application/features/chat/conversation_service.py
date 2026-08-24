@@ -1,6 +1,5 @@
 import asyncio
 import logging
-import uuid
 from typing import Any, Callable, Coroutine, Dict, List, Optional
 
 from backend.src.application.contracts.repositories import (
@@ -14,7 +13,6 @@ from backend.src.config.conversation import (
     SUMMARIZER_TEMPERATURE,
 )
 from backend.src.config.prompts import SUMMARY_PROMPT, SYSTEM_PROMPT
-from backend.src.infrastructure.data.db_client import purge_user_checkpoint_threads
 
 
 class ConversationService:
@@ -27,21 +25,21 @@ class ConversationService:
         self.conversations_repository = conversations_repository
         self.messages_repository = messages_repository
         self.summary_call_llm = summary_call_llm
-        self.sessions_summarized: set[uuid.UUID] = set()
+        self.sessions_summarized: set[str] = set()
 
-    def _resolve_conversation_id(self, user_id: uuid.UUID, create_if_missing: bool) -> Optional[uuid.UUID]:
+    def _resolve_conversation_id(self, user_id: str, create_if_missing: bool) -> Optional[str]:
         if user_id is None:
             return None
         if create_if_missing:
             return self.conversations_repository.get_or_create_conversation_id(user_id)
         return self.conversations_repository.get_conversation_id_by_user(user_id)
 
-    def ensure_conversation(self, user_id: uuid.UUID) -> None:
+    def ensure_conversation(self, user_id: str) -> None:
         if user_id is None:
             return
         self._resolve_conversation_id(user_id=user_id, create_if_missing=True)
 
-    def get_conversation(self, user_id: uuid.UUID, limit: Optional[int] = None) -> List[Dict[str, Any]]:
+    def get_conversation(self, user_id: str, limit: Optional[int] = None) -> List[Dict[str, Any]]:
         if user_id is None:
             return []
 
@@ -54,7 +52,7 @@ class ConversationService:
 
     def add_message(
         self,
-        user_id: uuid.UUID,
+        user_id: str,
         role: str,
         content: str,
         sources: Optional[List[Dict[str, Any]]] = None,
@@ -78,7 +76,7 @@ class ConversationService:
         )
         self.conversations_repository.touch_conversation(conversation_id=conversation_id)
 
-    def count_messages(self, user_id: uuid.UUID) -> int:
+    def count_messages(self, user_id: str) -> int:
         if user_id is None:
             return 0
 
@@ -88,7 +86,7 @@ class ConversationService:
 
         return self.messages_repository.count_messages(conversation_id=conversation_id)
 
-    def reset_conversation(self, user_id: uuid.UUID) -> bool:
+    def reset_conversation(self, user_id: str) -> bool:
         if user_id is None:
             return False
 
@@ -100,13 +98,13 @@ class ConversationService:
         self.conversations_repository.touch_conversation(conversation_id=conversation_id)
         return True
 
-    def purge_user_data(self, user_id: uuid.UUID) -> None:
+    def purge_user_data(self, user_id: str) -> None:
         """Drop cached user data before account deletion.
 
-        The FK cascade removes DB rows, but the Redis message cache (keyed by
-        conversation_id) and the LangGraph checkpointer thread state (keyed by
-        user_{user_id}) are not tied to the user row, so they must be purged
-        explicitly or stale PII would remain after account deletion.
+        The PocketBase CascadeDelete relations remove DB records, but the
+        Redis message cache (keyed by conversation_id) is not tied to the user
+        row, so it must be purged explicitly or stale PII would remain after
+        account deletion.
         """
         if user_id is None:
             return
@@ -114,10 +112,9 @@ class ConversationService:
         conversation_id = self._resolve_conversation_id(user_id=user_id, create_if_missing=False)
         if conversation_id is not None:
             self.messages_repository.invalidate_cache(conversation_id)
-        purge_user_checkpoint_threads(user_id)
         self.sessions_summarized.discard(user_id)
 
-    def replace_with_summary(self, user_id: uuid.UUID, summary: str) -> None:
+    def replace_with_summary(self, user_id: str, summary: str) -> None:
         if user_id is None:
             return
 
@@ -137,7 +134,7 @@ class ConversationService:
         )
         self.conversations_repository.touch_conversation(conversation_id=conversation_id)
 
-    def store_summary(self, user_id: uuid.UUID, summary: str) -> None:
+    def store_summary(self, user_id: str, summary: str) -> None:
         """Store summary in DB without clearing messages - preserves conversation history."""
         if user_id is None:
             return
@@ -153,7 +150,7 @@ class ConversationService:
         self.conversations_repository.update_summary(conversation_id, clean_summary)
         logging.getLogger(__name__).info("User %s summary stored (messages preserved)", user_id)
 
-    def get_summary(self, user_id: uuid.UUID) -> Optional[str]:
+    def get_summary(self, user_id: str) -> Optional[str]:
         """Get stored summary for a user's conversation."""
         if user_id is None:
             return None
@@ -164,7 +161,7 @@ class ConversationService:
 
         return self.conversations_repository.get_summary(conversation_id)
 
-    def summarize_session(self, user_id: uuid.UUID, max_messages: Optional[int] = None) -> str:
+    def summarize_session(self, user_id: str, max_messages: Optional[int] = None) -> str:
         if user_id is None:
             return ""
 
@@ -205,7 +202,7 @@ class ConversationService:
 
         return ""
 
-    def consume_summarized(self, user_id: uuid.UUID) -> bool:
+    def consume_summarized(self, user_id: str) -> bool:
         was_summarized = user_id in self.sessions_summarized
         if was_summarized:
             self.sessions_summarized.discard(user_id)

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 
 import { ApiError, deleteAccount, getCurrentUser, checkHealth } from '../lib/api'
-import { supabase } from '../lib/supabase'
+import { pocketbase } from '../lib/pocketbase'
 import { ChatPage } from '../features/chat/ChatPage'
 import { SignInPage } from '../features/auth/SignInPage'
 import { SignUpPage } from '../features/auth/SignUpPage'
@@ -48,14 +48,10 @@ function App() {
         return
       }
 
-      // The Supabase session lives in localStorage; /auth/me only succeeds when
-      // the session yields a valid access token, so probing it reveals the
-      // auth state.
-      const {
-        data: { session },
-      } = await supabase.auth.getSession()
-
-      if (!session) {
+      // The PocketBase session lives in localStorage; /auth/me only succeeds
+      // when the stored token is still valid, so probing it reveals the auth
+      // state.
+      if (!pocketbase.authStore.isValid) {
         setAuthStatus('signed_out')
         setIsBootstrapping(false)
         return
@@ -67,7 +63,7 @@ function App() {
         setAuthStatus('authenticated')
       } catch (error) {
         if (error instanceof ApiError && error.status === 401) {
-          await supabase.auth.signOut()
+          pocketbase.authStore.clear()
           setAuthStatus('signed_out')
         } else {
           setAuthStatus('unknown')
@@ -79,10 +75,9 @@ function App() {
   }, [])
 
   useEffect(() => {
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'SIGNED_IN') {
+    // Fires on sign-in (authWithPassword), sign-out and token changes.
+    const unsubscribe = pocketbase.authStore.onChange(() => {
+      if (pocketbase.authStore.isValid) {
         void (async () => {
           try {
             const user = await getCurrentUser()
@@ -92,16 +87,16 @@ function App() {
             // The bootstrap flow re-evaluates on next reload; ignore transient errors.
           }
         })()
-      } else if (event === 'SIGNED_OUT') {
+      } else {
         setCurrentUser(null)
         setAuthStatus('signed_out')
       }
     })
-    return () => subscription.unsubscribe()
+    return () => unsubscribe()
   }, [])
 
   const handleLogout = async (reason: 'manual' | 'expired' | 'deleted' = 'manual') => {
-    await supabase.auth.signOut()
+    pocketbase.authStore.clear()
     setCurrentUser(null)
     setAuthStatus(reason === 'expired' ? 'expired' : 'signed_out')
   }

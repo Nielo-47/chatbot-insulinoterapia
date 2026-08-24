@@ -2,10 +2,14 @@ const defaultApiBase = () => {
   return '/api'
 }
 
+const defaultPocketbasePath = () => {
+  return '/pb'
+}
+
 export const env = {
   apiBaseUrl: (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, '') || defaultApiBase(),
   requestTimeoutMs: Number(import.meta.env.VITE_REQUEST_TIMEOUT_MS || '60000'),
-  // Supabase project credentials. VITE_SUPABASE_URL must NOT have a trailing slash.
-  supabaseUrl: (import.meta.env.VITE_SUPABASE_URL as string | undefined)?.replace(/\/$/, '') || '',
-  supabaseAnonKey: (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined) || '',
+  // Same-origin path of the ui nginx proxy that forwards to the PocketBase
+  // container (no trailing slash).
+  pocketbaseUrl: (import.meta.env.VITE_POCKETBASE_URL as string | undefined)?.replace(/\/$/, '') || defaultPocketbasePath(),
 }

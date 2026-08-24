@@ -1,62 +1,73 @@
 import logging
-import uuid
-from typing import Protocol
+from typing import Callable, Optional
 
-from backend.src.application.contracts.repositories import ProfilesRepositoryLike
 from backend.src.domain.models import AuthenticatedPrincipal
 
 logger = logging.getLogger(__name__)
 
 
-class AccountDeletionClientLike(Protocol):
-    def delete_user(self, user_id: uuid.UUID, access_token: str) -> bool: ...
+class AccountDeletionClientLike:
+    """Structural contract: revoke the auth account for a user id."""
+
+    def delete_user(self, user_id: str) -> bool: ...
 
 
 class AuthenticationService:
-    """Identity resolution and account lifecycle, delegated to Supabase Auth.
+    """Identity resolution and account lifecycle, delegated to PocketBase Auth.
 
     This service contains no credential handling at all: passwords, sessions
-    and token issuance are owned by Supabase Auth. The backend only verifies
-    the JWT access token (see infra/security/supabase.py) and maps its ``sub``
-    claim (a UUID) to the local ``profiles`` row used as the conversations FK.
+    and token issuance are owned by PocketBase. The backend only verifies the
+    JWT access token locally (see infra/security/pocketbase.py) and reads its
+    ``id`` claim — the PocketBase record id, which doubles as the conversations
+    relation target. There is no local profile row anymore: the display name
+    lives on the ``users`` record itself.
     """
 
     def __init__(
         self,
-        profiles_repository: ProfilesRepositoryLike,
         account_deletion_client: AccountDeletionClientLike,
+        username_resolver: Optional[Callable[[str], str]] = None,
     ):
-        self.profiles_repository = profiles_repository
         self._account_deletion_client = account_deletion_client
+        self._username_resolver = username_resolver
 
-    def resolve_principal_from_identity(self, sub: str, username: str) -> AuthenticatedPrincipal:
-        """Resolve a Supabase identity to a local principal, provisioning on first login."""
-        user_id = uuid.UUID(sub)
-        self.profiles_repository.get_or_create_profile(user_id, username)
+    def resolve_principal_from_identity(self, user_id: str, username: str) -> AuthenticatedPrincipal:
+        """Map a verified token subject to the application principal.
+
+        No provisioning step is needed: the users record IS the profile.
+        """
+        if not user_id:
+            raise ValueError("user id must not be empty")
         return AuthenticatedPrincipal(id=user_id, username=username)
 
-    def delete_supabase_user(self, user_id: uuid.UUID, access_token: str) -> bool:
-        """Revoke the Auth user and remove the local profile row.
+    def resolve_username(self, user_id: str) -> str:
+        """Resolve the cosmetic display name for a user id."""
+        fallback = f"user_{user_id[:8]}" if user_id else "user"
+        if self._username_resolver is None:
+            return fallback
+        try:
+            resolved = self._username_resolver(user_id)
+        except Exception as exc:  # noqa: BLE001 - username is cosmetic only
+            logger.info("Username resolution failed for %s: %s", user_id, type(exc).__name__)
+            return fallback
+        return resolved or fallback
 
-        The Auth user is revoked first (via the ``delete-account`` edge
-        function, authenticated with the caller's access token) so access stops
-        immediately; only then is the local profile deleted
-        (conversations/messages cascade). If the revocation fails, the local
-        account is kept untouched (fail closed). The ``on_auth_user_deleted``
-        trigger is a safety net for deletions done outside this path.
+    def delete_account(self, user_id: str) -> bool:
+        """Revoke the auth account.
+
+        CascadeDelete relations remove conversations/messages with it. If the
+        revocation fails the account is kept untouched (fail closed).
         """
-        if not self._account_deletion_client.delete_user(user_id, access_token):
+        if not self._account_deletion_client.delete_user(user_id):
             return False
-        if not self.profiles_repository.delete_profile(user_id):
-            logger.warning("Profile row for %s already gone after Supabase user deletion", user_id)
         return True
 
 
 def build_authentication_service(
-    profiles_repository: ProfilesRepositoryLike,
     account_deletion_client: AccountDeletionClientLike,
+    username_resolver: Optional[Callable[[str], str]] = None,
 ) -> AuthenticationService:
     return AuthenticationService(
-        profiles_repository=profiles_repository,
         account_deletion_client=account_deletion_client,
+        username_resolver=username_resolver,
     )

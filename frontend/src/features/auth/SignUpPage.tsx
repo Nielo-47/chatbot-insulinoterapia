@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { ArrowLeft, Mail, Lock, UserPlus } from 'lucide-react'
 
-import { supabase } from '../../lib/supabase'
+import { pocketbase } from '../../lib/pocketbase'
 import { translateAuthError } from '../../lib/authErrors'
 import { navigateTo } from '../../lib/router'
 import type { AuthStatus, BackendStatus } from '../../types/app'
@@ -17,13 +17,11 @@ export function SignUpPage({ backendStatus, authStatus }: SignUpPageProps) {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
-  const [info, setInfo] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
     setError(null)
-    setInfo(null)
 
     if (password.length < 6) {
       setError('A senha deve ter pelo menos 6 caracteres.')
@@ -36,23 +34,17 @@ export function SignUpPage({ backendStatus, authStatus }: SignUpPageProps) {
 
     setSubmitting(true)
     try {
-      const { data, error: signUpError } = await supabase.auth.signUp({
+      // Email confirmation is currently disabled in the PocketBase users
+      // collection: the record is created and the session starts immediately.
+      await pocketbase.collection('users').create({
         email: email.trim(),
         password,
+        passwordConfirm: password,
       })
-      if (signUpError) {
-        setError(translateAuthError(signUpError))
-      } else if (data.session) {
-        // Email confirmation is enabled in this Supabase project, so a new
-        // signup only reaches this branch if confirmation was skipped. In that
-        // case the onAuthStateChange handler in App.tsx renders the chat page.
-      } else if (data.user) {
-        setInfo('Conta criada. Confirme o e-mail enviado para ativar o acesso.')
-      } else {
-        setError('Não foi possível criar a conta. Tente novamente.')
-      }
-    } catch {
-      setError('Erro inesperado ao tentar criar a conta.')
+      await pocketbase.collection('users').authWithPassword(email.trim(), password)
+      // The onAuthStoreChange handler in App.tsx renders the chat page.
+    } catch (signUpError) {
+      setError(translateAuthError(signUpError))
     } finally {
       setSubmitting(false)
     }
@@ -88,12 +80,6 @@ export function SignUpPage({ backendStatus, authStatus }: SignUpPageProps) {
       {authStatus === 'expired' && (
         <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
           Sua sessão expirou. Entre novamente.
-        </div>
-      )}
-
-      {info && (
-        <div className="mt-5 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-          {info}
         </div>
       )}
 

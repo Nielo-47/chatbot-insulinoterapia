@@ -5,40 +5,8 @@ from typing import Any, Dict, List, Optional
 from backend.src.application.contracts.repositories import (
     ConversationsRepositoryLike,
     MessagesRepositoryLike,
-    ProfilesRepositoryLike,
 )
 from backend.src.application.features.chat.conversation_service import ConversationService
-
-
-class InMemoryProfilesRepository(ProfilesRepositoryLike):
-    def __init__(self) -> None:
-        self.by_user_id: Dict[uuid.UUID, str] = {}
-        self.deleted: List[uuid.UUID] = []
-
-    def get_profile_by_id(self, user_id: uuid.UUID) -> Optional[Any]:
-        username = self.by_user_id.get(user_id)
-        if username is None:
-            return None
-        return SimpleProfile(user_id, username)
-
-    def get_or_create_profile(self, user_id: uuid.UUID, username: str) -> tuple[uuid.UUID, bool]:
-        if user_id in self.by_user_id:
-            return user_id, False
-        self.by_user_id[user_id] = username
-        return user_id, True
-
-    def delete_profile(self, user_id: uuid.UUID) -> bool:
-        if user_id not in self.by_user_id:
-            return False
-        self.by_user_id.pop(user_id)
-        self.deleted.append(user_id)
-        return True
-
-
-class SimpleProfile:
-    def __init__(self, user_id: uuid.UUID, username: str) -> None:
-        self.user_id = user_id
-        self.username = username
 
 
 class InMemoryConversationsRepository(ConversationsRepositoryLike):
@@ -105,7 +73,6 @@ class InMemoryConversationCache:
 
 class ConversationServiceTests(unittest.TestCase):
     def setUp(self) -> None:
-        self.profiles_repo = InMemoryProfilesRepository()
         self.conversations_repo = InMemoryConversationsRepository()
         self.messages_repo = InMemoryMessagesRepository()
 

@@ -1,23 +1,20 @@
+"""Domain models shared across the application layers.
+
+User ids are PocketBase record ids (strings of at most 15 lowercase
+alphanumeric characters); the ``users`` auth record doubles as the profile
+(username lives on the record) and the conversations relation points at it.
+"""
+
 from dataclasses import dataclass
-from datetime import datetime
 from typing import Optional
-import uuid
 
 
 @dataclass(frozen=True)
 class AuthenticatedPrincipal:
-    id: uuid.UUID
+    id: str
     username: str
-
-
-@dataclass(frozen=True)
-class Profile:
-    user_id: uuid.UUID
-    username: str
-    created_at: Optional[datetime] = None
 
 
 __all__ = [
     "AuthenticatedPrincipal",
-    "Profile",
 ]

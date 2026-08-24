@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { LogIn, Mail, Lock, UserPlus } from 'lucide-react'
 
-import { supabase } from '../../lib/supabase'
+import { pocketbase } from '../../lib/pocketbase'
 import { translateAuthError } from '../../lib/authErrors'
 import { navigateTo } from '../../lib/router'
 import type { AuthStatus, BackendStatus } from '../../types/app'
@@ -23,17 +23,11 @@ export function SignInPage({ backendStatus, authStatus }: SignInPageProps) {
     setError(null)
     setSubmitting(true)
     try {
-      const { error: authError } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
-        password,
-      })
-      if (authError) {
-        setError(translateAuthError(authError))
-      }
-      // On success the onAuthStateChange handler in App.tsx picks up the new
+      await pocketbase.collection('users').authWithPassword(email.trim(), password)
+      // On success the onAuthStoreChange handler in App.tsx picks up the new
       // session and renders the chat page.
-    } catch {
-      setError('Erro inesperado ao tentar entrar.')
+    } catch (authError) {
+      setError(translateAuthError(authError))
     } finally {
       setSubmitting(false)
     }

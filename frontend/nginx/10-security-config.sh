@@ -7,8 +7,8 @@
 #   HSTS OFF: browsers hard-fail self-signed connections with no bypass once
 #   HSTS has been seen for the host.
 #
-# The Content-Security-Policy connect-src is extended with the Supabase origin
-# (from VITE_SUPABASE_URL) so supabase-js can reach Supabase Auth directly.
+# PocketBase and the backend API are reached through same-origin proxies
+# (/pb, /api), so the CSP connect-src needs no extra origins.
 set -eu
 
 CERT_MOUNT_DIR=/etc/nginx/certs
@@ -32,14 +32,8 @@ else
     HSTS_BLOCK=""
 fi
 
-if [ -n "${VITE_SUPABASE_URL:-}" ]; then
-    SUPABASE_CSP_EXTRA=" https://$(echo "$VITE_SUPABASE_URL" | sed -E 's#^https?://##' | cut -d/ -f1)"
-else
-    SUPABASE_CSP_EXTRA=""
-fi
-
-export SSL_CERTIFICATE_LINE SSL_CERTIFICATE_KEY_LINE HSTS_BLOCK SUPABASE_CSP_EXTRA
-envsubst '${SSL_CERTIFICATE_LINE} ${SSL_CERTIFICATE_KEY_LINE} ${HSTS_BLOCK} ${SUPABASE_CSP_EXTRA}' \
+export SSL_CERTIFICATE_LINE SSL_CERTIFICATE_KEY_LINE HSTS_BLOCK
+envsubst '${SSL_CERTIFICATE_LINE} ${SSL_CERTIFICATE_KEY_LINE} ${HSTS_BLOCK}' \
     < /etc/nginx/ui.conf.tmpl > /etc/nginx/conf.d/default.conf
-envsubst '${HSTS_BLOCK} ${SUPABASE_CSP_EXTRA}' \
+envsubst '${HSTS_BLOCK}' \
     < /etc/nginx/security-headers.conf.tmpl > /etc/nginx/security-headers.conf

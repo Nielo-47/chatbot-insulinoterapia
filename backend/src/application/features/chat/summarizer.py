@@ -1,5 +1,4 @@
 import logging
-import uuid
 from typing import Any, Callable, Coroutine, Dict, List
 
 from backend.src.application.contracts.chat import ConversationServiceContract
@@ -20,7 +19,7 @@ class SummarizationService:
 
     async def summarize_and_trim(
         self,
-        user_id: uuid.UUID,
+        user_id: str,
         history: List[Dict[str, str]],
     ) -> Dict[str, Any]:
         """

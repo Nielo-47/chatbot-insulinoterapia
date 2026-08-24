@@ -12,10 +12,43 @@ services:
     volumes:
       - redis_data:/data
 
-  # Backend API - FastAPI service exposing chatbot functionality. Auth and the
-  # SQL database are cloud-hosted on Supabase: the backend verifies the JWT
-  # access tokens presented by the frontend and queries Supabase Postgres over
-  # the pooled connection (DATABASE_URL).
+  # PocketBase - self-hosted auth + app database (SQLite). The React UI
+  # authenticates against it through the ui nginx /pb proxy; the backend
+  # verifies the HS256 access tokens locally (users collection signing
+  # secret) and reads/writes conversations/messages via the superuser API.
+  # Data lives in ./data/pocketbase; schema and the optional Supabase import
+  # run as JSVM migrations from backend/data/pb_migrations/ on first boot.
+  pocketbase:
+    build:
+      context: .
+      dockerfile: dockerfile.pocketbase
+    restart: unless-stopped
+    environment:
+      - POCKETBASE_SUPERUSER_EMAIL=${POCKETBASE_SUPERUSER_EMAIL:?POCKETBASE_SUPERUSER_EMAIL must be set}
+      - POCKETBASE_SUPERUSER_PASSWORD=${POCKETBASE_SUPERUSER_PASSWORD:?POCKETBASE_SUPERUSER_PASSWORD must be set}
+    volumes:
+      - ./data/pocketbase:/pb/pb_data
+      - ./backend/data/pb_migrations:/pb/pb_migrations:ro
+      # Custom JSVM routes (token introspection used by the backend).
+      - ./backend/data/pb_hooks:/pb/pb_hooks:ro
+      # Optional one-shot Supabase export (scripts/export_supabase_data.sql).
+      - ./data/pb_import:/pb/import:ro
+    command:
+      - sh
+      - -c
+      - |
+        pocketbase superuser upsert --dir=/pb/pb_data "$$POCKETBASE_SUPERUSER_EMAIL" "$$POCKETBASE_SUPERUSER_PASSWORD" &&
+        exec pocketbase serve --http=0.0.0.0:8090 --dir=/pb/pb_data
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8090/api/health >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 6
+      start_period: 10s
+
+  # Backend API - FastAPI service exposing chatbot functionality. Auth tokens
+  # are verified locally against the PocketBase users signing secret; app data
+  # is accessed through the PocketBase superuser API.
   backend:
     build:
       context: .
@@ -23,19 +56,20 @@ services:
     restart: unless-stopped
     env_file: .env
     environment:
-      - DATABASE_URL=${DATABASE_URL:?DATABASE_URL must be set (postgresql+psycopg://postgres.<ref>:<password>@aws-0-<region>.pooler.supabase.com:6543/postgres?sslmode=require)}
       - CHAT_CACHE_REDIS_URL=${CHAT_CACHE_REDIS_URL:-redis://redis:6379/1}
       - CHAT_CACHE_TTL_SECONDS=${CHAT_CACHE_TTL_SECONDS:-300}
       - PYTHONPATH=/app
-      # Supabase Auth: JWT verification against the public JWKS endpoint. The
-      # secret key used for account deletion lives only in the Supabase
-      # delete-account edge function.
-      - SUPABASE_URL=${SUPABASE_URL:?SUPABASE_URL must be set}
-      - SUPABASE_JWKS_URL=${SUPABASE_JWKS_URL:?SUPABASE_JWKS_URL must be set}
+      # PocketBase Auth: local JWT verification with the users collection
+      # signing secret; account deletion uses the superuser API below.
+      - POCKETBASE_URL=${POCKETBASE_URL:-http://pocketbase:8090}
+      - POCKETBASE_SUPERUSER_EMAIL=${POCKETBASE_SUPERUSER_EMAIL:?POCKETBASE_SUPERUSER_EMAIL must be set}
+      - POCKETBASE_SUPERUSER_PASSWORD=${POCKETBASE_SUPERUSER_PASSWORD:?POCKETBASE_SUPERUSER_PASSWORD must be set}
     volumes:
       - ./data/processed:/app/data/processed
     depends_on:
       redis:
+        condition: service_healthy
+      pocketbase:
         condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
@@ -45,9 +79,8 @@ services:
       start_period: 60s
 
   # ngrok tunnel exposing the ui nginx over the public internet. Pinned to a
-  # free static dev domain (NGROK_STATIC_DOMAIN) so the URL never rotates:
-  # Supabase email-confirmation redirects are allowlisted against it, and the
-  # frontend's localStorage session is origin-scoped to it.
+  # free static dev domain (NGROK_STATIC_DOMAIN) so the URL never rotates;
+  # the frontend's localStorage session is origin-scoped to it.
   ngrok:
     image: ngrok/ngrok:alpine
     restart: unless-stopped
@@ -58,7 +91,9 @@ services:
     volumes:
       - ./scripts/ngrok.yml:/etc/ngrok.yml:ro
 
-  # UI - React frontend
+  # UI - React frontend served by nginx, which also proxies /api -> backend
+  # and /pb -> pocketbase so everything stays same-origin (no third-party CSP
+  # entries needed).
   ui:
     build:
       context: .
@@ -66,8 +101,7 @@ services:
       args:
         - VITE_API_URL=${VITE_API_URL:-/api}
         - VITE_REQUEST_TIMEOUT_MS=${VITE_REQUEST_TIMEOUT_MS:-60000}
-        - VITE_SUPABASE_URL=${VITE_SUPABASE_URL:-}
-        - VITE_SUPABASE_PUBLISHABLE_KEY=${VITE_SUPABASE_PUBLISHABLE_KEY:-}
+        - VITE_POCKETBASE_URL=${VITE_POCKETBASE_URL:-/pb}
     restart: unless-stopped
     env_file: .env
     ports:

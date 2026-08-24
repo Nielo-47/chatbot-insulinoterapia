@@ -27,11 +27,12 @@ if [[ -f "$ROOT_DIR/.env" ]]; then
   done < "$ROOT_DIR/.env"
 fi
 
-# Supabase values are read at import time by the config modules. The real ones
-# live in .env; provide safe fallbacks so the unit suite runs without them
-# (unit tests use stubs, never the real project).
-export SUPABASE_URL="${SUPABASE_URL:-https://test.supabase.co}"
-export SUPABASE_JWKS_URL="${SUPABASE_JWKS_URL:-https://test.supabase.co/auth/v1/.well-known/jwks.json}"
+# PocketBase values are read at import time by the config modules. The real
+# ones live in .env; provide safe fallbacks so the unit suite runs without
+# them (unit tests use stubs, never the real container).
+export POCKETBASE_URL="${POCKETBASE_URL:-http://pocketbase:8090}"
+export POCKETBASE_SUPERUSER_EMAIL="${POCKETBASE_SUPERUSER_EMAIL:-admin@test.internal}"
+export POCKETBASE_SUPERUSER_PASSWORD="${POCKETBASE_SUPERUSER_PASSWORD:-test-password}"
 
 echo "Running backend unit tests..."
 "$VENV_PYTHON" -m unittest backend.test.unit.test_auth -v

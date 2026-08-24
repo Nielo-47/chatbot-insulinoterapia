@@ -9,7 +9,6 @@ from backend.src.config.prompts import SYSTEM_PROMPT, USER_QUERY_PROMPT
 from backend.src.application.features.chat.critique import CritiqueService
 from backend.src.application.features.chat.summarizer import SummarizationService
 from backend.src.application.features.chat.suggestions import SuggestionService
-from backend.src.infrastructure.data.db_client import create_postgres_checkpointer
 from langgraph.graph import END, StateGraph
 from lightrag.prompt import PROMPTS
 from pydantic import BaseModel, Field
@@ -19,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 class QueryGraphState(BaseModel):
     query: str
-    user_id: uuid.UUID
+    user_id: str
     mode: QueryMode
     session_id: str
     query_params: Dict[str, Any] = Field(default_factory=dict)
@@ -47,7 +46,9 @@ class QueryProcessor:
         self._critique_svc = CritiqueService(call_llm)
         self._suggestion_svc = SuggestionService(call_llm)
         self._summarizer = SummarizationService(conversation_service, call_llm)
-        self._checkpointer = create_postgres_checkpointer()
+        # LangGraph checkpointer is optional (CHECKPOINTER_ENABLED) and was
+        # Postgres-only; it stays disabled until a SQLite saver is wired in.
+        self._checkpointer = None
         self._graph = self._build_graph()
 
     # ------------------------------------------------------------------ #
@@ -218,7 +219,7 @@ class QueryProcessor:
     async def query(
         self,
         query: str,
-        user_id: uuid.UUID,
+        user_id: str,
         mode: QueryMode = "hybrid",
         session_id: Optional[str] = None,
         **query_params,
