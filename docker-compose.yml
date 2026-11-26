@@ -12,25 +12,43 @@ services:
     volumes:
       - redis_data:/data
 
-  postgres:
-    image: postgres:16-alpine
-    restart: always
+  # PocketBase - self-hosted auth + app database (SQLite). The React UI
+  # authenticates against it through the ui nginx /pb proxy; the backend
+  # verifies the HS256 access tokens locally (users collection signing
+  # secret) and reads/writes conversations/messages via the superuser API.
+  # Data lives in ./data/pocketbase; schema and the optional Supabase import
+  # run as JSVM migrations from backend/data/pb_migrations/ on first boot.
+  pocketbase:
+    build:
+      context: .
+      dockerfile: dockerfile.pocketbase
+    restart: unless-stopped
     environment:
-      - POSTGRES_DB=${POSTGRES_DB:-chatbot}
-      - POSTGRES_USER=${POSTGRES_USER:-chatbot}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-chatbot}
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-chatbot} -d ${POSTGRES_DB:-chatbot}"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 10s
-    ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      - POCKETBASE_SUPERUSER_EMAIL=${POCKETBASE_SUPERUSER_EMAIL:?POCKETBASE_SUPERUSER_EMAIL must be set}
+      - POCKETBASE_SUPERUSER_PASSWORD=${POCKETBASE_SUPERUSER_PASSWORD:?POCKETBASE_SUPERUSER_PASSWORD must be set}
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - ./data/pocketbase:/pb/pb_data
+      - ./backend/data/pb_migrations:/pb/pb_migrations:ro
+      # Custom JSVM routes (token introspection used by the backend).
+      - ./backend/data/pb_hooks:/pb/pb_hooks:ro
+      # Optional one-shot Supabase export (scripts/export_supabase_data.sql).
+      - ./data/pb_import:/pb/import:ro
+    command:
+      - sh
+      - -c
+      - |
+        pocketbase superuser upsert --dir=/pb/pb_data "$$POCKETBASE_SUPERUSER_EMAIL" "$$POCKETBASE_SUPERUSER_PASSWORD" &&
+        exec pocketbase serve --http=0.0.0.0:8090 --dir=/pb/pb_data
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8090/api/health >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 6
+      start_period: 10s
 
-  # Backend API - FastAPI service exposing chatbot functionality
+  # Backend API - FastAPI service exposing chatbot functionality. Auth tokens
+  # are verified locally against the PocketBase users signing secret; app data
+  # is accessed through the PocketBase superuser API.
   backend:
     build:
       context: .
@@ -38,23 +56,20 @@ services:
     restart: unless-stopped
     env_file: .env
     environment:
-      - DATABASE_URL=${DATABASE_URL:-postgresql+psycopg://chatbot:chatbot@postgres:5432/chatbot}
       - CHAT_CACHE_REDIS_URL=${CHAT_CACHE_REDIS_URL:-redis://redis:6379/1}
       - CHAT_CACHE_TTL_SECONDS=${CHAT_CACHE_TTL_SECONDS:-300}
-      - DEV=${DEV:-false}
-      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
-      - EMBEDDING_BINDING_HOST=${OPENROUTER_BASE_URL:-https://openrouter.ai/api/v1}
-      - EMBEDDING_API_KEY=${OPENROUTER_API_KEY}
       - PYTHONPATH=/app
-      - BOOTSTRAP_USERS=${BOOTSTRAP_USERS:-}
+      # PocketBase Auth: local JWT verification with the users collection
+      # signing secret; account deletion uses the superuser API below.
+      - POCKETBASE_URL=${POCKETBASE_URL:-http://pocketbase:8090}
+      - POCKETBASE_SUPERUSER_EMAIL=${POCKETBASE_SUPERUSER_EMAIL:?POCKETBASE_SUPERUSER_EMAIL must be set}
+      - POCKETBASE_SUPERUSER_PASSWORD=${POCKETBASE_SUPERUSER_PASSWORD:?POCKETBASE_SUPERUSER_PASSWORD must be set}
     volumes:
       - ./data/processed:/app/data/processed
-    ports:
-      - "${BACKEND_PORT:-8000}:8000"
     depends_on:
       redis:
         condition: service_healthy
-      postgres:
+      pocketbase:
         condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
@@ -63,7 +78,22 @@ services:
       retries: 3
       start_period: 60s
 
-  # UI - React frontend
+  # ngrok tunnel exposing the ui nginx over the public internet. Pinned to a
+  # free static dev domain (NGROK_STATIC_DOMAIN) so the URL never rotates;
+  # the frontend's localStorage session is origin-scoped to it.
+  ngrok:
+    image: ngrok/ngrok:alpine
+    restart: unless-stopped
+    command: http --url=${NGROK_STATIC_DOMAIN:?NGROK_STATIC_DOMAIN must be set (your ngrok static dev domain)} https://ui:443
+    environment:
+      - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN:?NGROK_AUTHTOKEN must be set}
+      - NGROK_CONFIG=/etc/ngrok.yml
+    volumes:
+      - ./scripts/ngrok.yml:/etc/ngrok.yml:ro
+
+  # UI - React frontend served by nginx, which also proxies /api -> backend
+  # and /pb -> pocketbase so everything stays same-origin (no third-party CSP
+  # entries needed).
   ui:
     build:
       context: .
@@ -71,15 +101,24 @@ services:
       args:
         - VITE_API_URL=${VITE_API_URL:-/api}
         - VITE_REQUEST_TIMEOUT_MS=${VITE_REQUEST_TIMEOUT_MS:-60000}
+        - VITE_POCKETBASE_URL=${VITE_POCKETBASE_URL:-/pb}
     restart: unless-stopped
     env_file: .env
     ports:
-      - "${UI_PORT:-3000}:3000"
+      # HTTP :3000 redirects to HTTPS :443 (TLS terminated here, see dockerfile.ui).
+      - "${UI_HTTP_PORT:-3000}:80"
+      - "${UI_HTTPS_PORT:-443}:443"
+    volumes:
+      # Optional: mount real certs as ./certs/server.crt + ./certs/server.key.
+      # Without them a self-signed cert is generated at container start.
+      - ./certs:/etc/nginx/certs:ro
     depends_on:
       backend:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:3000/ || exit 1"]
+      # /api/health is unauthenticated; --insecure is acceptable for
+      # container-internal localhost traffic (self-signed or real certs).
+      test: ["CMD-SHELL", "curl -fsS -o /dev/null --insecure https://127.0.0.1/api/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -87,4 +126,3 @@ services:
 
 volumes:
   redis_data:
-  postgres_data:

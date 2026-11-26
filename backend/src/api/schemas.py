@@ -6,32 +6,23 @@ from pydantic import BaseModel, Field
 class SourceItem(BaseModel):
     path: str
     page: Optional[int] = None
-    excerpt: Optional[str] = None
-
-
-class LoginRequest(BaseModel):
-    username: str
-    password: str
-
-
-class TokenResponse(BaseModel):
-    access_token: str
-    token_type: str = "bearer"
+    content: Optional[str] = None
 
 
 class AuthenticatedUser(BaseModel):
-    id: int
+    id: str
     username: str
 
 
 class QueryRequest(BaseModel):
-    query: str
-    session_id: Optional[str] = None
+    query: str = Field(max_length=2000)
+    session_id: Optional[str] = Field(default=None, max_length=64)
 
 
 class QueryResponse(BaseModel):
     response: str
     sources: List[SourceItem]
+    follow_up_questions: List[str] = Field(default_factory=list)
     summarized: bool
     session_id: str
 

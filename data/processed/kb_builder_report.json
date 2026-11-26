@@ -1,0 +1,496 @@
+{
+  "generated_at": "2026-08-10T16:08:13+0000",
+  "raw_data_dir": "data/raw",
+  "results": [
+    {
+      "file": "data/raw/DOC Completo.docx",
+      "status": "ingested",
+      "type": "docx",
+      "chars": 63285,
+      "error": null
+    },
+    {
+      "file": "data/raw/Documento sem título.docx",
+      "status": "ingested",
+      "type": "docx",
+      "chars": 13366,
+      "error": null
+    },
+    {
+      "file": "data/raw/INSULINOTERAPIA/Aplicação de insulina/Cópia de Técnicas de aplicação de insulina.pdf",
+      "status": "ingested",
+      "type": "full",
+      "chars": 27039,
+      "error": null
+    },
+    {
+      "file": "data/raw/INSULINOTERAPIA/Aplicação de insulina/Documento sem título.docx",
+      "status": "ingested",
+      "type": "docx",
+      "chars": 24610,
+      "error": null
+    },
+    {
+      "file": "data/raw/INSULINOTERAPIA/Aplicação de insulina/Guia-Pratico-SBD-Canetas-Reutilizaveis-de-Insulina-no-SUS.pdf",
+      "status": "ingested",
+      "type": "full",
+      "chars": 11159,
+      "error": null
+    },
+    {
+      "file": "data/raw/INSULINOTERAPIA/Aplicação de insulina/Insulinas CANETAS.pdf",
+      "status": "ingested",
+      "type": "full",
+      "chars": 2562,
+      "error": null
+    },
+    {
+      "file": "data/raw/INSULINOTERAPIA/Aplicação de insulina/insulinas FRASCOS.pdf",
+      "status": "ingested",
+      "type": "full",
+      "chars": 2010,
+      "error": null
+    },
+    {
+      "file": "data/raw/INSULINOTERAPIA/Aplicação de insulina/insulinas em seringa.pdf",
+      "status": "ingested",
+      "type": "full",
+      "chars": 6824,
+      "error": null
+    },
+    {
+      "file": "data/raw/INSULINOTERAPIA/Aplicação de insulina/uso da insulina - Diretrizes-Sociedade-Brasileira-de-Diabetes-2019-2020.pdf",
+      "status": "ingested",
+      "type": "full",
+      "chars": 48716,
+      "error": null
+    },
+    {
+      "file": "data/raw/INSULINOTERAPIA/Armazenamento e Transporte/Armazenamento e transporte.docx",
+      "status": "ingested",
+      "type": "docx",
+      "chars": 2151,
+      "error": null
+    },
+    {
+      "file": "data/raw/INSULINOTERAPIA/Armazenamento e Transporte/Cuidados com a Insulinoterapia conservar.pdf",
+      "status": "ingested",
+      "type": "full",
+      "chars": 2456,
+      "error": null
+    },
+    {
+      "file": "data/raw/INSULINOTERAPIA/Armazenamento e Transporte/Diretrizes-Sociedade-Brasileira-de-Diabetes-2019-20201.pdf",
+      "status": "ingested",
+      "type": "full",
+      "chars": 9881,
+      "error": null
+    },
+    {
+      "file": "data/raw/INSULINOTERAPIA/Armazenamento e Transporte/transporte e conservação Diretrizes-Sociedade-Brasileira-de-Diabetes-2019-20201.pdf",
+      "status": "ingested",
+      "type": "full",
+      "chars": 4955,
+      "error": null
+    },
+    {
+      "file": "data/raw/INSULINOTERAPIA/Armazenamento e Transporte/transporte insulinas.pdf",
+      "status": "ingested",
+      "type": "full",
+      "chars": 1363,
+      "error": null
+    },
+    {
+      "file": "data/raw/INSULINOTERAPIA/Bulas/Bula Humalog.pdf",
+      "status": "ingested",
+      "type": "full",
+      "chars": 20535,
+      "error": null
+    },
+    {
+      "file": "data/raw/INSULINOTERAPIA/Bulas/LANTUS _ BulasMed.pdf",
+      "status": "ingested",
+      "type": "full",
+      "chars": 28472,
+      "error": null
+    },
+    {
+      "file": "data/raw/INSULINOTERAPIA/Bulas/Lista_Insulinas_Bulas (1).pdf",
+      "status": "ingested",
+      "type": "full",
+      "chars": 1103,
+      "error": null
+    },
+    {
+      "file": "data/raw/INSULINOTERAPIA/Bulas/NOVORAPID _ BulasMed.pdf",
+      "status": "ingested",
+      "type": "full",
+      "chars": 41776,
+      "error": null
+    },
+    {
+      "file": "data/raw/INSULINOTERAPIA/Bulas/TRESIBA _ BulasMed.pdf",
+      "status": "ingested",
+      "type": "full",
+      "chars": 27606,
+      "error": null
+    },
+    {
+      "file": "data/raw/INSULINOTERAPIA/Bulas/bula_1778357531609.pdf",
+      "status": "ingested",
+      "type": "full",
+      "chars": 69076,
+      "error": null
+    },
+    {
+      "file": "data/raw/INSULINOTERAPIA/Bulas/bula_Basaglar.pdf",
+      "status": "ingested",
+      "type": "full",
+      "chars": 158669,
+      "error": null
+    },
+    {
+      "file": "data/raw/INSULINOTERAPIA/Bulas/bula_Toujeo.pdf",
+      "status": "ingested",
+      "type": "full",
+      "chars": 87931,
+      "error": null
+    },
+    {
+      "file": "data/raw/INSULINOTERAPIA/Bulas/bula_apidra.pdf",
+      "status": "ingested",
+      "type": "full",
+      "chars": 142585,
+      "error": null
+    },
+    {
+      "file": "data/raw/INSULINOTERAPIA/Bulas/bula_fiasp.pdf",
+      "status": "ingested",
+      "type": "full",
+      "chars": 84877,
+      "error": null
+    },
+    {
+      "file": "data/raw/INSULINOTERAPIA/Bulas/bula_levemir.pdf",
+      "status": "ingested",
+      "type": "full",
+      "chars": 104962,
+      "error": null
+    },
+    {
+      "file": "data/raw/INSULINOTERAPIA/Bulas/bula_regular novonordiks.pdf",
+      "status": "ingested",
+      "type": "full",
+      "chars": 114815,
+      "error": null
+    },
+    {
+      "file": "data/raw/INSULINOTERAPIA/Bulas/bula_regular.pdf",
+      "status": "ingested",
+      "type": "full",
+      "chars": 54575,
+      "error": null
+    },
+    {
+      "file": "data/raw/INSULINOTERAPIA/Complicações relacionadas ao uso da insulina/Documento sem título.docx",
+      "status": "ingested",
+      "type": "docx",
+      "chars": 3012,
+      "error": null
+    },
+    {
+      "file": "data/raw/INSULINOTERAPIA/Complicações relacionadas ao uso da insulina/LIPODISTROFIAS.pdf",
+      "status": "ingested",
+      "type": "full",
+      "chars": 40785,
+      "error": null
+    },
+    {
+      "file": "data/raw/INSULINOTERAPIA/Complicações relacionadas ao uso da insulina/O que você precisa saber sobre Lipohipertrofia - Sociedade Brasileira de Diabetes.pdf",
+      "status": "ingested",
+      "type": "full",
+      "chars": 2609,
+      "error": null
+    },
+    {
+      "file": "data/raw/INSULINOTERAPIA/Descarte/Documento sem título.docx",
+      "status": "ingested",
+      "type": "docx",
+      "chars": 2124,
+      "error": null
+    },
+    {
+      "file": "data/raw/INSULINOTERAPIA/Descarte/Técnicas de aplicação de insulina.pdf",
+      "status": "ingested",
+      "type": "full",
+      "chars": 27039,
+      "error": null
+    },
+    {
+      "file": "data/raw/INSULINOTERAPIA/Descarte/armazenamento e descarte.pdf",
+      "status": "ingested",
+      "type": "full",
+      "chars": 6824,
+      "error": null
+    },
+    {
+      "file": "data/raw/INSULINOTERAPIA/Descarte/descarte.pdf",
+      "status": "ingested",
+      "type": "full",
+      "chars": 1943,
+      "error": null
+    },
+    {
+      "file": "data/raw/INSULINOTERAPIA/SICI (bomba de insulina)/231037.pdf",
+      "status": "ingested",
+      "type": "partial",
+      "chars": 120492,
+      "error": null
+    },
+    {
+      "file": "data/raw/INSULINOTERAPIA/SICI (bomba de insulina)/41d0f4.pdf",
+      "status": "ingested",
+      "type": "full",
+      "chars": 227940,
+      "error": null
+    },
+    {
+      "file": "data/raw/INSULINOTERAPIA/SICI (bomba de insulina)/887d88.pdf",
+      "status": "ingested",
+      "type": "partial",
+      "chars": 122080,
+      "error": null
+    },
+    {
+      "file": "data/raw/INSULINOTERAPIA/SICI (bomba de insulina)/IFU Accu-Chek Guide Solo Diabetes Manager.PDF",
+      "status": "ingested",
+      "type": "full",
+      "chars": 35559,
+      "error": null
+    },
+    {
+      "file": "data/raw/INSULINOTERAPIA/SICI (bomba de insulina)/MiniMed-780G-system-user-guide.pdf",
+      "status": "ingested",
+      "type": "partial",
+      "chars": 354291,
+      "error": null
+    },
+    {
+      "file": "data/raw/INSULINOTERAPIA/SICI (bomba de insulina)/bomba de insulina.pdf",
+      "status": "empty",
+      "type": "unreadable",
+      "chars": 0,
+      "error": "No content extracted"
+    },
+    {
+      "file": "data/raw/INSULINOTERAPIA/SICI (bomba de insulina)/sici.pdf",
+      "status": "ingested",
+      "type": "full",
+      "chars": 66016,
+      "error": null
+    },
+    {
+      "file": "data/raw/INSULINOTERAPIA/Tipos de insulinas/Documento sem título.docx",
+      "status": "ingested",
+      "type": "docx",
+      "chars": 4595,
+      "error": null
+    },
+    {
+      "file": "data/raw/INSULINOTERAPIA/Tipos de insulinas/Guia-Pratico-SBD-Canetas-Reutilizaveis-de-Insulina-no-SUS.pdf",
+      "status": "ingested",
+      "type": "full",
+      "chars": 11159,
+      "error": null
+    },
+    {
+      "file": "data/raw/INSULINOTERAPIA/Tipos de insulinas/Inhaling medicines_ delivering drugs to the body through the lungs _ Nature Reviews Drug Discovery.pdf",
+      "status": "ingested",
+      "type": "full",
+      "chars": 26873,
+      "error": null
+    },
+    {
+      "file": "data/raw/INSULINOTERAPIA/Tipos de insulinas/Insulinoterapia – Diretriz da Sociedade Brasileira de Diabetes – Ed. 2024.pdf",
+      "status": "ingested",
+      "type": "full",
+      "chars": 32300,
+      "error": null
+    },
+    {
+      "file": "data/raw/INSULINOTERAPIA/Tipos de insulinas/The Discovery and Development.pdf",
+      "status": "ingested",
+      "type": "full",
+      "chars": 55828,
+      "error": null
+    },
+    {
+      "file": "data/raw/INSULINOTERAPIA/Tipos de insulinas/Understanding insulin - International Diabetes Federation.pdf",
+      "status": "ingested",
+      "type": "full",
+      "chars": 9593,
+      "error": null
+    },
+    {
+      "file": "data/raw/INSULINOTERAPIA/Tipos de insulinas/cengiz-beck-2026-use-of-inhaled-insulin-with-automated-insulin-delivery-systems.pdf",
+      "status": "ingested",
+      "type": "full",
+      "chars": 29173,
+      "error": null
+    },
+    {
+      "file": "data/raw/INSULINOTERAPIA/Tipos de insulinas/edelman-et-al-2026-dosing-afrezza-it-s-not-that-complicated.pdf",
+      "status": "ingested",
+      "type": "full",
+      "chars": 30972,
+      "error": null
+    },
+    {
+      "file": "data/raw/INSULINOTERAPIA/Tipos de insulinas/insulina inalavel.pdf",
+      "status": "ingested",
+      "type": "scanned",
+      "chars": 12248,
+      "error": null
+    },
+    {
+      "file": "data/raw/INSULINOTERAPIA/Tipos de insulinas/tipos de insulina.png",
+      "status": "ingested",
+      "type": "image",
+      "chars": 733,
+      "error": null
+    },
+    {
+      "file": "data/raw/MONITORIZAÇÃO GLICÊMICA/CGM/CGM GLICOSE.pdf",
+      "status": "empty",
+      "type": "unreadable",
+      "chars": 0,
+      "error": "No content extracted"
+    },
+    {
+      "file": "data/raw/MONITORIZAÇÃO GLICÊMICA/CGM/Documento sem título.docx",
+      "status": "ingested",
+      "type": "docx",
+      "chars": 4102,
+      "error": null
+    },
+    {
+      "file": "data/raw/MONITORIZAÇÃO GLICÊMICA/CGM/blood glucose monitoring.pdf",
+      "status": "ingested",
+      "type": "full",
+      "chars": 121082,
+      "error": null
+    },
+    {
+      "file": "data/raw/MONITORIZAÇÃO GLICÊMICA/CGM/cgm.pdf",
+      "status": "ingested",
+      "type": "full",
+      "chars": 9870,
+      "error": null
+    },
+    {
+      "file": "data/raw/MONITORIZAÇÃO GLICÊMICA/CGM/monitoramento contínuo de glicose.pdf",
+      "status": "ingested",
+      "type": "scanned",
+      "chars": 14113,
+      "error": null
+    },
+    {
+      "file": "data/raw/MONITORIZAÇÃO GLICÊMICA/CGM/ref.pdf",
+      "status": "ingested",
+      "type": "full",
+      "chars": 5445,
+      "error": null
+    },
+    {
+      "file": "data/raw/MONITORIZAÇÃO GLICÊMICA/GLICEMIAS CAPILARES/Documento sem título.docx",
+      "status": "ingested",
+      "type": "docx",
+      "chars": 12758,
+      "error": null
+    },
+    {
+      "file": "data/raw/MONITORIZAÇÃO GLICÊMICA/GLICEMIAS CAPILARES/HIPO_HIPER.pdf",
+      "status": "ingested",
+      "type": "full",
+      "chars": 4083,
+      "error": null
+    },
+    {
+      "file": "data/raw/MONITORIZAÇÃO GLICÊMICA/GLICEMIAS CAPILARES/Orientacoes_Glicemia_SBD.pdf",
+      "status": "ingested",
+      "type": "full",
+      "chars": 17392,
+      "error": null
+    },
+    {
+      "file": "data/raw/MONITORIZAÇÃO GLICÊMICA/GLICEMIAS CAPILARES/Orientacoes_Hipoglicemia_SBD_transcricao.docx",
+      "status": "ingested",
+      "type": "docx",
+      "chars": 21809,
+      "error": null
+    },
+    {
+      "file": "data/raw/MONITORIZAÇÃO GLICÊMICA/GLICEMIAS CAPILARES/glicemias capilares.pdf",
+      "status": "ingested",
+      "type": "scanned",
+      "chars": 19384,
+      "error": null
+    },
+    {
+      "file": "data/raw/MONITORIZAÇÃO GLICÊMICA/METAS GLICÊMICAS/Cópia de HIPO_HIPER.pdf",
+      "status": "ingested",
+      "type": "full",
+      "chars": 4083,
+      "error": null
+    },
+    {
+      "file": "data/raw/MONITORIZAÇÃO GLICÊMICA/METAS GLICÊMICAS/Diagnostico e Classificação/Classification and Diagnosis of.pdf",
+      "status": "ingested",
+      "type": "full",
+      "chars": 152660,
+      "error": null
+    },
+    {
+      "file": "data/raw/MONITORIZAÇÃO GLICÊMICA/METAS GLICÊMICAS/Diagnostico e Classificação/Classificação do diabetes.pdf",
+      "status": "ingested",
+      "type": "full",
+      "chars": 51232,
+      "error": null
+    },
+    {
+      "file": "data/raw/MONITORIZAÇÃO GLICÊMICA/METAS GLICÊMICAS/Diagnostico e Classificação/Diagnóstico de diabetes mellitus.pdf",
+      "status": "ingested",
+      "type": "full",
+      "chars": 72574,
+      "error": null
+    },
+    {
+      "file": "data/raw/MONITORIZAÇÃO GLICÊMICA/METAS GLICÊMICAS/Documento sem título.docx",
+      "status": "ingested",
+      "type": "docx",
+      "chars": 11935,
+      "error": null
+    },
+    {
+      "file": "data/raw/MONITORIZAÇÃO GLICÊMICA/METAS GLICÊMICAS/Metas glicêmicas/Metas no tratamento.pdf",
+      "status": "ingested",
+      "type": "full",
+      "chars": 32908,
+      "error": null
+    },
+    {
+      "file": "data/raw/MONITORIZAÇÃO GLICÊMICA/METAS GLICÊMICAS/Metas glicêmicas/metas cuidado do diabetes.pdf",
+      "status": "ingested",
+      "type": "full",
+      "chars": 86417,
+      "error": null
+    },
+    {
+      "file": "data/raw/MONITORIZAÇÃO GLICÊMICA/METAS GLICÊMICAS/hipoglicemia.pdf",
+      "status": "ingested",
+      "type": "scanned",
+      "chars": 9636,
+      "error": null
+    }
+  ]
+}

@@ -1,0 +1,94 @@
+# Rendered at container start by /docker-entrypoint.d/10-security-config.sh.
+# Placeholders (${SSL_CERTIFICATE_LINE}, ${SSL_CERTIFICATE_KEY_LINE},
+# ${HSTS_BLOCK}) are substituted with envsubst; $nginx variables are untouched.
+#
+# Authentication is handled by the self-hosted PocketBase container: the SPA
+# authenticates via pocketbase-js through the same-origin /pb proxy and sends
+# the JWT access token to the backend as a Bearer header. This nginx serves
+# the static SPA, proxies the backend API (/api/) and PocketBase (/pb/), and
+# terminates TLS. /api/health stays exempt from the backend's auth check for
+# container healthchecks.
+
+server {
+    listen 80;
+    server_name _;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    http2 on;
+    server_name _;
+
+    ${SSL_CERTIFICATE_LINE}
+    ${SSL_CERTIFICATE_KEY_LINE}
+
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+    ssl_prefer_server_ciphers on;
+
+    root /usr/share/nginx/html;
+    index index.html;
+
+    # Security headers (rendered from security-headers.conf.tmpl; includes
+    # HSTS when real certificates are mounted). Locations that define
+    # their own add_header directives replace the inherited server-level ones
+    # and must include this file explicitly.
+    include /etc/nginx/security-headers.conf;
+
+    # SPA (served without an nginx auth gate; authentication is enforced by the
+    # backend on /api/* via the Bearer token, and the SPA never contains
+    # sensitive data).
+    location / {
+        try_files $uri $uri/ /index.html;
+        include /etc/nginx/security-headers.conf;
+    }
+
+    # Backend API. The backend verifies the Bearer JWT itself; unauthenticated
+    # requests receive a 401 from the API.
+    location /api/ {
+        proxy_pass http://backend:8000/;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        include /etc/nginx/security-headers.conf;
+    }
+
+    # PocketBase auth (same-origin proxy so the CSP never needs third-party
+    # connect-src entries). The trailing slash strips the /pb prefix.
+    location /pb/ {
+        proxy_pass http://pocketbase:8090/;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        include /etc/nginx/security-headers.conf;
+    }
+
+    # Health check — unauthenticated so container healthchecks and
+    # infrastructure probes can always reach it.
+    location = /api/health {
+        proxy_pass http://backend:8000/health;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # Self-hosted fonts used by the app.
+    location /fonts/ {
+        include /etc/nginx/security-headers.conf;
+        try_files $uri =404;
+    }
+
+    # CSP violation reports — logs to nginx error log for debugging.
+    location = /csp-report {
+        default_type application/json;
+        access_log off;
+        return 204;
+    }
+}

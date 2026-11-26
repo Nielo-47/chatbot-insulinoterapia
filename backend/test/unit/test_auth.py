@@ -1,93 +1,88 @@
 import unittest
-from unittest.mock import patch
-from typing import Any, Optional
 
-import jwt
-
-from backend.src.application.contracts.repositories import UsersRepositoryLike
 from backend.src.application.features.auth.auth_service import (
     AuthenticationService,
-    AccountLockedException,
-    RateLimitExceededException,
-)
-from backend.src.application.features.auth.auth_primitives import (
-    create_access_token,
-    decode_access_token,
-    hash_password,
-    verify_password,
+    build_authentication_service,
 )
 
 
-class AuthTests(unittest.TestCase):
-    def test_password_hash_round_trip(self) -> None:
-        hashed = hash_password("secret-password")
+class AccountDeletionClientStub:
+    def __init__(self) -> None:
+        self.deleted_user_ids: list[str] = []
+        self.result = True
 
-        self.assertTrue(verify_password("secret-password", hashed))
-        self.assertFalse(verify_password("wrong-password", hashed))
+    def delete_user(self, user_id: str) -> bool:
+        self.deleted_user_ids.append(user_id)
+        return self.result
 
-    def test_access_token_round_trip(self) -> None:
-        with patch("backend.src.infrastructure.security.token.JWT_SECRET_KEY", "token-secret-value-long-enough-32-bytes"):
-            with patch("backend.src.infrastructure.security.token.JWT_ALGORITHM", "HS256"):
-                with patch("backend.src.infrastructure.security.token.JWT_ISSUER", "test-issuer"):
-                    with patch("backend.src.infrastructure.security.token.JWT_AUDIENCE", "test-audience"):
-                        token = create_access_token(7, "alice", expires_minutes=5)
-                        payload = decode_access_token(token)
 
-        self.assertEqual(payload["sub"], "7")
-        self.assertEqual(payload["username"], "alice")
-        self.assertEqual(payload["iss"], "test-issuer")
-        self.assertEqual(payload["aud"], "test-audience")
-        self.assertIn("jti", payload)  # JWT ID should be present
+def _build_service(
+    deletion_result: bool = True,
+) -> tuple[AuthenticationService, AccountDeletionClientStub]:
+    deletion_client = AccountDeletionClientStub()
+    deletion_client.result = deletion_result
+    service = AuthenticationService(account_deletion_client=deletion_client)
+    return service, deletion_client
 
-    def test_expired_token_is_rejected(self) -> None:
-        with patch("backend.src.infrastructure.security.token.JWT_SECRET_KEY", "token-secret-value-long-enough-32-bytes"):
-            with patch("backend.src.infrastructure.security.token.JWT_ALGORITHM", "HS256"):
-                with patch("backend.src.infrastructure.security.token.JWT_ISSUER", "test-issuer"):
-                    with patch("backend.src.infrastructure.security.token.JWT_AUDIENCE", "test-audience"):
-                        token = create_access_token(7, "alice", expires_minutes=-1)
 
-        with patch("backend.src.infrastructure.security.token.JWT_SECRET_KEY", "token-secret-value-long-enough-32-bytes"):
-            with patch("backend.src.infrastructure.security.token.JWT_ALGORITHM", "HS256"):
-                with patch("backend.src.infrastructure.security.token.JWT_ISSUER", "test-issuer"):
-                    with patch("backend.src.infrastructure.security.token.JWT_AUDIENCE", "test-audience"):
-                        with self.assertRaises(jwt.ExpiredSignatureError):
-                            decode_access_token(token)
+class AuthenticationServiceTests(unittest.TestCase):
+    def test_resolve_principal_maps_token_subject(self) -> None:
+        service, _ = _build_service()
 
-    def test_delete_user_delegates_to_repository(self) -> None:
-        class UsersRepositoryStub(UsersRepositoryLike):
-            def __init__(self) -> None:
-                self.deleted_user_id: Optional[int] = None
+        principal = service.resolve_principal_from_identity("abc123def456ghi", "alice@example.com")
 
-            def delete_user_by_id(self, user_id: int) -> bool:
-                self.deleted_user_id = user_id
-                return True
+        self.assertEqual(principal.id, "abc123def456ghi")
+        self.assertEqual(principal.username, "alice@example.com")
 
-        users_repository = UsersRepositoryStub()
-        service = AuthenticationService(
-            users_repository=users_repository,
-            verify_password=verify_password,
-            create_access_token=create_access_token,
-            decode_access_token=decode_access_token,
-        )
+    def test_resolve_principal_rejects_empty_id(self) -> None:
+        service, _ = _build_service()
 
-        deleted = service.delete_user(12)
+        with self.assertRaises(ValueError):
+            service.resolve_principal_from_identity("", "alice@example.com")
+
+    def test_delete_account_deletes_the_user_record(self) -> None:
+        service, deletion_client = _build_service()
+
+        deleted = service.delete_account("abc123def456ghi")
 
         self.assertTrue(deleted)
-        self.assertEqual(users_repository.deleted_user_id, 12)
+        self.assertEqual(deletion_client.deleted_user_ids, ["abc123def456ghi"])
 
-    def test_token_contains_jti(self) -> None:
-        """Test that tokens have a unique JWT ID for revocation."""
-        with patch("backend.src.infrastructure.security.token.JWT_SECRET_KEY", "token-secret-value-long-enough-32-bytes"):
-            with patch("backend.src.infrastructure.security.token.JWT_ALGORITHM", "HS256"):
-                with patch("backend.src.infrastructure.security.token.JWT_ISSUER", "test-issuer"):
-                    with patch("backend.src.infrastructure.security.token.JWT_AUDIENCE", "test-audience"):
-                        token = create_access_token(7, "alice")
-                        payload = decode_access_token(token)
-        
-        # Each token should have a unique jti
-        self.assertIsNotNone(payload.get("jti"))
-        self.assertIsInstance(payload["jti"], str)
-        self.assertTrue(len(payload["jti"]) > 0)
+    def test_delete_account_fails_closed_when_revocation_fails(self) -> None:
+        service, _ = _build_service(deletion_result=False)
+
+        deleted = service.delete_account("abc123def456ghi")
+
+        self.assertFalse(deleted)
+
+    def test_resolve_username_falls_back_without_resolver(self) -> None:
+        service, _ = _build_service()
+
+        self.assertEqual(service.resolve_username("abcdefgh1234567"), "user_abcdefgh")
+
+    def test_resolve_username_uses_injected_resolver(self) -> None:
+        deletion_client = AccountDeletionClientStub()
+        service = AuthenticationService(
+            account_deletion_client=deletion_client,
+            username_resolver=lambda user_id: f"{user_id}@example.com",
+        )
+
+        self.assertEqual(service.resolve_username("abc123"), "abc123@example.com")
+
+
+class BuildAuthenticationServiceTests(unittest.TestCase):
+    def test_factory_wires_deletion_client_and_resolver(self) -> None:
+        deletion_client = AccountDeletionClientStub()
+        resolver = lambda user_id: user_id  # noqa: E731 - trivial test double
+
+        service = build_authentication_service(
+            account_deletion_client=deletion_client,
+            username_resolver=resolver,
+        )
+
+        self.assertIsInstance(service, AuthenticationService)
+        self.assertIs(service._account_deletion_client, deletion_client)
+        self.assertEqual(service.resolve_username("xyz"), "xyz")
 
 
 if __name__ == "__main__":

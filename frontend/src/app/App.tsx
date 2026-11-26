@@ -1,27 +1,37 @@
 import { useEffect, useState } from 'react'
 
-import { ApiError, clearAuthSession, deleteAccount, getCurrentUser, login as loginRequest, checkHealth } from '../lib/api'
-import { authStorage } from '../lib/auth'
+import { ApiError, deleteAccount, getCurrentUser, checkHealth } from '../lib/api'
+import { pocketbase } from '../lib/pocketbase'
 import { ChatPage } from '../features/chat/ChatPage'
-import { LoginPage } from '../features/auth/LoginPage'
+import { SignInPage } from '../features/auth/SignInPage'
+import { SignUpPage } from '../features/auth/SignUpPage'
 import type { AuthStatus, BackendStatus } from '../types/app'
 
 type CurrentUser = {
-  id: number
+  id: string
   username: string
+}
+
+function readRoute(): string {
+  // Hash-based routing: no hash -> login, `#/signin` -> registration.
+  return window.location.hash.startsWith('#/signin') ? '/signin' : '/'
 }
 
 function App() {
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null)
+  const [route, setRoute] = useState<string>(() => readRoute())
   const [isBootstrapping, setIsBootstrapping] = useState(true)
-  const [authError, setAuthError] = useState<string | null>(null)
-  const [isLoggingIn, setIsLoggingIn] = useState(false)
   const [backendStatus, setBackendStatus] = useState<BackendStatus>('checking')
   const [authStatus, setAuthStatus] = useState<AuthStatus>('checking')
 
   useEffect(() => {
+    const handleHashChange = () => setRoute(readRoute())
+    window.addEventListener('hashchange', handleHashChange)
+    return () => window.removeEventListener('hashchange', handleHashChange)
+  }, [])
+
+  useEffect(() => {
     void (async () => {
-      const token = authStorage.getToken()
       let backendOnline = false
 
       try {
@@ -32,61 +42,63 @@ function App() {
         setBackendStatus('offline')
       }
 
-      if (!token) {
+      if (!backendOnline) {
+        setAuthStatus('unknown')
+        setIsBootstrapping(false)
+        return
+      }
+
+      // The PocketBase session lives in localStorage; /auth/me only succeeds
+      // when the stored token is still valid, so probing it reveals the auth
+      // state.
+      if (!pocketbase.authStore.isValid) {
         setAuthStatus('signed_out')
         setIsBootstrapping(false)
         return
       }
 
       try {
-        if (backendOnline) {
-          const user = await getCurrentUser()
-          setCurrentUser(user)
-          setAuthStatus('authenticated')
-        } else {
-          setAuthStatus('unknown')
-        }
+        const user = await getCurrentUser()
+        setCurrentUser(user)
+        setAuthStatus('authenticated')
       } catch (error) {
         if (error instanceof ApiError && error.status === 401) {
-          setAuthStatus('invalid')
+          pocketbase.authStore.clear()
+          setAuthStatus('signed_out')
         } else {
           setAuthStatus('unknown')
         }
-        await clearAuthSession()
       } finally {
         setIsBootstrapping(false)
       }
     })()
   }, [])
 
-  const handleLogin = async (username: string, password: string) => {
-    setIsLoggingIn(true)
-    setAuthError(null)
-
-    try {
-      await loginRequest(username, password)
-      const user = await getCurrentUser()
-      setCurrentUser(user)
-      setAuthStatus('authenticated')
-    } catch (error) {
-      await clearAuthSession()
-      if (error instanceof ApiError && error.status === 401) {
-        setAuthStatus('signed_out')
-      } else if (error instanceof ApiError && error.status >= 500) {
-        setAuthStatus('unknown')
+  useEffect(() => {
+    // Fires on sign-in (authWithPassword), sign-out and token changes.
+    const unsubscribe = pocketbase.authStore.onChange(() => {
+      if (pocketbase.authStore.isValid) {
+        void (async () => {
+          try {
+            const user = await getCurrentUser()
+            setCurrentUser(user)
+            setAuthStatus('authenticated')
+          } catch {
+            // The bootstrap flow re-evaluates on next reload; ignore transient errors.
+          }
+        })()
       } else {
+        setCurrentUser(null)
         setAuthStatus('signed_out')
       }
-      setAuthError(error instanceof Error ? error.message : 'Nao foi possivel entrar.')
-    } finally {
-      setIsLoggingIn(false)
-    }
-  }
+    })
+    return () => unsubscribe()
+  }, [])
 
   const handleLogout = async (reason: 'manual' | 'expired' | 'deleted' = 'manual') => {
-    await clearAuthSession()
+    pocketbase.authStore.clear()
     setCurrentUser(null)
-    setAuthStatus(reason === 'expired' ? 'invalid' : 'signed_out')
+    setAuthStatus(reason === 'expired' ? 'expired' : 'signed_out')
   }
 
   const handleDeleteAccount = async () => {
@@ -99,14 +111,10 @@ function App() {
   }
 
   if (!currentUser) {
-    return (
-      <LoginPage
-        onLogin={handleLogin}
-        errorMessage={authError}
-        isSubmitting={isLoggingIn}
-        backendStatus={backendStatus}
-        authStatus={authStatus}
-      />
+    return route === '/signin' ? (
+      <SignUpPage backendStatus={backendStatus} authStatus={authStatus} />
+    ) : (
+      <SignInPage backendStatus={backendStatus} authStatus={authStatus} />
     )
   }
 

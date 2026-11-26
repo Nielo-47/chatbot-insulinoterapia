@@ -4,7 +4,7 @@ export interface ChatSource {
   id?: string
   path: string          // file path (relative)
   page?: number        // optional page number
-  excerpt?: string     // short text excerpt
+  content?: string     // full chunk text
   label?: string       // computed friendly label (optional)
 }
 
@@ -15,6 +15,7 @@ export interface ChatMessage {
   createdAt: string
   sources?: ChatSource[]
   summarized?: boolean
+  followUpQuestions?: string[]
   isError?: boolean
 }
 
@@ -25,6 +26,7 @@ export interface QueryPayload {
 export interface QueryResult {
   response: string
   sources: ChatSource[]
+  followUpQuestions: string[]
   summarized: boolean
 }
 

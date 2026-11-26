@@ -1,29 +1,31 @@
-"""FastAPI Backend for Diabetes Chatbot - Exposes RAG functionality via REST API."""
+"""FastAPI Backend for Diabetes Chatbot - Exposes RAG functionality via REST API.
+
+Authentication is delegated to the self-hosted PocketBase container. The
+frontend authenticates with pocketbase-js and sends the resulting JWT access
+token as an ``Authorization: Bearer`` header; the backend verifies the token
+locally with the users collection's HS256 signing secret and maps its ``id``
+claim (the PocketBase record id) to the application principal. Account
+deletion removes the user record via the superuser API (CascadeDelete
+relations purge conversations/messages).
+"""
 
 import logging
-import os
 import uuid
 from contextlib import asynccontextmanager
-from typing import List
+from typing import List, Optional
 
 import nest_asyncio
-from slowapi import Limiter, _rate_limit_exceeded_handler
-from slowapi.util import get_remote_address
-from slowapi.errors import RateLimitExceeded
 from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from backend.src.api.schemas import (
     AuthenticatedUser,
     ConversationHistoryResponse,
     ConversationMessage,
     HealthResponse,
-    LoginRequest,
     QueryRequest,
     QueryResponse,
-    TokenResponse,
 )
 from backend.src.api.dependencies import (
     build_auth_service,
@@ -32,16 +34,12 @@ from backend.src.api.dependencies import (
     get_chatbot_service,
 )
 from backend.src.application.features.auth import AuthenticationService
-from backend.src.application.features.auth.auth_service import AccountLockedException, RateLimitExceededException
 from backend.src.application.features.chat.chatbot_service import ChatbotService
 from backend.src.infrastructure.data.cache import init_semantic_cache
-from backend.src.config.security import JWT_SECRET_KEY
 from backend.src.config.env import require
-from backend.src.infrastructure.data import initialize_database
-
-
-# Rate limiter using client IP
-limiter = Limiter(key_func=get_remote_address)
+from backend.src.infrastructure.pocketbase import get_pocketbase_client
+from backend.src.infrastructure.security import rate_limit
+from backend.src.infrastructure.security.pocketbase import PocketBaseTokenError, verify_access_token
 
 
 def _parse_frontend_origins() -> List[str]:
@@ -63,10 +61,7 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
-auth_scheme = HTTPBearer(auto_error=False)
-
-
-def _unauthorized(detail: str = "Nao autenticado") -> HTTPException:
+def _unauthorized(detail: str = "Não autenticado") -> HTTPException:
     return HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail=detail,
@@ -74,56 +69,56 @@ def _unauthorized(detail: str = "Nao autenticado") -> HTTPException:
     )
 
 
+def _extract_bearer_token(request: Request) -> Optional[str]:
+    header = request.headers.get("Authorization", "")
+    scheme, _, token = header.partition(" ")
+    if scheme.lower() != "bearer" or not token.strip():
+        return None
+    return token.strip()
+
+
 def get_current_user(
-    credentials: HTTPAuthorizationCredentials | None = Depends(auth_scheme),
+    request: Request,
     auth_service: AuthenticationService = Depends(get_auth_service),
 ) -> AuthenticatedUser:
-    if credentials is None or credentials.scheme.lower() != "bearer":
+    token = _extract_bearer_token(request)
+    if not token:
         raise _unauthorized()
 
-    principal = auth_service.resolve_principal_from_token(credentials.credentials)
-    if principal is None:
-        raise _unauthorized("Token de acesso invalido ou expirado")
+    try:
+        identity = verify_access_token(token)
+    except PocketBaseTokenError:
+        raise _unauthorized()
+
+    user_id = str(identity.get("id") or "")
+    if not user_id:
+        raise _unauthorized()
+
+    # The username is cosmetic (display only); email is the natural identifier.
+    # Introspection usually returns the record's email; fall back to a cached
+    # directory lookup otherwise.
+    username = identity.get("email")
+    if not isinstance(username, str) or not username:
+        username = auth_service.resolve_username(user_id)
+
+    try:
+        principal = auth_service.resolve_principal_from_identity(user_id, username)
+    except ValueError:
+        logger.warning("Rejected access token with empty subject id")
+        raise _unauthorized()
 
     return AuthenticatedUser(id=principal.id, username=principal.username)
-
-
-_DEFAULT_JWT_SECRET = "change-me"
-_MIN_JWT_SECRET_LENGTH = 32
-
-
-def _validate_jwt_secret() -> None:
-    """Fail fast if JWT_SECRET_KEY is weak or left as the default value.
-
-    In development (DEV=true) a warning is logged instead of raising, so
-    local environments can start without a production-grade secret.
-    """
-    secret = JWT_SECRET_KEY
-    is_dev = require("DEV").lower() in ("1", "true", "yes")
-    weak = secret == _DEFAULT_JWT_SECRET or len(secret) < _MIN_JWT_SECRET_LENGTH
-    if weak:
-        if is_dev:
-            logger.warning(
-                "JWT_SECRET_KEY is using a weak/default value. "
-                "Set a strong secret (≥%d chars) before deploying to production.",
-                _MIN_JWT_SECRET_LENGTH,
-            )
-        else:
-            raise RuntimeError(
-                f"JWT_SECRET_KEY must be set to a strong secret (at least {_MIN_JWT_SECRET_LENGTH} characters). "
-                "Set DEV=true to bypass this check in local development."
-            )
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Manage chatbot lifecycle."""
-    _validate_jwt_secret()
     logger.info("Initializing chatbot...")
-    initialize_database()
-    logger.info("Database initialized successfully")
+    if not get_pocketbase_client().health():
+        logger.warning("PocketBase is not reachable yet; continuing startup (requests will retry auth)")
+    else:
+        logger.info("PocketBase connection verified")
     init_semantic_cache()
-    logger.info("Semantic cache initialized")
     app.state.chatbot = await build_chatbot_service()
     app.state.auth_service = build_auth_service()
     logger.info("Chatbot initialized successfully")
@@ -131,66 +126,44 @@ async def lifespan(app: FastAPI):
     logger.info("Shutting down chatbot...")
 
 
+# OpenAPI schema endpoints (/docs, /redoc, /openapi.json) are always disabled
+# so the API surface is never exposed for reconnaissance.
 app = FastAPI(
-    title="Diabetes Chatbot API",
-    description="Backend API for diabetes chatbot with RAG functionality",
+    title="LinaChat API",
+    description="Backend API for LinaChat — diabetes and insulinotherapy assistant",
     version="1.0.0",
     lifespan=lifespan,
+    docs_url=None,
+    redoc_url=None,
+    openapi_url=None,
 )
-
-# Add rate limiter
-app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 
 def _raise_api_error(exc: Exception, user_message: str) -> None:
     if isinstance(exc, HTTPException):
+        # Intentional control flow (e.g. the 429 query throttle); re-raise as-is.
         raise exc
+    # Exception detail is logged server-side and never reflected in the response
+    # body, so internal state/schema details cannot leak to clients (L1). The
+    # client always receives the generic, user-safe message.
+    logger.error("API error (%s): %s", type(exc).__name__, exc)
     if isinstance(exc, ValueError):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=user_message) from exc
     if isinstance(exc, RuntimeError):
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=user_message) from exc
     raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=user_message) from exc
 
 
 # Configure CORS for communication with UI container
+# SameSite=Lax + the origin allowlist already block cross-site requests, so
+# methods/headers are scoped to what the frontend actually uses (never "*").
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_parse_frontend_origins(),
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization"],
 )
-
-
-@app.post("/auth/login", response_model=TokenResponse)
-@limiter.limit("5/minute")  # Rate limit: 5 login attempts per minute per IP
-def login(request: Request, login_request: LoginRequest, auth_service: AuthenticationService = Depends(get_auth_service)):
-    # Get client IP for rate limiting
-    client_ip = request.client.host if request.client else None
-    
-    try:
-        principal = auth_service.authenticate_credentials(
-            login_request.username, 
-            login_request.password,
-            client_ip=client_ip,
-        )
-        if principal is None:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Nome de usuario ou senha invalidos")
-
-        access_token = auth_service.issue_access_token(principal)
-        return TokenResponse(access_token=access_token)
-    
-    except AccountLockedException as e:
-        raise HTTPException(
-            status_code=status.HTTP_423_LOCKED,
-            detail=f"Account is locked. Try again in {e.remaining_seconds} seconds.",
-        )
-    except RateLimitExceededException as e:
-        raise HTTPException(
-            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-            detail=f"Too many login attempts. Try again in {e.remaining_seconds} seconds.",
-        )
 
 
 @app.get("/auth/me", response_model=AuthenticatedUser)
@@ -198,31 +171,35 @@ def read_current_user(current_user: AuthenticatedUser = Depends(get_current_user
     return current_user
 
 
-@app.post("/auth/logout")
-def logout(
+@app.delete("/auth/me")
+def delete_current_user(
     request: Request,
     current_user: AuthenticatedUser = Depends(get_current_user),
     auth_service: AuthenticationService = Depends(get_auth_service),
+    chatbot: ChatbotService = Depends(get_chatbot_service),
 ):
-    """Logout the current user by blacklisting their token."""
-    # Get the token from the Authorization header
-    auth_header = request.headers.get("Authorization", "")
-    if auth_header.lower().startswith("bearer "):
-        token = auth_header[7:]  # Remove "Bearer " prefix
-        auth_service.logout_token(token)
-    
-    return {"message": "Desconectado com sucesso"}
+    """Delete the current account.
 
+    Cached PII (Redis conversation message cache) is purged FIRST, before the
+    account is revoked, so stale user data cannot outlive the account. The
+    PocketBase user record is then deleted via the superuser API; CascadeDelete
+    relations remove the conversations and messages. If the deletion fails,
+    the account is kept (fail closed).
+    """
+    token = _extract_bearer_token(request)
+    if not token:
+        raise _unauthorized()
 
-@app.delete("/auth/me")
-def delete_current_user(
-    current_user: AuthenticatedUser = Depends(get_current_user),
-    auth_service: AuthenticationService = Depends(get_auth_service),
-):
-    deleted = auth_service.delete_user(current_user.id)
-    if not deleted:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuario nao encontrado")
-    return {"message": "Usuario excluido com sucesso"}
+    # Purge cached PII for this user's conversation BEFORE the account is
+    # revoked. The semantic cache is global (keyed by prompt hash), not
+    # user-scoped, and is therefore not part of per-user purging.
+    chatbot.purge_user_data(current_user.id)
+    if not auth_service.delete_account(current_user.id):
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="Não foi possível excluir a conta no provedor de identidade",
+        )
+    return {"message": "Usuário excluído com sucesso"}
 
 
 @app.get("/user/conversations", response_model=ConversationHistoryResponse)
@@ -233,7 +210,7 @@ def get_user_conversations(
     """Get conversation history for the authenticated user."""
     try:
         messages = chatbot.get_history(current_user.id)
-        logger.info(f"Retrieved {len(messages)} messages for user {current_user.id}")
+        logger.info("Retrieved %d messages for user %s", len(messages), current_user.id)
         return ConversationHistoryResponse(
             messages=[
                 ConversationMessage(
@@ -245,8 +222,9 @@ def get_user_conversations(
             ]
         )
     except Exception as e:
-        logger.error(f"Error retrieving conversation history: {type(e).__name__}: {e}")
-        _raise_api_error(e, "Erro ao recuperar historico da conversa")
+        logger.error("Error retrieving conversation history for user %s: %s", current_user.id, type(e).__name__)
+        logger.debug("Conversation history error detail for user %s: %s", current_user.id, e)
+        _raise_api_error(e, "Erro ao recuperar histórico da conversa")
 
 
 @app.get("/health", response_model=HealthResponse)
@@ -263,26 +241,47 @@ async def query_chatbot(
     chatbot: ChatbotService = Depends(get_chatbot_service),
 ):
     """Query the chatbot with a question."""
+    session_id = request.session_id or str(uuid.uuid4())
     try:
-        session_id = request.session_id or str(uuid.uuid4())
+        is_allowed, _ = rate_limit.check_query_rate_limit(current_user.id)
+        if not is_allowed:
+            remaining = rate_limit.get_query_rate_limit_remaining_seconds(current_user.id)
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail=f"Limite de consultas excedido. Tente novamente em {remaining} segundos.",
+            )
 
-        logger.info(f"Processing query for user {current_user.id} / session {session_id}: {request.query[:50]}...")
+        logger.info(
+            "Processing query for user %s / session %s (query length %d)",
+            current_user.id,
+            session_id,
+            len(request.query),
+        )
 
         # Query the chatbot
         result = await chatbot.chat(request.query, user_id=current_user.id, session_id=session_id)
         result["session_id"] = result.get("session_id", session_id)
 
         logger.info(
-            f"Query completed for user {current_user.id} / session {session_id}: "
-            f"response={len(result.get('response', ''))} chars, "
-            f"sources={len(result.get('sources', []))}, "
-            f"summarized={result.get('summarized', False)}"
+            "Query completed for user %s / session %s: "
+            "response=%d chars, sources=%d, summarized=%s",
+            current_user.id,
+            session_id,
+            len(result.get("response", "")),
+            len(result.get("sources", [])),
+            result.get("summarized", False),
         )
 
         return QueryResponse(**result)
 
     except Exception as e:
-        logger.error(f"Error processing query: {type(e).__name__}: {e}")
+        logger.error(
+            "Error processing query for user %s / session %s: %s",
+            current_user.id,
+            session_id,
+            type(e).__name__,
+        )
+        logger.debug("Query error detail for user %s / session %s: %s", current_user.id, session_id, e)
         _raise_api_error(e, "Erro ao processar consulta")
 
 
@@ -295,18 +294,28 @@ async def clear_user_conversations(
     try:
         cleared = chatbot.end_session(current_user.id)
         if cleared:
-            logger.info(f"Cleared conversation for user {current_user.id}")
+            logger.info("Cleared conversation for user %s", current_user.id)
             return {"message": "Conversa limpa com sucesso"}
-        return {"message": "No conversation found"}
+        return {"message": "Nenhuma conversa encontrada"}
     except Exception as e:
-        logger.error(f"Error clearing conversation: {type(e).__name__}: {e}")
+        logger.error("Error clearing conversation for user %s: %s", current_user.id, type(e).__name__)
+        logger.debug("Clear conversation error detail for user %s: %s", current_user.id, e)
         _raise_api_error(e, "Erro ao limpar conversa")
 
 
 @app.get("/")
 async def root():
-    """Root endpoint."""
-    return {"message": "Diabetes Chatbot API", "version": "1.0.0", "docs": "/docs"}
+    """Root endpoint.
+
+    Kept unauthenticated (harmless banner), but deliberately omits the version
+    so the API surface is not fingerprinted (L2). /health must stay
+    unauthenticated too because the container healthcheck probes it. All
+    other endpoints require a valid PocketBase Bearer token.
+    """
+    return {
+        "message": "LinaChat API",
+        "docs": None,
+    }
 
 
 if __name__ == "__main__":

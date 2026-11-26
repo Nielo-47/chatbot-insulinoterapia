@@ -106,15 +106,15 @@ class RAGRuntime:
                     conversation_history=conversation_history,
                 ),
             )
-            logger.warning("RAG RAW OUTPUT: %r", rag_data)
             if not rag_data or not isinstance(rag_data, dict):
-                logger.error("RAG returned invalid data: %r", rag_data)
+                logger.error("RAG returned invalid data (type=%s)", type(rag_data).__name__)
             elif rag_data.get("status") != "success":
+                # Truncate the provider message to bound exposure; retrieved
+                # document content is never logged.
                 logger.error(
-                    "RAG FAILURE: status=%r, message=%r, metadata=%r",
+                    "RAG query failed: status=%r, message=%.120r",
                     rag_data.get("status"),
                     rag_data.get("message"),
-                    rag_data.get("metadata"),
                 )
             sources = extract_sources(rag_data)
             return {
@@ -122,8 +122,11 @@ class RAGRuntime:
                 "sources": sources,
             }
         except Exception as e:
-            logger.exception("Exception during RAG query_data: %s", e)
+            logger.error("Exception during RAG query_data: %s", type(e).__name__)
+            logger.debug("RAG query_data exception detail: %s", e)
+            # A generic message is returned (and may be interpolated into the
+            # LLM prompt); the real exception detail stays in the logs only.
             return {
-                "rag_data": {"status": "error", "message": str(e)},
+                "rag_data": {"status": "error", "message": "RAG query failed"},
                 "sources": [],
             }

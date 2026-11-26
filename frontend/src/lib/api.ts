@@ -1,8 +1,24 @@
 import { z } from 'zod'
 
 import { env } from './env'
-import { authStorage } from './auth'
+import { pocketbase } from './pocketbase'
 import type { ConversationHistoryMessage, QueryPayload, QueryResult } from '../types/chat'
+
+const MAX_ERROR_LENGTH = 200
+
+function sanitizeError(message: string): string {
+  // Strip control characters but keep printable Unicode text so accented
+  // Portuguese characters in backend messages are preserved.
+  const cleaned = message
+    .split('')
+    .filter((ch) => {
+      const code = ch.charCodeAt(0)
+      return code === 0x09 || code === 0x0a || code === 0x0d || code >= 0x20
+    })
+    .join('')
+  // Truncate to max length
+  return cleaned.length > MAX_ERROR_LENGTH ? cleaned.slice(0, MAX_ERROR_LENGTH) + '…' : cleaned
+}
 
 export class ApiError extends Error {
   status: number
@@ -18,14 +34,15 @@ export class ApiError extends Error {
 const sourceItemSchema = z.object({
   id: z.string().optional(),
   path: z.string(),
-  page: z.number().optional(),
-  excerpt: z.string().optional(),
+  page: z.number().nullish().transform((value) => value ?? undefined),
+  content: z.string().nullish().transform((value) => value ?? undefined),
   label: z.string().optional(),
 })
 
 const queryResultSchema = z.object({
   response: z.string(),
   sources: z.array(sourceItemSchema),
+  follow_up_questions: z.array(z.string()).default([]),
   summarized: z.boolean(),
 })
 
@@ -34,13 +51,8 @@ const healthResultSchema = z.object({
   message: z.string(),
 })
 
-const loginResultSchema = z.object({
-  access_token: z.string(),
-  token_type: z.literal('bearer'),
-})
-
 const currentUserSchema = z.object({
-  id: z.number(),
+  id: z.string(),
   username: z.string(),
 })
 
@@ -54,28 +66,36 @@ const conversationHistorySchema = z.object({
   ),
 })
 
-async function request<T>(
-  path: string,
-  init: RequestInit,
-  schema: z.ZodSchema<T>,
-  options?: { skipAuth?: boolean },
-): Promise<T> {
+function getAccessToken(): string | null {
+  return pocketbase.authStore.token || null
+}
+
+async function request<T>(path: string, init: RequestInit, schema: z.ZodSchema<T>): Promise<T> {
   const controller = new AbortController()
   const timeout = window.setTimeout(() => controller.abort(), env.requestTimeoutMs)
-  const token = authStorage.getToken()
   const headers = new Headers(init.headers)
   headers.set('Content-Type', 'application/json')
 
-  if (!options?.skipAuth && token) {
+  const token = getAccessToken()
+  if (token) {
     headers.set('Authorization', `Bearer ${token}`)
   }
 
-  try {
-    const response = await fetch(`${env.apiBaseUrl}${path}`, {
+  const doFetch = () =>
+    fetch(`${env.apiBaseUrl}${path}`, {
       ...init,
       headers,
       signal: controller.signal,
     })
+
+  try {
+    const response = await doFetch()
+
+    if (response.status === 401) {
+      // PocketBase tokens are long-lived but not renewable: an expired or
+      // revoked token means the user must sign in again.
+      throw new ApiError('Não autenticado', 401)
+    }
 
     if (!response.ok) {
       let detail = `Request failed with status ${response.status}`
@@ -87,14 +107,14 @@ async function request<T>(
       } catch {
         // Keep the status-only message when the response is not JSON.
       }
-      throw new ApiError(detail, response.status)
+      throw new ApiError(sanitizeError(detail), response.status)
     }
 
     const json = await response.json()
     return schema.parse(json)
   } catch (error) {
     if (error instanceof DOMException && error.name === 'AbortError') {
-      throw new Error('A requisicao demorou demais. Tente novamente.')
+      throw new Error('A requisição demorou demais. Tente novamente.')
     }
 
     if (error instanceof z.ZodError) {
@@ -115,34 +135,15 @@ export async function checkHealth(): Promise<void> {
   await request('/health', { method: 'GET' }, healthResultSchema)
 }
 
-export async function login(username: string, password: string): Promise<{ accessToken: string; tokenType: 'bearer' }> {
-  const result = await request(
-    '/auth/login',
-    {
-      method: 'POST',
-      body: JSON.stringify({ username, password }),
-    },
-    loginResultSchema,
-    { skipAuth: true },
-  )
-
-  authStorage.setToken(result.access_token)
-  return {
-    accessToken: result.access_token,
-    tokenType: result.token_type,
-  }
-}
-
-export async function getCurrentUser(): Promise<{ id: number; username: string }> {
+export async function getCurrentUser(): Promise<{ id: string; username: string }> {
   return request('/auth/me', { method: 'GET' }, currentUserSchema)
 }
 
 export async function deleteAccount(): Promise<void> {
+  // The PocketBase access token is the proof of identity; the backend deletes
+  // the users record via the superuser API and then purges local cached data.
+  // No password re-entry exists.
   await request('/auth/me', { method: 'DELETE' }, z.object({ message: z.string() }))
-}
-
-export async function clearAuthSession(): Promise<void> {
-  authStorage.clearToken()
 }
 
 export async function getConversationHistory(): Promise<ConversationHistoryMessage[]> {
@@ -151,11 +152,15 @@ export async function getConversationHistory(): Promise<ConversationHistoryMessa
 }
 
 export async function sendQuery(payload: QueryPayload): Promise<QueryResult> {
-  return request('/query', { method: 'POST', body: JSON.stringify(payload) }, queryResultSchema)
+  const result = await request('/query', { method: 'POST', body: JSON.stringify(payload) }, queryResultSchema)
+  return {
+    response: result.response,
+    sources: result.sources,
+    followUpQuestions: result.follow_up_questions,
+    summarized: result.summarized,
+  }
 }
 
 export async function clearConversation(): Promise<void> {
   await request(`/user/conversations`, { method: 'DELETE' }, z.object({ message: z.string() }))
 }
-
-export const clearSession = clearConversation

@@ -6,6 +6,8 @@ from backend.src.application.features.chat.query_processor import QueryProcessor
 from backend.src.infrastructure.rag.cleaner import extract_sources
 from lightrag.prompt import PROMPTS
 
+USER_ID = "user0000alice0001"
+
 
 class DummyRAGRuntime:
     def __init__(self, rag_data: Any = None, error: Optional[Exception] = None):
@@ -88,20 +90,39 @@ class QueryProcessorTests(unittest.IsolatedAsyncioTestCase):
             side_effect=[
                 "Resposta inicial",
                 '{"needs_refinement": false, "issues": [], "suggestions": []}',
+                '{"questions": ["Q1?", "Q2?", "Q3?"]}',
             ]
         )
         processor = make_processor(DummyRAGRuntime(rag_data=rag_data), conversation_service, call_llm)
 
-        result = await processor.query("Pergunta", user_id=42, session_id="sess-1")
+        result = await processor.query("Pergunta", user_id=USER_ID, session_id="sess-1")
 
         self.assertEqual(result["response"], "Resposta inicial")
-        self.assertEqual(result["sources"], ["doc1.md"])
+        self.assertEqual(result["follow_up_questions"], ["Q1?", "Q2?", "Q3?"])
+        self.assertEqual(
+            result["sources"],
+            [
+                {"path": "doc1.md", "page": None, "content": ""},
+                {"path": "doc1.md", "page": None, "content": ""},
+            ],
+        )
         self.assertFalse(result["summarized"])  # Not enough messages to trigger summarization
         self.assertEqual(result["session_id"], "sess-1")
         self.assertEqual(len(conversation_service.added_messages), 2)
-        self.assertEqual(conversation_service.added_messages[0], (42, "user", "Pergunta", []))
-        self.assertEqual(conversation_service.added_messages[1], (42, "assistant", "Resposta inicial", ["doc1.md"]))
-        self.assertEqual(call_llm.await_count, 2)
+        self.assertEqual(conversation_service.added_messages[0], (USER_ID, "user", "Pergunta", []))
+        self.assertEqual(
+            conversation_service.added_messages[1],
+            (
+                USER_ID,
+                "assistant",
+                "Resposta inicial",
+                [
+                    {"path": "doc1.md", "page": None, "content": ""},
+                    {"path": "doc1.md", "page": None, "content": ""},
+                ],
+            ),
+        )
+        self.assertEqual(call_llm.await_count, 3)
 
     async def test_query_with_refinement(self) -> None:
         rag_data = {"status": "success", "data": {"chunks": []}}
@@ -111,29 +132,38 @@ class QueryProcessorTests(unittest.IsolatedAsyncioTestCase):
                 "Resposta inicial",
                 '{"needs_refinement": true, "issues": ["x"], "suggestions": ["y"]}',
                 "Resposta refinada",
+                '{"questions": ["Ref Q1?", "Ref Q2?", "Ref Q3?"]}',
             ]
         )
         processor = make_processor(DummyRAGRuntime(rag_data=rag_data), conversation_service, call_llm)
 
-        result = await processor.query("Pergunta", user_id=7)
+        result = await processor.query("Pergunta", user_id=USER_ID)
 
         self.assertEqual(result["response"], "Resposta refinada")
+        self.assertEqual(result["follow_up_questions"], ["Ref Q1?", "Ref Q2?", "Ref Q3?"])
         self.assertFalse(result["summarized"])
-        self.assertEqual(conversation_service.added_messages[0], (7, "user", "Pergunta", []))
-        self.assertEqual(conversation_service.added_messages[1], (7, "assistant", "Resposta refinada", []))
-        self.assertEqual(call_llm.await_count, 3)
+        self.assertEqual(conversation_service.added_messages[0], (USER_ID, "user", "Pergunta", []))
+        self.assertEqual(conversation_service.added_messages[1], (USER_ID, "assistant", "Resposta refinada", []))
+        self.assertEqual(call_llm.await_count, 4)
 
     async def test_query_with_malformed_critique_falls_back(self) -> None:
         rag_data = {"status": "success", "data": {"chunks": []}}
         conversation_service = DummyConversationService()
-        call_llm = AsyncMock(side_effect=["Resposta inicial", "not-json"])
+        call_llm = AsyncMock(
+            side_effect=[
+                "Resposta inicial",
+                "not-json",
+                '{"questions": ["Q1?", "Q2?", "Q3?"]}',
+            ]
+        )
         processor = make_processor(DummyRAGRuntime(rag_data=rag_data), conversation_service, call_llm)
 
-        result = await processor.query("Pergunta", user_id=9)
+        result = await processor.query("Pergunta", user_id=USER_ID)
 
         self.assertEqual(result["response"], "Resposta inicial")
-        self.assertEqual(call_llm.await_count, 2)
-        self.assertEqual(conversation_service.added_messages[1], (9, "assistant", "Resposta inicial", []))
+        self.assertEqual(result["follow_up_questions"], ["Q1?", "Q2?", "Q3?"])
+        self.assertEqual(call_llm.await_count, 3)
+        self.assertEqual(conversation_service.added_messages[1], (USER_ID, "assistant", "Resposta inicial", []))
 
     async def test_query_skips_critique_when_fail_response(self) -> None:
         rag_data = {"status": "success", "data": {"chunks": []}}
@@ -141,12 +171,31 @@ class QueryProcessorTests(unittest.IsolatedAsyncioTestCase):
         call_llm = AsyncMock(return_value=PROMPTS["fail_response"])
         processor = make_processor(DummyRAGRuntime(rag_data=rag_data), conversation_service, call_llm)
 
-        result = await processor.query("Pergunta", user_id=10)
+        result = await processor.query("Pergunta", user_id=USER_ID)
 
         self.assertEqual(result["response"], PROMPTS["fail_response"])
+        self.assertEqual(result["follow_up_questions"], [])
         self.assertEqual(call_llm.await_count, 1)
-        self.assertEqual(conversation_service.added_messages[0], (10, "user", "Pergunta", []))
-        self.assertEqual(conversation_service.added_messages[1], (10, "assistant", PROMPTS["fail_response"], []))
+        self.assertEqual(conversation_service.added_messages[0], (USER_ID, "user", "Pergunta", []))
+        self.assertEqual(conversation_service.added_messages[1], (USER_ID, "assistant", PROMPTS["fail_response"], []))
+
+    async def test_query_malformed_suggestions_falls_back_to_empty(self) -> None:
+        rag_data = {"status": "success", "data": {"chunks": []}}
+        conversation_service = DummyConversationService()
+        call_llm = AsyncMock(
+            side_effect=[
+                "Resposta inicial",
+                '{"needs_refinement": false, "issues": [], "suggestions": []}',
+                "not-json",
+            ]
+        )
+        processor = make_processor(DummyRAGRuntime(rag_data=rag_data), conversation_service, call_llm)
+
+        result = await processor.query("Pergunta", user_id=USER_ID)
+
+        self.assertEqual(result["response"], "Resposta inicial")
+        self.assertEqual(result["follow_up_questions"], [])
+        self.assertEqual(call_llm.await_count, 3)
 
     async def test_query_rag_error_does_not_persist_messages(self) -> None:
         conversation_service = DummyConversationService()
@@ -154,7 +203,7 @@ class QueryProcessorTests(unittest.IsolatedAsyncioTestCase):
         processor = make_processor(DummyRAGRuntime(error=RuntimeError("RAG failed")), conversation_service, call_llm)
 
         with self.assertRaises(RuntimeError):
-            await processor.query("Pergunta", user_id=5)
+            await processor.query("Pergunta", user_id=USER_ID)
 
         self.assertEqual(conversation_service.added_messages, [])
         self.assertEqual(call_llm.await_count, 0)
@@ -174,15 +223,50 @@ class QueryProcessorTests(unittest.IsolatedAsyncioTestCase):
             side_effect=[
                 "Nova resposta",
                 '{"needs_refinement": false, "issues": [], "suggestions": []}',
+                '{"questions": ["Q1?", "Q2?", "Q3?"]}',
             ]
         )
         rag_runtime = DummyRAGRuntime(rag_data=rag_data)
         processor = make_processor(rag_runtime, conversation_service, call_llm)
 
-        result = await processor.query("Pergunta", user_id=11)
+        result = await processor.query("Pergunta", user_id=USER_ID)
 
         self.assertEqual(result["response"], "Nova resposta")
         self.assertEqual(rag_runtime.last_history, [{"role": "assistant", "content": "Resposta anterior"}])
+
+    def test_extract_sources_removes_all_page_markers(self) -> None:
+        rag_data = {
+            "status": "success",
+            "data": {
+                "chunks": [
+                    {
+                        "chunk_id": "chunk-1",
+                        "reference_id": "1",
+                        "content": "[PAGE 3]\nTexto inicial.\n[PAGE 4]\nTexto na página seguinte.",
+                    },
+                ],
+                "references": [
+                    {"reference_id": "1", "file_path": "data/raw/doc1.md"},
+                ],
+            },
+        }
+
+        sources = extract_sources(rag_data)
+
+        self.assertEqual(
+            sources,
+            [
+                {
+                    "path": "doc1.md",
+                    "page": 3,
+                    "content": "Texto inicial.\nTexto na página seguinte.",
+                },
+            ],
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()
 
 
 if __name__ == "__main__":

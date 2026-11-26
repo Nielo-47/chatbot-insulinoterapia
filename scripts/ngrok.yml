@@ -1,0 +1,7 @@
+version: "3"
+
+agent:
+  # The tunnel is pinned to a static dev domain via the compose command line
+  # (--url=${NGROK_STATIC_DOMAIN}); no inspection API exposure is needed
+  # anymore (the Authentik URL-discovery code is gone).
+  update_check: false

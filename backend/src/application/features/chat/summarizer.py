@@ -19,7 +19,7 @@ class SummarizationService:
 
     async def summarize_and_trim(
         self,
-        user_id: int,
+        user_id: str,
         history: List[Dict[str, str]],
     ) -> Dict[str, Any]:
         """

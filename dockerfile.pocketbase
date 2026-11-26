@@ -1,0 +1,27 @@
+# Self-contained PocketBase image pinned to an exact release for deterministic
+# builds. Upgrades are deliberate: bump PB_VERSION (and audit breaking changes
+# in the PB changelog) rather than floating.
+FROM alpine:3.20
+
+ARG PB_VERSION=0.39.11
+# Host architecture of the build machine (default x86_64); override with
+# `--build-arg PB_ARCH=arm64` on ARM hosts.
+ARG PB_ARCH=amd64
+
+RUN apk add --no-cache ca-certificates unzip wget
+
+ADD https://github.com/pocketbase/pocketbase/releases/download/v${PB_VERSION}/pocketbase_${PB_VERSION}_linux_${PB_ARCH}.zip /tmp/pb.zip
+
+RUN unzip -o /tmp/pb.zip pocketbase -d /usr/local/bin \
+    && chmod +x /usr/local/bin/pocketbase \
+    && rm /tmp/pb.zip \
+    && pocketbase --version
+
+# Data lives entirely in /pb/pb_data (mounted as a compose volume). JSVM
+# migrations (/pb/pb_migrations) and the optional Supabase import export
+# (/pb/import) are mounted read-only. WORKDIR /pb so relative paths resolve.
+WORKDIR /pb
+
+EXPOSE 8090
+
+CMD ["/usr/local/bin/pocketbase", "serve", "--http=0.0.0.0:8090", "--dir=/pb/pb_data"]
